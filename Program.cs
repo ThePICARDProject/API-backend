@@ -1,3 +1,5 @@
+using API_backend.Services.FileProcessing;
+
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
