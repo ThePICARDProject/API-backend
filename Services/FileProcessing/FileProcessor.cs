@@ -1,4 +1,5 @@
 ﻿using Microsoft.Extensions.Primitives;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq.Expressions;
 
@@ -15,15 +16,21 @@ namespace API_backend.Services.FileProcessing
     public class FileProcessor
     {
         private readonly string _databaseFileSystemBasePath;
+        private readonly string _executablePath;
 
         public FileProcessor(FileProcessorOptions fileProcessorOptions)
-        {                             
+        {
+            // Get the path for the executable for running bash scripts
+            _executablePath = fileProcessorOptions.ExecutablePath;
+            if (!File.Exists(_executablePath))
+                throw new FileNotFoundException($"The executable file at the path \"{_executablePath}\" could not be found or does not exist.");
+
             // Initialize the base path for the database filesystem and verify it exists
             _databaseFileSystemBasePath = fileProcessorOptions.DatabaseFileSystemBasePath;
             if (string.IsNullOrEmpty(_databaseFileSystemBasePath))
                 throw new ArgumentNullException(nameof(fileProcessorOptions.DatabaseFileSystemBasePath));
             if (!Directory.Exists(_databaseFileSystemBasePath))
-                throw new DirectoryNotFoundException($"The output directory \"{_databaseFileSystemBasePath}\" could not be found or does not exist");
+                throw new DirectoryNotFoundException($"The output directory \"{_databaseFileSystemBasePath}\" could not be found or does not exist.");
         }
 
         /// <summary>
@@ -31,14 +38,14 @@ namespace API_backend.Services.FileProcessing
         /// text file within the database filesystem.
         /// 
         /// Database filesystem directory structure is as follows: **CHECK ON THIS**
-        ///     {DatabaseFileSystemBasePath}/{UserId}/{AlgorithmName}/{SureveyNumber}.txt
+        ///     "{DatabaseFileSystemBasePath}/{UserId}/{AlgorithmName}/{SureveyNumber}.txt"
         /// </summary>
         /// <param name="userId"></param>
         /// <param name="algorithmName"></param>
         /// <param name="experimentNumber"></param>
         /// <returns></returns>
         /// <exception cref="ArgumentNullException"></exception>
-        public string AggregateData(string userId, string algorithmName, string survey)
+        public async Task<string> AggregateData(string userId, string algorithmName, string survey)
         {
             // Verify Args
             if(string.IsNullOrEmpty(userId))
@@ -56,23 +63,26 @@ namespace API_backend.Services.FileProcessing
                 algorithmName, 
                 survey 
             });
-
-            ////////////////////////////////////
-            ///  INTERFACE WITH HDFS TO GET  ///
-            ///  FILES AND OUTPUT TO THE DB  ///
-            ///     FILESYSTEM BASE PATH     ///
-            ////////////////////////////////////
             
             // Currently an idea for using bash based on current implementation. Doesn't seem to be a better option
             using(Process resultsOut = new Process())
             {
-                resultsOut.StartInfo.FileName = "/bin/sh";
-                // This is the command ran by results-out.sh, with the output path substituted with the database path
-                resultsOut.StartInfo.Arguments = $"docker run --rm --name results-extractor --network \"$(basename \"$(pwd)\")_cluster-network\" -v \"$(pwd)/results:/mnt/results\" spark-hadoop:latest hdfs dfs -getmerge /data/results/palfa/output {aggregateFilePath}";
+                resultsOut.StartInfo.FileName = _executablePath;
+
+                // Add arguments
+                Collection<string> argumentsList = resultsOut.StartInfo.ArgumentList;
+                argumentsList.Add("/results_out.sh");
+                argumentsList.Add(aggregateFilePath);
                 resultsOut.StartInfo.CreateNoWindow = false;
 
-                System.Diagnostics.Process.Start(aggregateFilePath);
+                // Start the process and wait to exit
+                resultsOut.Start();
+                await resultsOut.WaitForExitAsync();
             }
+
+            // If we exit the process and the file still does not exist, throw an exception
+            if (!File.Exists(aggregateFilePath))
+                throw new FileNotFoundException($"Failed to aggregate data: output file does not exist at the path \"{aggregateFilePath}\".");
                        
             // Return the path of the saved file
             return aggregateFilePath;   
