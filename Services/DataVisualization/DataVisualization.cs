@@ -31,7 +31,7 @@ namespace API_backend.Services.DataVisualization
 
 
 
-            string tempParams = $"-i {quotedInputScript} -d1 \"Ratio.S-SSL\" -d2 \"Recall\" -g \"line\" -o \"output.pdf\"";
+            string tempParams = $"-i {quotedInputScript} -d1 Ratio.S-SSL -d2 Recall -g line -o output.pdf";
 
             ProcessStartInfo startInfo = new ProcessStartInfo
             {
