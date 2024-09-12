@@ -1,4 +1,5 @@
-﻿using API_backend.Services.DataVisualization;
+﻿using API_backend.Models;
+using API_backend.Services.DataVisualization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -16,12 +17,13 @@ namespace API_backend.Controllers
             _dataVisualization = dataVisualization;
         }
 
-        [HttpGet]
-        public IActionResult GetValues()
+        [HttpPost]
+        public IActionResult GetValues([FromForm] VisualizationRequest visRequest)
         {
+            //TODO: remove debug line
             Console.WriteLine("Reached GetTest function");
-            string parameters = "- i \"testdata.csv\" - d1 \"Ratio.S-SSL\" - d2 \"Recall\" - g \"line\" - o \"output.pdf\"";
-            _dataVisualization.GraphInput(parameters);
+
+            _dataVisualization.GraphInput(visRequest);
 
             return Ok();
         }
