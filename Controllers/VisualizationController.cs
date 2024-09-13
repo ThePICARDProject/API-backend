@@ -7,12 +7,12 @@ namespace API_backend.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class ValuesController : ControllerBase
+    public class VisualizationController : ControllerBase
     {
 
         private readonly DataVisualization _dataVisualization;
 
-        public ValuesController(DataVisualization dataVisualization)
+        public VisualizationController(DataVisualization dataVisualization)
         {
             _dataVisualization = dataVisualization;
         }
