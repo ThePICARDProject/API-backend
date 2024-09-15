@@ -7,10 +7,10 @@ namespace API_backend.Services.FileProcessing
     /// </summary>
     public class FileProcessorOptions
     {
-        // Local shell path
-        public string ExecutablePath { get; set; }
-
         // Base path for the Database file system
         public string DatabaseFileSystemBasePath { get; set; }
+
+        // Base path for Algorithm implementations
+        public string JarFileBasePath { get; set; }
     }
 }

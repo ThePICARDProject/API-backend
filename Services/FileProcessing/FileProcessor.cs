@@ -9,28 +9,65 @@ namespace API_backend.Services.FileProcessing
     /// Service for aggregating experiment data and parsing the data into a .csv file.
     /// </summary>
     /// <remarks>
-    /// Need to perform similar functionality to the bash script in results-out.sh.
-    /// Instead of outputting to the hardcoded path, generate a path for the database and save there.
+    /// Implemented based off of bash scripts provided in the docker-swarm repository.
     /// </remarks>
-    /// <seealso href="https://github.com/ThePICARDProject/docker-swarm/blob/main/docker-swarm/results-out.sh"/>
+    /// <seealso href="https://github.com/ThePICARDProject/docker-swarm/"/>
     public class FileProcessor
     {
         private readonly string _databaseFileSystemBasePath;
-        private readonly string _executablePath;
+        private readonly string _jarBasePath;
 
         public FileProcessor(FileProcessorOptions fileProcessorOptions)
         {
-            // Get the path for the executable for running bash scripts
-            _executablePath = fileProcessorOptions.ExecutablePath;
-            if (!File.Exists(_executablePath))
-                throw new FileNotFoundException($"The executable file at the path \"{_executablePath}\" could not be found or does not exist.");
-
             // Initialize the base path for the database filesystem and verify it exists
             _databaseFileSystemBasePath = fileProcessorOptions.DatabaseFileSystemBasePath;
             if (string.IsNullOrEmpty(_databaseFileSystemBasePath))
                 throw new ArgumentNullException(nameof(fileProcessorOptions.DatabaseFileSystemBasePath));
             if (!Directory.Exists(_databaseFileSystemBasePath))
                 throw new DirectoryNotFoundException($"The output directory \"{_databaseFileSystemBasePath}\" could not be found or does not exist.");
+
+            // Initialize the base path for the .jar file storage and verify it exists
+            _jarBasePath = fileProcessorOptions.JarFileBasePath;
+            if(string.IsNullOrEmpty(_jarBasePath))
+                throw new ArgumentNullException(nameof(fileProcessorOptions.JarFileBasePath));
+            if (!Directory.Exists(_jarBasePath))
+                throw new DirectoryNotFoundException($"The directory \"{fileProcessorOptions.JarFileBasePath}\" could not be found or does not exist.");
+        }
+
+        /// <summary>
+        /// Submits a single experiment to the Docker-Swarm.
+        /// </summary>
+        /// <param name="className">The name of the main class in the algorithm .jar file.</param>
+        /// <param name="jarName">The name of the .jar file stored at the path "/opt/jars/{file_name}"</param>
+        /// <param name="args">Additional arguments specific for each algorithm</param>
+        /// <exception cref="NotImplementedException"></exception>
+        private void Submit(string className, string jarName, List<string> args)
+        {
+            // Verify Args
+            if(string.IsNullOrEmpty(className))
+                throw new ArgumentNullException(nameof(className));
+            if(string.IsNullOrEmpty(jarName))
+                throw new ArgumentNullException(nameof(jarName));
+            if(!File.Exists(Path.Combine(_jarBasePath, jarName)))
+                throw new FileNotFoundException($".jar file with the name \"{jarName}\" does not exist in the specified folder.");
+
+            // Create submit process
+            using(Process submit = new Process())
+            {
+                // Setup Process
+                submit.StartInfo.FileName = "submit.sh"; // THIS WILL NOT WORK UNLESS SCRIPT IS IN LOCAL DIRECTORY
+
+                Collection<string> arguments = new Collection<string>();
+                arguments.Add(className);
+                arguments.Add(jarName);
+                foreach(string arg in args)
+                    arguments.Add(arg);
+
+                submit.StartInfo.CreateNoWindow = true;
+            
+                submit.Start();
+                submit.WaitForExit();
+            }
         }
 
         /// <summary>
@@ -68,16 +105,17 @@ namespace API_backend.Services.FileProcessing
             // Currently an idea for using bash based on current implementation. Doesn't seem to be a better option
             using(Process resultsOut = new Process())
             {
-                resultsOut.StartInfo.FileName = _executablePath;
+                // THIS WILL NOT WORK UNLESS SCRIPT IS IN LOCAL DIRECTORY
+                resultsOut.StartInfo.FileName = "results-out.sh";
 
                 // Add arguments
                 Collection<string> argumentsList = resultsOut.StartInfo.ArgumentList;
-                argumentsList.Add("/results_out.sh");
                 argumentsList.Add(aggregateFilePath);
                 resultsOut.StartInfo.CreateNoWindow = false;
 
                 // Start the process and wait to exit
-                resultsOut.Start();
+                if (!resultsOut.Start())
+                    throw new Exception("Failed to start the new process");
                 await resultsOut.WaitForExitAsync();
             }
 
@@ -97,7 +135,7 @@ namespace API_backend.Services.FileProcessing
         /// <exception cref="NotImplementedException"></exception>
         public string GetCsv()
         {
-            throw new NotImplementedException();
+            throw new NotImplementedException("TODO");
         }
     }
 }
