@@ -34,34 +34,35 @@ namespace API_backend.Services.FileProcessing
         }
 
         /// <summary>
-        /// Aggregates all data within the Hdfs into a single output
-        /// text file within the database filesystem.
+        /// Aggregates all data within the Hdfs into a single output text file within the database filesystem.
         /// 
-        /// Database filesystem directory structure is as follows: **CHECK ON THIS**
-        ///     "{DatabaseFileSystemBasePath}/{UserId}/{AlgorithmName}/{SureveyNumber}.txt"
+        /// Database filesystem directory structure is as follows: 
+        ///     "{DatabaseFileSystemBasePath}/{UserId}/{AlgorithmName}/{Timestamp}_{surveyNumber}.txt"
         /// </summary>
         /// <param name="userId"></param>
         /// <param name="algorithmName"></param>
         /// <param name="experimentNumber"></param>
         /// <returns></returns>
         /// <exception cref="ArgumentNullException"></exception>
-        public async Task<string> AggregateData(string userId, string algorithmName, string survey)
+        public async Task<string> AggregateData(string userId, string algorithmName, string surveyNumber, string timestamp)
         {
             // Verify Args
             if(string.IsNullOrEmpty(userId))
                 throw new ArgumentNullException(nameof(userId));
             if(string.IsNullOrEmpty(algorithmName))
                 throw new ArgumentNullException(nameof(algorithmName));
-            if(string.IsNullOrEmpty(survey))
-                throw new ArgumentNullException(nameof(survey));
+            if(string.IsNullOrEmpty(surveyNumber))
+                throw new ArgumentNullException(nameof(surveyNumber));
+            if(string.IsNullOrEmpty(timestamp))
+                throw new ArgumentNullException(nameof(timestamp));
 
             // Generate the aggregate file path
             string aggregateFilePath = Path.Combine(new string[] 
             { 
                 _databaseFileSystemBasePath, 
                 userId, 
-                algorithmName, 
-                survey 
+                algorithmName,
+                $"{timestamp}_{surveyNumber}.txt",
             });
             
             // Currently an idea for using bash based on current implementation. Doesn't seem to be a better option
