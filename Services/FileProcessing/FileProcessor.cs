@@ -36,6 +36,11 @@ namespace API_backend.Services.FileProcessing
 
         /// <summary>
         /// Submits a single experiment to the Docker-Swarm.
+        /// 
+        /// NOTES:
+        ///     Must tie a running experiment to a user 
+        ///     make a new folder as the experimentId and put the results
+        ///     See if we can run the HDFS in this folder
         /// </summary>
         /// <param name="className">The name of the main class in the algorithm .jar file.</param>
         /// <param name="jarName">The name of the .jar file stored at the path "/opt/jars/{file_name}"</param>
