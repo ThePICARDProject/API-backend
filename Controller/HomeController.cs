@@ -1,42 +1,63 @@
 ﻿
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.OpenApi.Models;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authorization;
+using System.Text.Json.Nodes;
 
 namespace API_backend.Controller
 {
-    public class HomeController
+    [ApiController]
+    [Route("[controller]")]
+    public class ExperimentController : ControllerBase
     {
+
+        //need experiment object for holding params of experiment?
 
 
         /**
-         * picard notes
+         * STEPS FOR HANDLING POST REQUEST
+         * 
+         *  1.	Authenticate the User
+         *  2. 	Parse the Multipart Request:
+         *          //service layer??
+         * 	3.	Save Experiment Details:
+         * 	        //service layer??
+            4.	Save the Dataset:
+            5.	Handle Experiment Status:
+            6.	Trigger Docker Swarm Execution:
+         **/
+        
 
-            
-            get parameters from ui 
-            send to database ( dylan) 
-            look at shell scripts for parameter details, ui should be the same
-
-            make list of params from shell scripts? 
-            shouldn't have to do login functionality ( dylan doing this )
-
-            outline each post request in kanban for devine
-        **/
-
-
-        //post request template
-        [Microsoft.AspNetCore.Mvc.HttpPost]
-        public async Task<ActionResult> SendExperiment([FromBody] string value)
+        //joe said json Object is easier to use for passing info to this endpoint?
+        [HttpPost("sendExperiment")]
+        public async Task<ActionResult> passExperiment(JsonObject Experiment)
         {
-            if (string.IsNullOrWhiteSpace(value))
+           /*
+            * GUARDS NEEDED?
+            */
+
+            //NEED: convert jsonObject to csv file ?
+                 //csv experimentCsv = convertToCsv(ExperimentData);
+
+            //call service method for handling of
+            //      1. parsing,
+            //      2. passing to model
+            //      3. saving to db,
+            //      4. sending to docker.
+            service.receiveExperiment(experimentCsv);
+
+            int success = service.sendExperiment(experimentCsv);
+
+            if (success)
             {
-                return BadRequest();
+                return Ok();
             }
-
-            //do something with value
-                //pass value to service method for handling in database
-
-
-            return Ok();
+            else
+            {
+                return BadRequestObjectResult("Error sending experiment");
+            }
+            
         }
 
 
