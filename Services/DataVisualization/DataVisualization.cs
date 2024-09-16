@@ -90,12 +90,14 @@ namespace API_backend.Services.DataVisualization
 
         }
 
-        /**
-         * @brief Formats graph.py parameters to pass to python executable file
-         * @param paremeters - data visualization parameters passed to controller from input form
-         * @param inputFilePath indicates filepath location
-         * @return string containing Python formatted parameters
-        */
+
+
+
+        /// <summary>
+        /// Method <c>FormatInputStringt</c> formats graph.py parameters to pass to python executable file
+        /// </summary>
+        /// <param name="parameters">Users submitted parameters for python script</param>
+        /// <returns>string formatted for python script</returns>
         public string FormatInputString(VisualizationRequest parameters, string inputFilePath)
         {
 
