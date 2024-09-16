@@ -15,67 +15,79 @@ namespace API_backend.Services.DataVisualization
             _env = env;
         }
 
-        /**
-         * TODO: documentation
-        */
+        /// <summary>
+        /// Method <c>GraphInput</c> creates graph.py executable file and sets user submitted values as parameters
+        /// </summary>
+        /// <param name="parameters">Users submitted parameters for python script</param>
+        /// <returns>boolean representing successfully passed parameters</returns>
         public bool GraphInput(VisualizationRequest parameters)
         {
-            // TODO: Input validation, likely already handled on front end
-
-            // Get the base directory of the application
-            var baseDirectory = _env.ContentRootPath;
-
-            var inputFile = parameters.InputFile;
-
-            string fileName = inputFile.FileName;
-
-            if (Path.GetExtension(fileName) != ".csv")
+            try
             {
-                fileName = Path.GetFileNameWithoutExtension(fileName) + ".csv";
+                // Get the base directory of the application
+                var baseDirectory = _env.ContentRootPath;
+
+                var inputFile = parameters.InputFile;
+
+                if (inputFile == null || inputFile.Length == 0)
+                {
+                    throw new ArgumentException("No input file provided or file is empty");
+                }
+
+                string fileName = inputFile.FileName;
+
+                if (Path.GetExtension(fileName).ToLower() != ".csv")
+                {
+                    throw new ArgumentException("Invalid file format. Only .csv files are allowed.");
+                }
+
+                var filePath = Path.Combine(baseDirectory, "InputFiles", fileName);
+
+                // Check if the directory exists
+                if (!Directory.Exists(Path.Combine(baseDirectory, "InputFiles")))
+                {
+                    Directory.CreateDirectory(Path.Combine(baseDirectory, "InputFiles"));
+                }
+
+                // Copy input file to file path
+                using (var stream = System.IO.File.Create(filePath))
+                {
+                    inputFile.CopyToAsync(stream);
+                }
+
+                string input = FormatInputString(parameters, filePath);
+
+
+                ProcessStartInfo startInfo = new ProcessStartInfo
+                {
+                    FileName = "python.exe",
+                    Arguments = $"{input}",
+                    WindowStyle = ProcessWindowStyle.Hidden
+                };
+
+                using (Process pythonExe = new Process())
+                {
+                    pythonExe.StartInfo = startInfo;
+                    pythonExe.Start();
+                    pythonExe.WaitForExit();
+
+                }
+
+                /*
+                 * example input
+                 * python3 graph.py -i "testdata.csv" -d1 "Ratio.S-SSL" -d2 "Recall" -g "line" -o "output.pdf"
+                */
+
+                return true;
+
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"An unexpected error occurred: {ex.Message}");
+                return false;
             }
 
-            var filePath = Path.Combine(baseDirectory, "InputFiles", fileName);
 
-            // Check if the directory exists
-            if (!Directory.Exists(Path.Combine(baseDirectory, "InputFiles")))
-            {
-                Directory.CreateDirectory(Path.Combine(baseDirectory, "InputFiles"));
-            }
-
-            // Copy input file to file path
-            using (var stream = System.IO.File.Create(filePath))
-            {
-                inputFile.CopyToAsync(stream);
-            }
-
-            //TODO: Remove debug line
-            Console.WriteLine("File path is " + filePath);
-
-            string input = FormatInputString(parameters, filePath);
-
-
-            ProcessStartInfo startInfo = new ProcessStartInfo
-            {
-                FileName = "python.exe",
-                Arguments = $"{input}",
-                WindowStyle = ProcessWindowStyle.Hidden
-            };
-
-            using (Process pythonExe = new Process())
-            {
-                pythonExe.StartInfo = startInfo;
-                pythonExe.Start();
-                pythonExe.WaitForExit();
-
-            }
-
-            /*
-             * example input
-             * python3 graph.py -i "testdata.csv" -d1 "Ratio.S-SSL" -d2 "Recall" -g "line" -o "output.pdf"
-            */
-
-            //TODO: Update return value to accurately reflect result
-            return false;
         }
 
         /**
@@ -87,6 +99,10 @@ namespace API_backend.Services.DataVisualization
         public string FormatInputString(VisualizationRequest parameters, string inputFilePath)
         {
 
+            if (string.IsNullOrEmpty(parameters.XAxis) || string.IsNullOrEmpty(parameters.YAxis) || string.IsNullOrEmpty(parameters.GraphType) || string.IsNullOrEmpty(parameters.OutputFileName)) {
+                throw new ArgumentException("Missing graph parameters: X axis, Y axis, graph type, or output filename.");
+            }
+            
             var baseDirectory = _env.ContentRootPath;
 
             // Build the path to the Python script
@@ -99,10 +115,11 @@ namespace API_backend.Services.DataVisualization
             sb.Append(" -d1 " + parameters.XAxis);
             sb.Append(" -d2 " + parameters.YAxis);
             sb.Append(" -g " + parameters.GraphType);
+            sb.Append(" -o ");
 
             if (parameters.OutputFileName != null || parameters.OutputFileName != "")
             {
-                sb.Append(" -o " + parameters.OutputFileName);
+                sb.Append(parameters.OutputFileName);
             }
 
 
