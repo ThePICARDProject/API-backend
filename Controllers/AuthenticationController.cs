@@ -1,42 +1,37 @@
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Tokens;
-using System.IdentityModel.Tokens.Jwt;
-using API_backend.Models;
-using API_backend.Services;
-using API_backend.Services.Token;
 
-namespace YourNamespace.Controllers
+namespace API_backend.Controllers
 {
     [ApiController]
     [Route("[controller]")]
     public class AuthenticationController : ControllerBase
     {
-        private readonly ITokenService _tokenService;
-
-        public AuthenticationController(ITokenService tokenService)
+        /// <summary>
+        /// Initiates the Google OAuth 2.0 authentication process.
+        /// </summary>
+        /// <param name="returnUrl">The URL to redirect to after successful authentication.</param>
+        [HttpGet("login")]
+        public IActionResult Login(string returnUrl = "/swagger/index.html")
         {
-            _tokenService = tokenService;
-        }
-
-        [HttpPost("authenticate")]
-        public IActionResult Authenticate([FromBody] TokenRequest request)
-        {
-            if (_tokenService.ValidateToken(request.Token, out var validatedToken))
+            // Ensure the returnUrl is local to prevent open redirects.
+            if (!Url.IsLocalUrl(returnUrl))
             {
-                var jwtToken   = validatedToken as JwtSecurityToken;
-                var userClaims = jwtToken.Claims;
-
-                var user = new User
-                {
-                    FirstName = userClaims.FirstOrDefault(c => c.Type == "given_name")?.Value,
-                    LastName  = userClaims.FirstOrDefault(c => c.Type == "family_name")?.Value,
-                    Email     = userClaims.FirstOrDefault(c => c.Type == "email")?.Value
-                };
-
-                return Ok(user);
+                return BadRequest("Invalid return URL.");
             }
 
-            return Unauthorized();
+            return Challenge(new AuthenticationProperties { RedirectUri = returnUrl }, GoogleDefaults.AuthenticationScheme);
+        }
+
+        /// <summary>
+        /// Logs the user out and clears the authentication cookie.
+        /// </summary>
+        [HttpGet("logout")]
+        public IActionResult Logout()
+        {
+            return SignOut(new AuthenticationProperties { RedirectUri = "/swagger/index.html" }, CookieAuthenticationDefaults.AuthenticationScheme);
         }
     }
 }
