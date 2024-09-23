@@ -10,7 +10,7 @@ namespace API_backend.Services.FileProcessing
         // Base path for the Database file system
         public string DatabaseFileSystemBasePath { get; set; }
 
-        // Base path for Algorithm implementations
-        public string JarFileBasePath { get; set; }
+        // Base path for docker-swarm
+        public string DockerSwarmPath { get; set; }
     }
 }
