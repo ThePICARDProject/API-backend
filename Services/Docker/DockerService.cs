@@ -1,4 +1,5 @@
-﻿using API_backend.Services.FileProcessing;
+﻿using API_backend.Models;
+using API_backend.Services.FileProcessing;
 using Microsoft.Extensions.Options;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
@@ -19,6 +20,7 @@ namespace API_backend.Services.Docker
     {
         private string _jarBasePath;
         private string _dockerPath;
+        private string _hdfsPath;
 
         public DockerService(DockerOptions options) 
         {
@@ -50,27 +52,30 @@ namespace API_backend.Services.Docker
         /// <param name="args">Optional arguments for a given algorithm.</param>
         /// <exception cref="ArgumentNullException"></exception>
         /// <exception cref="FileNotFoundException"></exception>
-        public void Submit(string userId, string className, string relativeJarPath, List<string> args)
+        public void SubmitExperiment(SubmitExperiment data)
         {
             // Construct paths
             string sparkHadoopConfig = Path.Combine(new string[] { _dockerPath, "docker-images", "spark-hadoop", "config", "hdfs-site.xml" });
-            string submitPath = Path.Combine(_dockerPath, "submit.sh");
+            string submitPath = Path.Combine(_dockerPath, "submit-experiment.sh");
 
             // Verify Args
-            if (string.IsNullOrEmpty(className))
-                throw new ArgumentNullException(nameof(className));
-            if (string.IsNullOrEmpty(relativeJarPath))
-                throw new ArgumentNullException(nameof(relativeJarPath));
+            if (string.IsNullOrEmpty(data.ClassName))
+                throw new ArgumentNullException(nameof(data.ClassName));
+            if (string.IsNullOrEmpty(data.RelativeJarPath))
+                throw new ArgumentNullException(nameof(data.RelativeJarPath));
             if (!File.Exists(sparkHadoopConfig))
                 throw new FileNotFoundException($"Hadoop config file with the path \"{sparkHadoopConfig}\" does not exist.");
             if (!File.Exists(submitPath))
                 throw new FileNotFoundException($"Submit file with the path \"{submitPath}\" does not exist.");
-            if (!File.Exists(Path.Combine(_jarBasePath, relativeJarPath)))
-                throw new FileNotFoundException($".jar file with the name \"{relativeJarPath}\" does not exist in the specified folder.");
+            if (!File.Exists(Path.Combine(_jarBasePath, data.RelativeJarPath)))
+                throw new FileNotFoundException($".jar file with the name \"{data.RelativeJarPath}\" does not exist in the specified folder.");
 
             // Update Spark-Hadoop configuration (dfs.datanode.data.dir)
             // Add a folder with the userId to create data nodes
-            // TODO
+            // CHECK SCRIPTS SHOULD AUTO CREATE ON STARTUP
+            string userFolder = Path.Combine(_hdfsPath, data.UserId);
+
+            
 
             // Create submit process
             using (Process submit = new Process())
@@ -79,10 +84,31 @@ namespace API_backend.Services.Docker
                 submit.StartInfo.FileName = submitPath;
 
                 Collection<string> arguments = new Collection<string>();
-                arguments.Add(className);
-                arguments.Add(relativeJarPath);
-                foreach (string arg in args)
-                    arguments.Add(arg);
+                
+                // Add docker-swarm path and dataset
+                arguments.Add(_dockerPath);
+                arguments.Add(data.Dataset);
+
+                // Add trials
+                arguments.Add(data.Trials.ToString());
+
+                // TODO
+
+                // Add Node Counts
+                arguments.Add(data.NodeCounts.Count.ToString());
+                foreach(int node in data.NodeCounts)
+                {
+                    arguments.Add(node.ToString());
+                }
+
+                // Add Trials
+                arguments.Add(data.Trials.ToString());
+                
+                
+                //arguments.Add(className);
+                //arguments.Add(relativeJarPath);
+                //foreach (string arg in args)
+                    //arguments.Add(arg);
 
                 submit.StartInfo.CreateNoWindow = true;
 
