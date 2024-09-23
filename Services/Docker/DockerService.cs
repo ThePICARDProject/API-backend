@@ -7,6 +7,8 @@ namespace API_backend.Services.Docker
 {
     /// <summary>
     /// Service for intiating experiments using Docker-Swarm
+    /// 
+    /// NOTE: CHECK WHAT IS CONSTANTLY RUNNING AND WHAT WE NEED TO DO TO SPIN UP AN EXPERIMENT
     /// </summary>
     /// /// <remarks>
     /// Implemented based off of bash scripts provided in the docker-swarm repository.
@@ -40,6 +42,7 @@ namespace API_backend.Services.Docker
         /// 
         /// Note: HDFS data node local path is defined in hdfs-site.xml
         /// Note: May have to update the configuration each time we run? Construct a folder to place the hdfs data node.
+        /// Note: NameNode path is also created in the DockerFile. Must be aware of this if we change path.
         /// </summary>
         /// <param name="userId">The Id of the user submitting an experiment</param>
         /// <param name="className">The main class name in the algorithm .jar.</param>
@@ -47,7 +50,7 @@ namespace API_backend.Services.Docker
         /// <param name="args">Optional arguments for a given algorithm.</param>
         /// <exception cref="ArgumentNullException"></exception>
         /// <exception cref="FileNotFoundException"></exception>
-        private void Submit(string userId, string className, string relativeJarPath, List<string> args)
+        public void Submit(string userId, string className, string relativeJarPath, List<string> args)
         {
             // Construct paths
             string sparkHadoopConfig = Path.Combine(new string[] { _dockerPath, "docker-images", "spark-hadoop", "config", "hdfs-site.xml" });
@@ -87,5 +90,7 @@ namespace API_backend.Services.Docker
                 submit.WaitForExit();
             }
         }
+    
+
     }
 }
