@@ -4,6 +4,7 @@ using Microsoft.OpenApi.Models;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using System.Text.Json.Nodes;
+using API_backend.Services.FileProcessing;
 
 namespace API_backend.Controller
 {
@@ -12,54 +13,59 @@ namespace API_backend.Controller
     public class ExperimentController : ControllerBase
     {
 
-        //need experiment object for holding params of experiment?
+        // FileProcessor class
+        private readonly FileProcessor _fileProcessor;
 
-
-        /**
-         * STEPS FOR HANDLING POST REQUEST
-         * 
-         *  1.	Authenticate the User
-         *  2. 	Parse the Multipart Request:
-         *          //service layer??
-         * 	3.	Save Experiment Details:
-         * 	        //service layer??
-            4.	Save the Dataset:
-            5.	Handle Experiment Status:
-            6.	Trigger Docker Swarm Execution:
-         **/
-        
-
-        //joe said json Object is easier to use for passing info to this endpoint?
-        [HttpPost("sendExperiment")]
-        public async Task<ActionResult> passExperiment(JsonObject Experiment)
+        // Constructor to inject the FileProcessor 
+        public ExperimentController(FileProcessor fileProcessor)
         {
-           /*
-            * GUARDS NEEDED?
-            */
+            _fileProcessor = fileProcessor;
+        }
 
-            //NEED: convert jsonObject to csv file ?
-                 //csv experimentCsv = convertToCsv(ExperimentData);
+        /// <summary>
+        /// Endpoint to accept experiment data from ui and send to file processing service
+        /// </summary>
+        /// <returns>Returns the path where the experiment data is stored</returns>
+        [HttpPost("create")]
+        public IActionResult createExperiment([FromBody]String userId, String algorithmName, String survey)
+        {
 
-            //call service method for handling of
-            //      1. parsing,
-            //      2. passing to model
-            //      3. saving to db,
-            //      4. sending to docker.
-            service.receiveExperiment(experimentCsv);
-
-            int success = service.sendExperiment(experimentCsv);
-
-            if (success)
+            /*
+             *  Validates the experiment details, calls aggregateData, checks return value
+             *  @return Ok() if successful
+             *  @return BadRequest() if 
+             *      - bad parameter from frontend
+             *      - aggregateData() returns null
+         
+             */
+            try
             {
-                return Ok();
+                // Verify Args
+                if (string.IsNullOrEmpty(userId))
+                    throw new ArgumentNullException(nameof(userId));
+                if (string.IsNullOrEmpty(algorithmName))
+                    throw new ArgumentNullException(nameof(algorithmName));
+                if (string.IsNullOrEmpty(survey))
+                    throw new ArgumentNullException(nameof(survey));
+
+                // call to FileProcessor service method to aggregate data
+                String filePath = _fileProcessor.AggregateData(userId, algorithmName, survey);
+
+                //if aggregateData() returns a valid path, success
+                if (!string.IsNullOrEmpty(filePath))
+                    return Ok();
             }
-            else
+            catch (Exception e)
             {
-                return BadRequestObjectResult("Error sending experiment");
+                Console.WriteLine(e.Message);
+                return BadRequest();
             }
-            
+
+            //fall through
+            return BadRequest();
         }
 
 
     }
+
 }
