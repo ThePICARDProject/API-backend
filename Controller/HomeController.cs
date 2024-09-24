@@ -27,7 +27,7 @@ namespace API_backend.Controller
         /// </summary>
         /// <returns>Returns the path where the experiment data is stored</returns>
         [HttpPost("create")]
-        public IActionResult createExperiment([FromBody]String userId, String algorithmName, String survey)
+        public IActionResult createExperiment([FromBody] String userId, String algorithmName, String survey)
         {
 
             /*
@@ -48,12 +48,17 @@ namespace API_backend.Controller
                 if (string.IsNullOrEmpty(survey))
                     throw new ArgumentNullException(nameof(survey));
 
+                // Initiate Experiment from Docker service
+
                 // call to FileProcessor service method to aggregate data
-                String filePath = _fileProcessor.AggregateData(userId, algorithmName, survey);
+                // COMMENTED OUT TO ALLOW FOR BUILD
+                //String filePath = _fileProcessor.AggregateData(userId, algorithmName, survey);
+
+                // If we have a valid filePath from the file processor, getCsv()
 
                 //if aggregateData() returns a valid path, success
-                if (!string.IsNullOrEmpty(filePath))
-                    return Ok();
+                //if (!string.IsNullOrEmpty(filePath))
+                    // return Ok();
             }
             catch (Exception e)
             {

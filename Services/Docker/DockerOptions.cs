@@ -9,6 +9,6 @@
         public string DockerSwarmPath { get; set; }
 
         // Base path for hadoop output
-        public string HadoopPath { get; set; }
+        public string HdfsPath { get; set; }
     }
 }

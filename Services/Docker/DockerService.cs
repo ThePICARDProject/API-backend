@@ -3,13 +3,12 @@ using API_backend.Services.FileProcessing;
 using Microsoft.Extensions.Options;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Xml;
 
 namespace API_backend.Services.Docker
 {
     /// <summary>
-    /// Service for intiating experiments using Docker-Swarm
-    /// 
-    /// NOTE: CHECK WHAT IS CONSTANTLY RUNNING AND WHAT WE NEED TO DO TO SPIN UP AN EXPERIMENT
+    /// Service for intiating experiments using Docker-Swarm.
     /// </summary>
     /// /// <remarks>
     /// Implemented based off of bash scripts provided in the docker-swarm repository.
@@ -31,6 +30,11 @@ namespace API_backend.Services.Docker
             if (!Directory.Exists(_dockerPath))
                 throw new DirectoryNotFoundException($"The directory \"{options.DockerSwarmPath}\" could not be found or does not exist.");
 
+            // Check the Hadoop Path
+            _hdfsPath = options.HdfsPath;
+            if(string.IsNullOrEmpty(_hdfsPath))
+                throw new ArgumentNullException(_hdfsPath);
+
             // Initialize the base path for the .jar file storage and verify it exists
             _jarBasePath = options.JarFileBasePath;
             if (string.IsNullOrEmpty(_jarBasePath))
@@ -41,6 +45,12 @@ namespace API_backend.Services.Docker
 
         /// <summary>
         /// Submits a single experiment to Docker-Swarm.
+        /// 
+        /// Spins up an instance of Docker-Swarm and Hadoop, and runs experiments in
+        /// a folder with the hadoop path and the userId of the user who submitted it.
+        ///
+        /// Executes an experiment consisting of the number of trials defined in SubmitExperiment
+        /// for each nodeCount in the list.
         /// 
         /// Note: HDFS data node local path is defined in hdfs-site.xml
         /// Note: May have to update the configuration each time we run? Construct a folder to place the hdfs data node.
@@ -74,8 +84,17 @@ namespace API_backend.Services.Docker
             // Add a folder with the userId to create data nodes
             // CHECK SCRIPTS SHOULD AUTO CREATE ON STARTUP
             string userFolder = Path.Combine(_hdfsPath, data.UserId);
-
-            
+            XmlDocument hdfsConfig = new XmlDocument();
+            hdfsConfig.Load(sparkHadoopConfig);
+            XmlNodeList properties = hdfsConfig.GetElementsByTagName("property");
+            foreach(XmlNode property in properties)
+            {
+                if (property.ChildNodes.Item(0).Value == "dfs.namenode.name.dir")
+                    property.ChildNodes.Item(1).Value = Path.Combine(userFolder, "nameNode");
+                else if (property.ChildNodes.Item(0).Value == "dfs.datanode.data.dir")
+                    property.ChildNodes.Item(1).Value = Path.Combine(userFolder, "dataNode");
+            }
+            hdfsConfig.Save(sparkHadoopConfig);
 
             // Create submit process
             using (Process submit = new Process())
