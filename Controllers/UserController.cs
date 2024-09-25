@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 
-namespace API_backend.Controllers
+namespace API_Backend.Controllers
 {
     [Authorize]
     [ApiController]
@@ -23,7 +23,8 @@ namespace API_backend.Controllers
                 {
                     FirstName = identity.FindFirst(ClaimTypes.GivenName)?.Value,
                     LastName = identity.FindFirst(ClaimTypes.Surname)?.Value,
-                    Email = identity.FindFirst(ClaimTypes.Email)?.Value
+                    Email = identity.FindFirst(ClaimTypes.Email)?.Value,
+                    UserID = identity.FindFirst(ClaimTypes.NameIdentifier)?.Value
                 };
 
                 return Ok(user);

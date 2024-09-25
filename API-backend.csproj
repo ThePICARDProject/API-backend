@@ -11,8 +11,11 @@
     <PackageReference Include="Microsoft.AspNetCore.Authentication.Cookies" Version="2.2.0" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.Google" Version="8.0.8" />
     <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.8" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.8" />
     <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="8.0.2" />
+    <PackageReference Include="MySql.EntityFrameworkCore" Version="8.0.5" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="8.0.2" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
   </ItemGroup>
 
@@ -24,7 +27,9 @@
     <Compile Remove="Services\Token\TokenService.cs" />
     <Compile Remove="Models\TokenRequest.cs" />
     <Compile Remove="Models\TokenResponse.cs" />
-    <Compile Remove="Models\User.cs" />
+    <Compile Remove="Models\Dataset.cs" />
+    <Compile Remove="AllowSwaggerAccessHandler.cs" />
+    <Compile Remove="AllowSwaggerAccessRequirement.cs" />
   </ItemGroup>
 
 </Project>
