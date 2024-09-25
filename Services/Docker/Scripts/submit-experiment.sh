@@ -8,8 +8,19 @@
 
 # Get command line args
 docker_path=$1
-dataset=$2
+dataset_name=$2
 trials=$3
+node_counts=$4
+
+next_arg_position=$((5 + $node_counts))
+num_classes=$((6 + $node_counts))
+num_trees=$((7 + $node_counts))
+impurity=$((8 + $node_counts))
+max_depth=$((9 + $node_counts))
+max_bins=$((10 + $max_bins))
+output_name=$((11 + $node_counts))
+percent_labeled=$((12 + $node_counts))
+optional_start=((13 + $node_counts))
 
 # Start Docker containers
 docker swarm init
@@ -31,5 +42,6 @@ for node_count_index in $(seq 3 $end_index); do
     # Iterate trials
     for j in $(seq 1 $trials); do
         # Submit
+        $docker_path/submit.sh $class_name $jar_path $num_classes $num_trees $impurity $max_depth $max_bins $dataset_name $output_name $percent_labeled ${@$optional_start}
     done
 done

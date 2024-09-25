@@ -106,29 +106,29 @@ namespace API_backend.Services.Docker
                 
                 // Add docker-swarm path and dataset
                 arguments.Add(_dockerPath);
-                arguments.Add(data.Dataset);
+                arguments.Add(data.DatasetName);
 
-                // Add trials
+                // Add Trials
                 arguments.Add(data.Trials.ToString());
-
-                // TODO
 
                 // Add Node Counts
                 arguments.Add(data.NodeCounts.Count.ToString());
                 foreach(int node in data.NodeCounts)
-                {
                     arguments.Add(node.ToString());
-                }
 
-                // Add Trials
-                arguments.Add(data.Trials.ToString());
-                
-                
-                //arguments.Add(className);
-                //arguments.Add(relativeJarPath);
-                //foreach (string arg in args)
-                    //arguments.Add(arg);
+                // Add required arguments
+                arguments.Add(data.NumberOfClasses.ToString());
+                arguments.Add(data.NumberOfTrees.ToString());
+                arguments.Add(data.Impurity.ToString());
+                arguments.Add(data.MaxDepth.ToString());
+                arguments.Add(data.MaxBins.ToString()); 
+                arguments.Add(data.OutputName.ToString());
+                arguments.Add(data.PercentLabeled.ToString());
 
+                // Add optional arguments
+                foreach(string arg in data.args)
+                    arguments.Add(arg);
+             
                 submit.StartInfo.CreateNoWindow = true;
 
                 submit.Start();
