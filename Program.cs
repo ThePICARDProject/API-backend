@@ -1,6 +1,7 @@
 using API_Backend.Data;
 using API_Backend.Models;
 using API_backend.Logging;
+using API_backend.Services.DataVisualization;
 using API_backend.Services.FileProcessing;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
@@ -31,8 +32,19 @@ builder.Services.AddSwaggerGen(options =>
 
 // Register custom services for dependency injection
 builder.Services.AddScoped<ExperimentService>();
-builder.Services.AddScoped<DataVisualization>();
+builder.Services.AddScoped<DataVisualizationService>();
 builder.Services.AddScoped<IDatasetService, DatasetService>();
+
+// Register the background service.
+builder.Services.AddHostedService<ExperimentWorkerService>();
+
+// Register the dataset service
+builder.Services.AddScoped<IDatasetService, DatasetService>();
+
+// Register the DatasetService (assuming the DatasetService is correctly implemented)
+//builder.Services.AddScoped<IDatasetService, DatasetService>();
+
+// Register the background service.
 builder.Services.AddHostedService<ExperimentWorkerService>();
 builder.Services.AddSingleton<IExperimentQueue, ExperimentQueue>();
 
@@ -40,7 +52,7 @@ builder.Services.AddSingleton<IExperimentQueue, ExperimentQueue>();
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseMySql(
         builder.Configuration.GetConnectionString("DefaultConnection"),
-        new MySqlServerVersion(new Version(8, 0, 26)) // Replace with your MySQL server version
+        new MySqlServerVersion(new Version(8, 0, 35)) // TODO: Jacob -- Remove change in db before pushing anything // Replace with your MySQL server version
     )
 );
 

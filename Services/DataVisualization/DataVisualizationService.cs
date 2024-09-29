@@ -6,11 +6,11 @@ using System.Text;
 
 namespace API_backend.Services.DataVisualization
 {
-    public class DataVisualization
+    public class DataVisualizationService
     {
         private readonly IWebHostEnvironment _env;
 
-        public DataVisualization(IWebHostEnvironment env)
+        public DataVisualizationService(IWebHostEnvironment env)
         {
             _env = env;
         }
