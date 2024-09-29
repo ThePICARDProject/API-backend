@@ -135,7 +135,5 @@ namespace API_backend.Services.Docker
                 submit.WaitForExit();
             }
         }
-    
-
     }
 }
