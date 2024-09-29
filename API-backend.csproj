@@ -16,6 +16,10 @@
     <PackageReference Include="MySql.EntityFrameworkCore" Version="8.0.5" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="8.0.2" />
+    <PackageReference Include="Serilog" Version="4.0.2" />
+    <PackageReference Include="Serilog.Extensions.Logging" Version="8.0.1-dev-10398" />
+    <PackageReference Include="Serilog.Sinks.MariaDB" Version="1.0.1" />
+    <PackageReference Include="Serilog.Sinks.MySQL" Version="5.0.0" />
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
   </ItemGroup>
 
@@ -30,6 +34,9 @@
     <Compile Remove="Models\Dataset.cs" />
     <Compile Remove="AllowSwaggerAccessHandler.cs" />
     <Compile Remove="AllowSwaggerAccessRequirement.cs" />
+    <Compile Remove="Models\InitiateUploadDto.cs" />
+    <Compile Remove="Models\ChunkedUploadDto.cs" />
+    <Compile Remove="Logging\UserIdEnricher.cs" />
   </ItemGroup>
 
 </Project>

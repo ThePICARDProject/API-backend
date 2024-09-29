@@ -1,22 +1,23 @@
-using API_Backend.Services;
-using API_Backend.Services.FileProcessing;
+using API_Backend.Data;
+using API_Backend.Models;
+using API_backend.Logging;
+using API_backend.Services.FileProcessing;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
-using System.Security.Claims;
-using API_Backend.Data;
-using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.OAuth;
-using API_Backend.Models;
+using Microsoft.EntityFrameworkCore;
+using Serilog;
+using Serilog.Debugging;
+using Serilog.Events;
+using Serilog.Sinks.MariaDB.Extensions;
 using System.Reflection;
-
-
+using System.Security.Claims;
+using API_backend.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add controllers to the service container.
+// Register services
 builder.Services.AddControllers();
-
-// Register services for API documentation and exploration.
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(options =>
 {
@@ -28,22 +29,12 @@ builder.Services.AddSwaggerGen(options =>
     }
 });
 
-// Register custom services for dependency injection.
+// Register custom services for dependency injection
 builder.Services.AddScoped<ExperimentService>();
 builder.Services.AddScoped<DataVisualization>();
 builder.Services.AddScoped<IDatasetService, DatasetService>();
-
-// Register the background service.
 builder.Services.AddHostedService<ExperimentWorkerService>();
-
-// Register the dataset service
-builder.Services.AddScoped<IDatasetService, DatasetService>();
-
-// Register the DatasetService (assuming the DatasetService is correctly implemented)
-builder.Services.AddScoped<IDatasetService, DatasetService>();
-
-// Register the background service.
-builder.Services.AddHostedService<ExperimentWorkerService>();
+builder.Services.AddSingleton<IExperimentQueue, ExperimentQueue>();
 
 // Register DbContext with MySQL
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
@@ -53,6 +44,30 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     )
 );
 
+// Register IHttpContextAccessor
+builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
+
+// Inside Program.cs
+
+Log.Logger = new LoggerConfiguration()
+    .MinimumLevel.Debug()
+    .MinimumLevel.Override("Microsoft", LogEventLevel.Warning)
+    .Enrich.FromLogContext()
+    .WriteTo.MariaDB(
+        connectionString: builder.Configuration.GetConnectionString("DefaultConnection"),
+        tableName: "Logs",
+        autoCreateTable: true 
+    )
+    .CreateLogger();
+
+// Replace the default logger with Serilog
+builder.Logging.ClearProviders();
+builder.Logging.AddSerilog();
+
+// Enable Serilog self-logging
+SelfLog.Enable(msg => File.AppendAllText("serilog-selflog.txt", msg + Environment.NewLine));
+
+// Configure authentication
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
@@ -72,14 +87,14 @@ builder.Services.AddAuthentication(options =>
     options.Scope.Add("profile");
     options.Scope.Add("email");
 
-    // Restrict access to users with a specific email domain.
+    // Restrict access to users with a specific email domain
     options.Events = new OAuthEvents
     {
         OnCreatingTicket = async context =>
         {
-            var email = context.Identity.FindFirst(ClaimTypes.Email)?.Value;
-            var firstName = context.Identity.FindFirst(ClaimTypes.GivenName)?.Value;
-            var lastName = context.Identity.FindFirst(ClaimTypes.Surname)?.Value;
+            var email = context.Identity?.FindFirst(ClaimTypes.Email)?.Value;
+            var firstName = context.Identity?.FindFirst(ClaimTypes.GivenName)?.Value;
+            var lastName = context.Identity?.FindFirst(ClaimTypes.Surname)?.Value;
 
             // Check email domain
             if (email != null && !email.EndsWith("@mix.wvu.edu", StringComparison.OrdinalIgnoreCase))
@@ -106,7 +121,7 @@ builder.Services.AddAuthentication(options =>
                 await dbContext.SaveChangesAsync();
             }
 
-            var claimsIdentity = (ClaimsIdentity)context.Principal.Identity;
+            var claimsIdentity = (ClaimsIdentity)context.Principal?.Identity!;
             var existingNameIdClaims = claimsIdentity.FindAll(ClaimTypes.NameIdentifier).ToList();
             foreach (var claim in existingNameIdClaims)
             {
@@ -119,18 +134,12 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
-// Register IHttpContextAccessor
-builder.Services.AddHttpContextAccessor();
-
-// Build the WebApplication.
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
+// Configure the HTTP request pipeline
 if (app.Environment.IsDevelopment())
 {
     app.UseDeveloperExceptionPage();
-
-    // Enable Swagger for API documentation.
     app.UseSwagger();
     app.UseSwaggerUI();
 }
@@ -138,6 +147,10 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.UseAuthentication();
+
+// Register the middleware **after** UseAuthentication
+app.UseMiddleware<SerilogUserIdEnrichmentMiddleware>();
+
 app.UseAuthorization();
 
 app.MapControllers();

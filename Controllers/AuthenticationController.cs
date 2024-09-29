@@ -1,3 +1,5 @@
+
+using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
@@ -9,6 +11,13 @@ namespace API_Backend.Controllers
     [Route("[controller]")]
     public class AuthenticationController : ControllerBase
     {
+        private readonly ILogger<AuthenticationController> _logger;
+
+        public AuthenticationController(ILogger<AuthenticationController> logger)
+        {
+            _logger = logger;
+        }
+
         /// <summary>
         /// Initiates the Google OAuth 2.0 authentication process.
         /// </summary>
@@ -16,9 +25,12 @@ namespace API_Backend.Controllers
         [HttpGet("login")]
         public IActionResult Login(string returnUrl = "/swagger/index.html")
         {
-            // Ensure the returnUrl is local to prevent open redirects.
+            _logger.LogInformation("Login initiated with returnUrl: {ReturnUrl}", returnUrl);
+
+            // Ensure the returnUrl is local to prevent open redirects
             if (!Url.IsLocalUrl(returnUrl))
             {
+                _logger.LogWarning("Invalid return URL: {ReturnUrl}", returnUrl);
                 return BadRequest("Invalid return URL.");
             }
 
@@ -31,6 +43,8 @@ namespace API_Backend.Controllers
         [HttpGet("logout")]
         public IActionResult Logout()
         {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            _logger.LogInformation("User {userID} logged out.", userId);
             return SignOut(new AuthenticationProperties { RedirectUri = "/swagger/index.html" }, CookieAuthenticationDefaults.AuthenticationScheme);
         }
     }

@@ -1,28 +1,26 @@
-// File: Data/ApplicationDbContext.cs
+
+
 using API_Backend.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace API_Backend.Data
 {
-    public class ApplicationDbContext : DbContext
+    public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : DbContext(options)
     {
         // Constructor accepting DbContextOptions
-        public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
-            : base(options)
-        {
-        }
 
         // DbSets for your entities
-        public DbSet<User> Users { get; set; }
-        public DbSet<ExperimentRequest> ExperimentRequests { get; set; }
-        public DbSet<DockerSwarmParameters> DockerSwarmParameters { get; set; }
-        public DbSet<Algorithm> Algorithms { get; set; }
-        public DbSet<AlgorithmParameter> AlgorithmParameters { get; set; }
-        public DbSet<ExperimentAlgorithmParameterValue> ExperimentAlgorithmParameterValues { get; set; }
-        public DbSet<ExperimentResult> ExperimentResults { get; set; }
-        public DbSet<DataVisualization> DataVisualizations { get; set; }
-        public DbSet<VisualizationExperiment> VisualizationExperiments { get; set; }
-        public DbSet<StoredDataSet> StoredDataSets { get; set; }
+        public DbSet<User> Users { get; init; }
+        public DbSet<ExperimentRequest> ExperimentRequests { get; init; }
+        public DbSet<DockerSwarmParameters> DockerSwarmParameters { get; init; }
+        public DbSet<Algorithm> Algorithms { get; init; }
+        public DbSet<AlgorithmParameter> AlgorithmParameters { get; init; }
+        public DbSet<UploadSession> UploadSessions { get; init; }
+        public DbSet<ExperimentAlgorithmParameterValue> ExperimentAlgorithmParameterValues { get; init; }
+        public DbSet<ExperimentResult> ExperimentResults { get; init; }
+        public DbSet<DataVisualization> DataVisualizations { get; init; }
+        public DbSet<VisualizationExperiment> VisualizationExperiments { get; init; }
+        public DbSet<StoredDataSet> StoredDataSets { get; init; }
 
         // Override OnModelCreating to configure relationships
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -36,7 +34,7 @@ namespace API_Backend.Data
                       .HasMaxLength(36); // For GUIDs
             });
 
-            // Example for StoredDataSet
+            // Configure StoredDataSet
             modelBuilder.Entity<StoredDataSet>(entity =>
             {
                 entity.HasKey(e => e.DataSetID);
@@ -46,7 +44,17 @@ namespace API_Backend.Data
                       .OnDelete(DeleteBehavior.Cascade);
             });
 
-            // Configure other entities similarly...
+            // Configure UploadSession
+            modelBuilder.Entity<UploadSession>(entity =>
+            {
+                entity.HasKey(e => e.UploadId);
+                entity.HasOne(e => e.User)
+                      .WithMany()
+                      .HasForeignKey(e => e.UserID)
+                      .OnDelete(DeleteBehavior.Cascade);
+            });
+
+            // Configure other entities as needed...
 
             base.OnModelCreating(modelBuilder);
         }

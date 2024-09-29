@@ -1,56 +1,53 @@
-using Microsoft.AspNetCore.Mvc;
-using API_Backend.Services;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Authorization;
-using System.Security.Claims;
 using API_Backend.Models;
-using API_backend.Services;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
+using API_backend.Services.FileProcessing;
 
 namespace API_Backend.Controllers
 {
     [Authorize]
     [ApiController]
     [Route("api/result")]
-    public class ResultController : ControllerBase
+    public class ResultController(ExperimentService experimentService, ILogger<ResultController> logger)
+        : ControllerBase
     {
-        private readonly ExperimentService _experimentService;
-
-        public ResultController(ExperimentService experimentService)
-        {
-            _experimentService = experimentService;
-        }
-
         /// <summary>
         /// Gets the processed results of an experiment.
         /// </summary>
         [HttpGet("data/{experimentId}")]
         public async Task<IActionResult> GetProcessedResults(string experimentId)
         {
-            var experiment = await _experimentService.GetExperimentByIdAsync(experimentId);
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            logger.LogInformation("User {UserID} is requesting results for ExperimentID {ExperimentID}", userId, experimentId);
 
-            if (experiment == null || experiment.Status != ExperimentStatus.Finished)
+            var experiment = await experimentService.GetExperimentByIdAsync(experimentId);
+
+            if (experiment is not { Status: ExperimentStatus.Finished })
             {
+                logger.LogWarning("Results not available for ExperimentID {ExperimentID}", experimentId);
                 return NotFound(new { message = "Results not available or experiment not completed." });
             }
 
             // Ensure the requesting user is the owner of the experiment
-            int userId = int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier));
-
-            var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            if (string.IsNullOrEmpty(userIdClaim))
+            if (experiment.UserID != userId)
             {
+                logger.LogWarning("User {UserID} is not authorized to access results for ExperimentID {ExperimentID}", userId, experimentId);
                 return Forbid();
             }
 
             // Retrieve result data
-            var result = await _experimentService.GetExperimentResultAsync(experimentId);
+            var result = await experimentService.GetExperimentResultAsync(experimentId);
 
             if (result == null)
             {
+                logger.LogWarning("Experiment results not found for ExperimentID {ExperimentID}", experimentId);
                 return NotFound(new { message = "Experiment results not found." });
             }
 
-            // Return the result data (you might need to adjust this based on how you store results)
+            logger.LogInformation("Returning results for ExperimentID {ExperimentID}", experimentId);
+
+            // Return the result data
             return Ok(new { experimentId, result });
         }
     }

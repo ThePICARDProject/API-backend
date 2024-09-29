@@ -1,52 +1,56 @@
-using Microsoft.Extensions.Hosting;
-using Microsoft.Extensions.DependencyInjection;
-using System;
-using System.Threading;
-using System.Threading.Tasks;
-using API_Backend.Models;
 
-namespace API_Backend.Services.FileProcessing
+using API_backend.Models;
+
+namespace API_backend.Services.FileProcessing
 {
-    /// <summary>
-    /// Background service that processes experiments from the queue.
-    /// </summary>
     public class ExperimentWorkerService : BackgroundService
     {
         private readonly IServiceProvider _serviceProvider;
-        private static SemaphoreSlim _semaphore = new SemaphoreSlim(1, 1); // Limit to 1 concurrent experiment
+        private readonly IExperimentQueue _experimentQueue;
+        private readonly ILogger<ExperimentWorkerService> _logger;
 
-        public ExperimentWorkerService(IServiceProvider serviceProvider)
+        public ExperimentWorkerService(
+            IServiceProvider serviceProvider,
+            IExperimentQueue experimentQueue,
+            ILogger<ExperimentWorkerService> logger)
         {
             _serviceProvider = serviceProvider;
+            _experimentQueue = experimentQueue;
+            _logger = logger;
         }
 
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
+            _logger.LogInformation("ExperimentWorkerService started.");
+
             while (!stoppingToken.IsCancellationRequested)
             {
-                await _semaphore.WaitAsync(stoppingToken);
-
                 try
                 {
-                    using (var scope = _serviceProvider.CreateScope())
-                    {
-                        var experimentService = scope.ServiceProvider.GetRequiredService<ExperimentService>();
-                        var nextExperiment = await experimentService.GetNextQueuedExperimentAsync();
+                    var experimentRequest = await _experimentQueue.DequeueAsync(stoppingToken);
 
-                        if (nextExperiment != null)
-                        {
-                            await experimentService.RunExperimentAsync(nextExperiment);
-                        }
+                    using var scope = _serviceProvider.CreateScope();
+                    var experimentService = scope.ServiceProvider.GetRequiredService<ExperimentService>();
+
+                    // Enrich logs with UserID
+                    using (_logger.BeginScope(new Dictionary<string, object> { ["UserID"] = experimentRequest.UserID }))
+                    {
+                        _logger.LogInformation("Processing experiment {ExperimentID}", experimentRequest.ExperimentID);
+                        await experimentService.RunExperimentAsync(experimentRequest);
+                        _logger.LogInformation("Experiment {ExperimentID} processed successfully", experimentRequest.ExperimentID);
                     }
                 }
-                finally
+                catch (OperationCanceledException)
                 {
-                    _semaphore.Release();
+                    // Graceful shutdown
                 }
-
-                // Wait before checking the queue again
-                await Task.Delay(TimeSpan.FromSeconds(5), stoppingToken);
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex, "Error occurred while processing experiments.");
+                }
             }
+
+            _logger.LogInformation("ExperimentWorkerService stopping.");
         }
     }
 }

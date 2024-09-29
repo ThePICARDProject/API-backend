@@ -14,10 +14,10 @@ namespace API_Backend.Models
 
         [Required]
         [EmailAddress]
-        public string Email { get; set; }
+        public string? Email { get; set; }
 
-        public string FirstName { get; set; }
-        public string LastName { get; set; }
+        public string? FirstName { get; set; }
+        public string? LastName { get; set; }
 
         [Required]
         public DateTime CreatedAt { get; set; }
