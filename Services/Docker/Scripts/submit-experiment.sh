@@ -1,9 +1,7 @@
 ﻿!#/bin/bash
 
-# TODO
-# Spins up an instance of docker-swarm and HDFS for a specific user
-# Assumes the path for HDFS has already been updated in hdfs-site.xml
-# DOES NOT export output or shutdown
+# Adds docker containers and sets up HDFS
+# DOES NOT export results or shutdown
 # Based on instructions from hadoop-startup.md, autotest.sh, ...
 
 # Get command line args
@@ -11,7 +9,6 @@ docker_path=$1
 dataset_name=$2
 trials=$3
 node_counts=$4
-
 driver_memory=$((5 + $node_counts))
 driver_cores=$((6 + $node_counts))
 executer_number=$((7 + $node_counts))
@@ -27,10 +24,8 @@ output_name=$((16 + $node_counts))
 percent_labeled=$((17 + $node_counts))
 optional_start=((18 + $node_counts))
 
-# NOT SURE: Start Docker containers
-docker swarm join
-docker compose build
-./up.sh
+# Add Docker Contatainers
+./$docker_path/up.sh
 
 # Setup hadoop
 ./$docker_path/mkdir-hdfs-hadoop-home.sh
@@ -44,6 +39,9 @@ for node_count_index in $(seq 3 $end_index); do
     
     # Scale node count
     ./$docker_path/scale.sh $node_count_index
+
+    # Add data set
+    ./$docker_path/data-in.sh $dataset
 
     # Iterate trials
     for j in $(seq 1 $trials); do
@@ -59,4 +57,12 @@ for node_count_index in $(seq 3 $end_index); do
             --conf spark.executer.memoryOverhead=$memory_overhead \
             --class $class_name $jar_path $num_classes $num_trees $impurity $max_depth $max_bins $dataset_name $output_name $percent_labeled ${@$optional_start}
     done
+
+    # Remove dataset from HDFS
+    # Do this in order to avoid corrupting before scale
+    # Added since rebalance.sh is not working
+    docker run --rm --name dataset-remove --network "$(basename "$(pwd)")_cluster-network" \
+    spark-hadoop:latest hdfs dfs -rm /user/hadoop
 done
+
+./$docker_path/down.sh

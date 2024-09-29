@@ -4,6 +4,7 @@ using Microsoft.Extensions.Options;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Xml;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace API_backend.Services.Docker
 {
@@ -65,7 +66,6 @@ namespace API_backend.Services.Docker
         public void SubmitExperiment(SubmitExperiment data)
         {
             // Construct paths
-            string sparkHadoopConfig = Path.Combine(new string[] { _dockerPath, "docker-images", "spark-hadoop", "config", "hdfs-site.xml" });
             string submitPath = Path.Combine(_dockerPath, "submit-experiment.sh");
 
             // Verify Args
@@ -73,28 +73,10 @@ namespace API_backend.Services.Docker
                 throw new ArgumentNullException(nameof(data.ClassName));
             if (string.IsNullOrEmpty(data.RelativeJarPath))
                 throw new ArgumentNullException(nameof(data.RelativeJarPath));
-            if (!File.Exists(sparkHadoopConfig))
-                throw new FileNotFoundException($"Hadoop config file with the path \"{sparkHadoopConfig}\" does not exist.");
             if (!File.Exists(submitPath))
                 throw new FileNotFoundException($"Submit file with the path \"{submitPath}\" does not exist.");
             if (!File.Exists(Path.Combine(_jarBasePath, data.RelativeJarPath)))
                 throw new FileNotFoundException($".jar file with the name \"{data.RelativeJarPath}\" does not exist in the specified folder.");
-
-            // Update Spark-Hadoop configuration (dfs.datanode.data.dir)
-            // Add a folder with the userId to create data nodes
-            // CHECK SCRIPTS SHOULD AUTO CREATE ON STARTUP
-            string userFolder = Path.Combine(_hdfsPath, data.UserId);
-            XmlDocument hdfsConfig = new XmlDocument();
-            hdfsConfig.Load(sparkHadoopConfig);
-            XmlNodeList properties = hdfsConfig.GetElementsByTagName("property");
-            foreach(XmlNode property in properties)
-            {
-                if (property.ChildNodes.Item(0).Value == "dfs.namenode.name.dir")
-                    property.ChildNodes.Item(1).Value = Path.Combine(userFolder, "nameNode");
-                else if (property.ChildNodes.Item(0).Value == "dfs.datanode.data.dir")
-                    property.ChildNodes.Item(1).Value = Path.Combine(userFolder, "dataNode");
-            }
-            hdfsConfig.Save(sparkHadoopConfig);
 
             // Create submit process
             using (Process submit = new Process())
@@ -116,6 +98,16 @@ namespace API_backend.Services.Docker
                 foreach(int node in data.NodeCounts)
                     arguments.Add(node.ToString());
 
+                // Add Driver data
+                arguments.Add(data.DriverMemory);
+                arguments.Add(data.DriverCores);
+
+                // Add Executer data
+                arguments.Add(data.ExecutorNumber);
+                arguments.Add(data.ExecutorMemory);
+                arguments.Add(data.ExecuterCores);
+                arguments.Add(data.MemoryOverhead);
+                
                 // Add required arguments
                 arguments.Add(data.NumberOfClasses.ToString());
                 arguments.Add(data.NumberOfTrees.ToString());
@@ -135,5 +127,6 @@ namespace API_backend.Services.Docker
                 submit.WaitForExit();
             }
         }
+    
     }
 }

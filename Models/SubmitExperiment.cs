@@ -12,7 +12,18 @@ namespace API_backend.Models
         
         // Submit Arguments
         public int Trials { get; set; }
+
+        // Docker Arguments
         public List<int> NodeCounts { get; set; }
+
+        // Spark Arguments
+        public string DriverMemory { get; set; }
+        public string DriverCores { get; set; }
+        
+        public string ExecutorNumber { get; set; }
+        public string ExecutorMemory { get; set; }
+        public string ExecuterCores { get; set; }
+        public string MemoryOverhead { get; set; }
 
         // Required Algorithm Arguments
         public int NumberOfClasses { get; set; }
@@ -24,7 +35,7 @@ namespace API_backend.Models
         public string OutputName { get; set; }
         public int PercentLabeled { get; set; }
 
-        // Optional Arguments
+        // Optional Algorithm Arguments
         public List<string> args { get; set; }
     }
 }
