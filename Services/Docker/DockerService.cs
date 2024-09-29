@@ -20,7 +20,6 @@ namespace API_backend.Services.Docker
     {
         private string _jarBasePath;
         private string _dockerPath;
-        private string _hdfsPath;
 
         public DockerService(DockerOptions options) 
         {
@@ -30,11 +29,6 @@ namespace API_backend.Services.Docker
                 throw new ArgumentNullException(nameof(options.DockerSwarmPath));
             if (!Directory.Exists(_dockerPath))
                 throw new DirectoryNotFoundException($"The directory \"{options.DockerSwarmPath}\" could not be found or does not exist.");
-
-            // Check the Hadoop Path
-            _hdfsPath = options.HdfsPath;
-            if(string.IsNullOrEmpty(_hdfsPath))
-                throw new ArgumentNullException(_hdfsPath);
 
             // Initialize the base path for the .jar file storage and verify it exists
             _jarBasePath = options.JarFileBasePath;
