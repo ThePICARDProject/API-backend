@@ -1,4 +1,5 @@
 using API_backend.Services.DataVisualization;
+using API_backend.Services.Docker;
 using API_backend.Services.FileProcessing;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -11,6 +12,11 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddSingleton<DataVisualization>();
 
+// Configure Services
+builder.Services.Configure<ExperimentOptions>(builder.Configuration.GetSection("Experiments"));
+builder.Services.AddSingleton<ExperimentService>();
+builder.Services.Configure<FileProcessorOptions>(builder.Configuration.GetSection("FileProcessing"));
+builder.Services.AddSingleton<ExperimentService>();
 
 var app = builder.Build();
 

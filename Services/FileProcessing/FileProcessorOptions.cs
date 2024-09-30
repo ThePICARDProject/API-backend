@@ -8,9 +8,9 @@ namespace API_backend.Services.FileProcessing
     public class FileProcessorOptions
     {
         // Base path for the Database file system
-        public string DatabaseFileSystemBasePath { get; set; }
+        public string OutputBasePath { get; set; }
 
         // Base path for docker-swarm
-        public string DockerSwarmPath { get; set; }
+        public string RepositoryBasePath { get; set; }
     }
 }

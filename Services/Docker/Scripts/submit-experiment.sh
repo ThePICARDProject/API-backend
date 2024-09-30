@@ -1,7 +1,7 @@
 ﻿!#/bin/bash
 
-# Adds docker containers and sets up HDFS
-# DOES NOT export results or shutdown
+# Adds docker containers and sets up HDFS within the containers
+# DOES NOT export results
 # Based on instructions from hadoop-startup.md, autotest.sh, ...
 
 # Get command line args
@@ -46,7 +46,7 @@ for node_count_index in $(seq 3 $end_index); do
     # Iterate trials
     for j in $(seq 1 $trials); do
         # Submit
-        docker exec "$(docker inspect --format '{{.Status.ContainerStatus.ContainerID}}' "$(docker service ps -q "$(basename "$(pwd)")_master" --filter desired-state=running)")" 
+        docker exec "$(docker inspect --format '{{.Status.ContainerStatus.ContainerID}}' "$(docker service ps -q "$(basename "$(pwd)")_master" --filter desired-state=running)")" \ 
             /opt/spark/bin/spark-submit  \
             --master yarn \
             --driver-memory $driver_memory \
@@ -65,4 +65,6 @@ for node_count_index in $(seq 3 $end_index); do
     spark-hadoop:latest hdfs dfs -rm /user/hadoop
 done
 
+# REMOVE THIS, will need to get output before removing stack
+# Remove Nodes
 ./$docker_path/down.sh
