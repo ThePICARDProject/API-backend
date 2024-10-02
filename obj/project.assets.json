@@ -428,23 +428,23 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\Justin\\.nuget\\packages\\": {},
+    "C:\\Users\\12677\\.nuget\\packages\\": {},
     "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\Justin\\source\\repos\\ThePICARDProject\\API-backend\\API-backend.csproj",
+      "projectUniqueName": "D:\\ThePICARDProject\\API-backend\\API-backend.csproj",
       "projectName": "API-backend",
-      "projectPath": "C:\\Users\\Justin\\source\\repos\\ThePICARDProject\\API-backend\\API-backend.csproj",
-      "packagesPath": "C:\\Users\\Justin\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\Justin\\source\\repos\\ThePICARDProject\\API-backend\\obj\\",
+      "projectPath": "D:\\ThePICARDProject\\API-backend\\API-backend.csproj",
+      "packagesPath": "C:\\Users\\12677\\.nuget\\packages\\",
+      "outputPath": "D:\\ThePICARDProject\\API-backend\\obj\\",
       "projectStyle": "PackageReference",
       "fallbackFolders": [
         "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
       ],
       "configFilePaths": [
-        "C:\\Users\\Justin\\AppData\\Roaming\\NuGet\\NuGet.Config",
+        "C:\\Users\\12677\\AppData\\Roaming\\NuGet\\NuGet.Config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
         "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
       ],
@@ -454,7 +454,6 @@
       "sources": {
         "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
         "C:\\Program Files\\dotnet\\library-packs": {},
-        "C:\\Users\\Justin\\AppData\\Local\\Esri\\NuGet": {},
         "https://api.nuget.org/v3/index.json": {}
       },
       "frameworks": {

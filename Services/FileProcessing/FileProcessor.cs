@@ -3,6 +3,7 @@ using Microsoft.Extensions.Primitives;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq.Expressions;
+using System.Text;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace API_backend.Services.FileProcessing
@@ -102,13 +103,48 @@ namespace API_backend.Services.FileProcessing
 
         /// <summary>
         /// Generates a CSV file containing formatted results.
-        /// NOTE: AggregateData must be called before this method.
+        /// 
         /// </summary>
         /// <returns></returns>
         /// <exception cref="NotImplementedException"></exception>
-        public string GetCsv()
+        public string GetCsv(string outputPath, string resultsPath, string survey, string classifier, int executors)
         {
-            throw new NotImplementedException("TODO");
+            if (!Directory.Exists(outputPath))
+                throw new DirectoryNotFoundException("Output directory not found.");
+
+            using (StreamReader output = new StreamReader(Path.Combine(resultsPath)))
+            {
+                // Print header
+                string header = "Survey,Classifier,Multiclass,Executors,Trees,Labeled,Recall,Precision,FPR,F1,F4,Time.Split,Time.Train,Time.Test,Repitition,SupervisedTrees,Semi-SupervisedTrees,Ratio.S-SSL\n";
+                
+                string splittingTimeId = "SplittingTime";
+                double splittingTime;
+
+                string trainingTimeId = "TrainingTime";
+                double trainingTime;
+
+                string testingTimeId = "TestingTime";
+                double testingTime;
+
+                while(!output.EndOfStream)
+                {
+                    string line = output.ReadLine();
+                    if(line.ToUpper().Substring(0, splittingTimeId.Length) == splittingTimeId.ToUpper())
+                    {
+                        splittingTime = Double.Parse(line.Split('=')[1].Trim());
+                    } 
+                    else if(line.ToUpper().Substring(0, trainingTimeId.Length) == splittingTimeId.ToUpper())
+                    {
+                        trainingTime = Double.Parse(line.Split('=')[1].Trim());
+                    } 
+                    else if(line.ToUpper().Substring(0, testingTimeId.Length) == testingTimeId.ToUpper())
+                    {
+                        testingTime = Double.Parse(line.Split('=')[1].Trim());
+                    }
+                }
+                
+            }
+            return outputPath;
         }
     }
 }
