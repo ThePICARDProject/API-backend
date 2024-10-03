@@ -17,88 +17,37 @@ namespace API_backend.Services.FileProcessing
     /// <seealso href="https://github.com/ThePICARDProject/docker-swarm/"/>
     public class FileProcessor
     {
-        private readonly string _databaseFileSystemBasePath;
-        private readonly string _dockerPath;
-
-        public FileProcessor(FileProcessorOptions fileProcessorOptions)
-        {
-            // Check our Docker-Swarm path
-            _dockerPath = fileProcessorOptions.RepositoryBasePath;
-            if (string.IsNullOrEmpty(_dockerPath))
-                throw new ArgumentNullException(nameof(fileProcessorOptions.RepositoryBasePath));
-            if (!Directory.Exists(_dockerPath))
-                throw new DirectoryNotFoundException($"The directory \"{fileProcessorOptions.RepositoryBasePath}\" could not be found or does not exist.");
-
-            // Initialize the base path for the database filesystem and verify it exists
-            _databaseFileSystemBasePath = fileProcessorOptions.OutputBasePath;
-            if (string.IsNullOrEmpty(_databaseFileSystemBasePath))
-                throw new ArgumentNullException(nameof(fileProcessorOptions.OutputBasePath));
-            if (!Directory.Exists(_databaseFileSystemBasePath))
-                throw new DirectoryNotFoundException($"The output directory \"{_databaseFileSystemBasePath}\" could not be found or does not exist.");
-        }
+        public FileProcessor() {}
 
         /// <summary>
-        /// Aggregates all data within the Hdfs into a single output text file within the database filesystem.
-        /// Removes all Docker containers on completion
+        /// Aggregates all raw data files existing in a local filesystem folder into a single output file.
+        /// Data from each trial results file is given a header with the filename corresponsing to the 
+        /// trial that specific output came from.
         /// 
-        /// Database filesystem directory structure is as follows: 
-        ///     "{DatabaseFileSystemBasePath}/{UserId}/{AlgorithmName}/{Timestamp}_{surveyNumber}.txt"
         /// </summary>
         /// <param name="userId"></param>
         /// <param name="algorithmName"></param>
         /// <param name="experimentNumber"></param>
         /// <returns></returns>
         /// <exception cref="ArgumentNullException"></exception>
-        public async Task<string> AggregateData(string userId, string algorithmName, string surveyNumber, string timestamp)
+        public void AggregateData(string survey, string algorithmName, string timestamp, string resultsDirectory)
         {
-            // Verify Args
-            if(string.IsNullOrEmpty(userId))
-                throw new ArgumentNullException(nameof(userId));
-            if(string.IsNullOrEmpty(algorithmName))
-                throw new ArgumentNullException(nameof(algorithmName));
-            if(string.IsNullOrEmpty(surveyNumber))
-                throw new ArgumentNullException(nameof(surveyNumber));
-            if(string.IsNullOrEmpty(timestamp))
-                throw new ArgumentNullException(nameof(timestamp));
+            // Check if out resultsDirectory exists
+            if (!Directory.Exists(resultsDirectory))
+                throw new DirectoryNotFoundException($"The directory \"{resultsDirectory}\" was not found");
 
-            // Generate the aggregate file path
-            string aggregateFilePath = Path.Combine(new string[] 
-            { 
-                _databaseFileSystemBasePath, 
-                userId, 
-                algorithmName,
-                $"{timestamp}_{surveyNumber}.txt",
-            });
-
-            // Currently an idea for using bash based on current implementation. Doesn't seem to be a better option
-            string error;
-            using(Process resultsOut = new Process())
+            // Generate an output file path and get all results files
+            string outputPath = Path.Combine(resultsDirectory, $"{survey}_{algorithmName}_{timestamp}.txt");
+            var resultsFiles = Directory.EnumerateFiles(resultsDirectory);
+            
+            // For each results file, append the results to the aggregate file
+            foreach (var filePath in resultsFiles)
             {
-                resultsOut.StartInfo.FileName = Path.Combine(_dockerPath, "results-out.sh");
-
-                // Add arguments
-                Collection<string> argumentsList = resultsOut.StartInfo.ArgumentList;
-                argumentsList.Add(aggregateFilePath);
-                resultsOut.StartInfo.CreateNoWindow = false;
-
-                // Start the process and wait to exit
-                if (!resultsOut.Start())
-                    throw new Exception("Failed to start the new process");
-                
-                // Start and wait for error
-                resultsOut.Start();
-                error = await resultsOut.StandardError.ReadToEndAsync();
-                await resultsOut.WaitForExitAsync();
-                if (resultsOut.ExitCode != 0)
-                    throw new Exception($"AggregateData failed with error code {resultsOut.ExitCode} and message: \"{error}\"");
+                List<string> lines = File.ReadLines(Path.Combine(resultsDirectory, filePath)).ToList();
+                lines.Insert(0, $"---------------------------------------------------------------------------\nOutput Results for { Path.GetFileName(filePath)}\n---------------------------------------------------------------------------\n");
+                File.AppendAllLines(outputPath, lines);
+                File.Delete(Path.Combine(resultsDirectory, filePath));
             }
-
-            // If we exit the process and the file still does not exist, throw an exception
-            if (!File.Exists(aggregateFilePath))
-                throw new FileNotFoundException($"Failed to aggregate data: output file does not exist at the path \"{aggregateFilePath}\".");
-                       
-            // Return the path of the saved file
-            return aggregateFilePath;   
         }
 
         /// <summary>

@@ -94,14 +94,18 @@ namespace API_backend.Services.Experiments
                 arguments.Add(data.ExecuterCores);
                 arguments.Add(data.MemoryOverhead);
                 
-                // Add required arguments
+                // Add required algorithm arguments
                 arguments.Add(data.NumberOfClasses.ToString());
                 arguments.Add(data.NumberOfTrees.ToString());
                 arguments.Add(data.Impurity.ToString());
                 arguments.Add(data.MaxDepth.ToString());
-                arguments.Add(data.MaxBins.ToString()); 
-                arguments.Add(data.OutputName.ToString());
+                arguments.Add(data.MaxBins.ToString());
+
                 arguments.Add(data.PercentLabeled.ToString());
+                
+                // Add output paths
+                arguments.Add(data.HdfsOutputDirectory.ToString());
+                arguments.Add(data.LocalOutputDirectory.ToString());
 
                 // Add optional arguments
                 foreach(string arg in data.args)

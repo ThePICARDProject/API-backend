@@ -20,9 +20,10 @@ num_trees=$((12 + $node_counts))
 impurity=$((13 + $node_counts))
 max_depth=$((14 + $node_counts))
 max_bins=$((15 + $max_bins))
-output_name=$((16 + $node_counts))
-percent_labeled=$((17 + $node_counts))
-optional_start=((18 + $node_counts))
+percent_labeled=$((16 + $node_counts))
+hdfs_output_directory=$((17 + $node_counts))
+local_output_directory=$(18 + $node_counts)
+optional_start=((19 + $node_counts))
 
 # Add Docker Contatainers
 ./$docker_path/up.sh
@@ -55,7 +56,11 @@ for node_count_index in $(seq 3 $end_index); do
             --executer-memory $executer_memory \
             --executer-cores $executer_cores \
             --conf spark.executer.memoryOverhead=$memory_overhead \
-            --class $class_name $jar_path $num_classes $num_trees $impurity $max_depth $max_bins $dataset_name $output_name $percent_labeled ${@$optional_start}
+            --class $class_name $jar_path $num_classes $num_trees $impurity $max_depth $max_bins $dataset_name $data_output_dir $percent_labeled ${@$optional_start}
+    
+        # Output a results file
+        docker run --rm --name results-extractor --network "$(basename "$(pwd)")_cluster-network" -v "$(pwd)/results:/mnt/results" \
+        spark-hadoop:latest hdfs dfs -getmerge $data_output_dir $results_output_dir/output$j.txt
     done
 
     # Remove dataset from HDFS
