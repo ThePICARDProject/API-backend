@@ -4,6 +4,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Linq.Expressions;
 using System.Text;
+using static System.Net.Mime.MediaTypeNames;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace API_backend.Services.FileProcessing
@@ -17,7 +18,12 @@ namespace API_backend.Services.FileProcessing
     /// <seealso href="https://github.com/ThePICARDProject/docker-swarm/"/>
     public class FileProcessor
     {
-        public FileProcessor() {}
+        private readonly IWebHostEnvironment _env;
+
+        public FileProcessor(IWebHostEnvironment env)
+        {
+            _env = env;
+        }
 
         /// <summary>
         /// Aggregates all raw data files existing in a local filesystem folder into a single output file.
@@ -75,25 +81,124 @@ namespace API_backend.Services.FileProcessing
                 string testingTimeId = "TestingTime";
                 double testingTime;
 
+                string recallId = "Recall(1.0)";
+                double recall;
+
+                string precisionId = "Precision(1.0)";
+                double precision;
+
                 while(!output.EndOfStream)
                 {
                     string line = output.ReadLine();
-                    if(line.ToUpper().Substring(0, splittingTimeId.Length) == splittingTimeId.ToUpper())
+                    if (line.ToUpper().Substring(0, splittingTimeId.Length) == splittingTimeId.ToUpper())
                     {
                         splittingTime = Double.Parse(line.Split('=')[1].Trim());
-                    } 
-                    else if(line.ToUpper().Substring(0, trainingTimeId.Length) == splittingTimeId.ToUpper())
+                        Console.Write(splittingTime);
+                    }
+                    else if (line.ToUpper().Substring(0, trainingTimeId.Length) == splittingTimeId.ToUpper())
                     {
                         trainingTime = Double.Parse(line.Split('=')[1].Trim());
-                    } 
-                    else if(line.ToUpper().Substring(0, testingTimeId.Length) == testingTimeId.ToUpper())
+                        Console.Write(trainingTime);
+
+                    }
+                    else if (line.ToUpper().Substring(0, testingTimeId.Length) == testingTimeId.ToUpper())
                     {
                         testingTime = Double.Parse(line.Split('=')[1].Trim());
+                        Console.Write(testingTime);
+
+                    }
+                    else if (line.ToUpper().Substring(0, precisionId.Length) == precisionId.ToUpper())
+                    {
+                        precision = Double.Parse(line.Split("=")[1].Trim());
+                        Console.Write(precision);
+
+                    }
+                    else if (line.ToUpper().Substring(0, recallId.Length) == recallId.ToUpper())
+                    {
+                        recall = Double.Parse(line.Split("=")[1].Trim());
+                        Console.Write(recall);
+
                     }
                 }
                 
             }
             return outputPath;
+        }
+
+
+
+        public void GetCsvTest()
+        {
+
+            // Get the base directory of the application
+                var baseDirectory = _env.ContentRootPath;
+
+            string path = "\\Services\\FileProcessing\\Test Files\\PICARD Example 1 Results.txt";
+                
+            Console.WriteLine(baseDirectory);
+
+            string fullPath = baseDirectory + path;
+
+            Console.WriteLine(fullPath);
+
+            using (StreamReader output = new StreamReader(Path.Combine(fullPath)))
+            {
+                // Print header
+                string header = "Survey,Classifier,Multiclass,Executors,Trees,Labeled,Recall,Precision,FPR,F1,F4,Time.Split,Time.Train,Time.Test,Repitition,SupervisedTrees,Semi-SupervisedTrees,Ratio.S-SSL\n";
+
+                string splittingTimeId = "SplittingTime";
+                double splittingTime;
+
+                string trainingTimeId = "TrainingTime";
+                double trainingTime;
+
+                string testingTimeId = "TestingTime";
+                double testingTime;
+
+                string recallId = "Recall(1.0)";
+                double recall;
+
+                string precisionId = "Precision(1.0)";
+                double precision;
+
+                while (!output.EndOfStream)
+                {
+                    string line = output.ReadLine();
+
+                    Console.WriteLine(line);
+                    if (line.ToUpper().Substring(0, splittingTimeId.Length) == splittingTimeId.ToUpper())
+                    {
+                        splittingTime = Double.Parse(line.Split('=')[1].Trim());
+                        Console.Write(splittingTime);
+                    }
+                    else if (line.ToUpper().Substring(0, trainingTimeId.Length) == splittingTimeId.ToUpper())
+                    {
+                        trainingTime = Double.Parse(line.Split('=')[1].Trim());
+                        Console.Write(trainingTime);
+
+                    }
+                    else if (line.ToUpper().Substring(0, testingTimeId.Length) == testingTimeId.ToUpper())
+                    {
+                        testingTime = Double.Parse(line.Split('=')[1].Trim());
+                        Console.Write(testingTime);
+
+                    }
+                    else if (line.ToUpper().Substring(0, precisionId.Length) == precisionId.ToUpper())
+                    {
+                        precision = Double.Parse(line.Split("=")[1].Trim());
+                        Console.Write(precision);
+
+                    }
+                    else if (line.ToUpper().Substring(0, recallId.Length) == recallId.ToUpper())
+                    {
+                        recall = Double.Parse(line.Split("=")[1].Trim());
+                        Console.Write(recall);
+
+                    }
+                }
+
+            }
+            return;
         }
     }
 }
