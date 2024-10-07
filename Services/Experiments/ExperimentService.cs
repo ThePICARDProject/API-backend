@@ -53,16 +53,6 @@ namespace API_backend.Services.Experiments
             // Construct paths
             string submitPath = Path.Combine(_repositoryBasePath, "submit-experiment.sh");
 
-            // Verify Args
-            if (string.IsNullOrEmpty(data.ClassName))
-                throw new ArgumentNullException(nameof(data.ClassName));
-            if (string.IsNullOrEmpty(data.RelativeJarPath))
-                throw new ArgumentNullException(nameof(data.RelativeJarPath));
-            if (!File.Exists(submitPath))
-                throw new FileNotFoundException($"Submit file with the path \"{submitPath}\" does not exist.");
-            if (!File.Exists(Path.Combine(_jarBasePath, data.RelativeJarPath)))
-                throw new FileNotFoundException($".jar file with the name \"{data.RelativeJarPath}\" does not exist in the specified folder.");
-
             // Create submit process
             string error;
             using (Process submit = new Process())
@@ -74,42 +64,22 @@ namespace API_backend.Services.Experiments
                 
                 // Add docker-swarm path and dataset
                 arguments.Add(_repositoryBasePath);
-                arguments.Add(data.DatasetPath);
-
-                // Add Trials
-                arguments.Add(data.Trials.ToString());
+                arguments.Add(data.DatasetBasePath);
 
                 // Add Node Counts
-                arguments.Add(data.NodeCounts.Count.ToString());
-                foreach(int node in data.NodeCounts)
-                    arguments.Add(node.ToString());
+                arguments.Add(data.NodeCount.ToString());
 
-                // Add Driver data
+                // Add Spark arguments
                 arguments.Add(data.DriverMemory);
-                //arguments.Add(data.DriverCores);
-
-                // Add Executer data
-                //arguments.Add(data.ExecutorNumber);
-                arguments.Add(data.ExecutorMemory);
+                arguments.Add(data.DriverCores);
+                arguments.Add(data.ExecutorNumber);
                 arguments.Add(data.ExecuterCores.ToString());
+                arguments.Add(data.ExecutorMemory);
                 arguments.Add(data.MemoryOverhead.ToString());
-                
-                // Add required algorithm arguments
-                arguments.Add(data.NumberOfClasses.ToString());
-                arguments.Add(data.NumberOfTrees.ToString());
-                arguments.Add(data.Impurity.ToString());
-                arguments.Add(data.MaxDepth.ToString());
-                arguments.Add(data.MaxBins.ToString());
-
-                arguments.Add(data.PercentLabeled.ToString());
-                
+               
                 // Add output paths
                 arguments.Add(data.HdfsOutputDirectory.ToString());
                 arguments.Add(data.LocalOutputDirectory.ToString());
-
-                // Add optional arguments
-                foreach(string arg in data.args)
-                    arguments.Add(arg);
              
                 submit.StartInfo.CreateNoWindow = true;
 
