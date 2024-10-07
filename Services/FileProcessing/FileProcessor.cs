@@ -130,10 +130,13 @@ namespace API_backend.Services.FileProcessing
         public void GetCsvTest()
         {
 
-            // Get the base directory of the application
-                var baseDirectory = _env.ContentRootPath;
+            // will be replaced with parameter
+            int classifications = 4;
 
-            string path = "\\Services\\FileProcessing\\Test Files\\PICARD Example 1 Results.txt";
+            // Get the base directory of the application
+            var baseDirectory = _env.ContentRootPath;
+
+            string path = "\\Services\\FileProcessing\\Test Files\\PICARD Example 2 Results.txt";
                 
             Console.WriteLine(baseDirectory);
 
@@ -146,55 +149,43 @@ namespace API_backend.Services.FileProcessing
                 // Print header
                 string header = "Survey,Classifier,Multiclass,Executors,Trees,Labeled,Recall,Precision,FPR,F1,F4,Time.Split,Time.Train,Time.Test,Repitition,SupervisedTrees,Semi-SupervisedTrees,Ratio.S-SSL\n";
 
-                string splittingTimeId = "SplittingTime";
-                double splittingTime;
+                var metrics = new Dictionary<string, double?>
+                {
+                    {"SplittingTime", null },
+                    {"TrainingTime", null },
+                    {"TestingTime", null },
 
-                string trainingTimeId = "TrainingTime";
-                double trainingTime;
+                };
 
-                string testingTimeId = "TestingTime";
-                double testingTime;
+                for (int i = 0; i < classifications; i++)
+                {
+                    metrics.Add($"Recall({i}.0)", null);
+                    metrics.Add($"Precision({i}.0)", null);
+                    metrics.Add($"F1-Score({i}.0)", null);
+                    metrics.Add($"FPR({i}.0)", null);
 
-                string recallId = "Recall(1.0)";
-                double recall;
+                }
 
-                string precisionId = "Precision(1.0)";
-                double precision;
+                int count = 1;
 
                 while (!output.EndOfStream)
                 {
                     string line = output.ReadLine();
 
-                    Console.WriteLine(line);
-                    if (line.ToUpper().Substring(0, splittingTimeId.Length) == splittingTimeId.ToUpper())
-                    {
-                        splittingTime = Double.Parse(line.Split('=')[1].Trim());
-                        Console.Write(splittingTime);
-                    }
-                    else if (line.ToUpper().Substring(0, trainingTimeId.Length) == splittingTimeId.ToUpper())
-                    {
-                        trainingTime = Double.Parse(line.Split('=')[1].Trim());
-                        Console.Write(trainingTime);
+                    Console.Write(count + ": ");
 
-                    }
-                    else if (line.ToUpper().Substring(0, testingTimeId.Length) == testingTimeId.ToUpper())
+                    foreach (var metricKey in metrics.Keys.ToList())
                     {
-                        testingTime = Double.Parse(line.Split('=')[1].Trim());
-                        Console.Write(testingTime);
+                        if (line.StartsWith(metricKey, StringComparison.OrdinalIgnoreCase))
+                        {
+                            var value = Double.Parse(line.Split('=')[1].Trim());
+                            metrics[metricKey] = value;
+                            Console.WriteLine(metricKey + ": " + metrics[metricKey]);   
 
+                        }
                     }
-                    else if (line.ToUpper().Substring(0, precisionId.Length) == precisionId.ToUpper())
-                    {
-                        precision = Double.Parse(line.Split("=")[1].Trim());
-                        Console.Write(precision);
 
-                    }
-                    else if (line.ToUpper().Substring(0, recallId.Length) == recallId.ToUpper())
-                    {
-                        recall = Double.Parse(line.Split("=")[1].Trim());
-                        Console.Write(recall);
-
-                    }
+                    count++;
                 }
 
             }
