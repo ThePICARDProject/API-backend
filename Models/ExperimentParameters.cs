@@ -31,12 +31,12 @@ namespace API_backend.Models
 
         // Spark Arguments
         public string DriverMemory { get; set; }
-        public string DriverCores { get; set; }
+        //public string DriverCores { get; set; }
         
-        public string ExecutorNumber { get; set; }
+        //public string ExecutorNumber { get; set; }
         public string ExecutorMemory { get; set; }
-        public string ExecuterCores { get; set; }
-        public string MemoryOverhead { get; set; }
+        public int ExecuterCores { get; set; }
+        public int MemoryOverhead { get; set; }
 
         // Required Algorithm Arguments
         public int NumberOfClasses { get; set; }
@@ -44,7 +44,7 @@ namespace API_backend.Models
         public string Impurity {  get; set; }
         public int MaxDepth { get; set; }
         public int MaxBins { get; set; }
-        public string DatasetName { get; set; }
+        public string DatasetPath { get; set; }
         public int PercentLabeled { get; set; }
 
         public string HdfsOutputDirectory { get; set; } // Location in Hdfs where results are output to

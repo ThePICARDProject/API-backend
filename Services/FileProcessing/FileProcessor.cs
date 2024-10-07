@@ -44,7 +44,7 @@ namespace API_backend.Services.FileProcessing
             foreach (var filePath in resultsFiles)
             {
                 List<string> lines = File.ReadLines(Path.Combine(resultsDirectory, filePath)).ToList();
-                lines.Insert(0, $"---------------------------------------------------------------------------\nOutput Results for { Path.GetFileName(filePath)}\n---------------------------------------------------------------------------\n");
+                lines.Insert(0, $"---------------------------------------------------------------------------\nOutput Results for {Path.GetFileName(filePath)}\n---------------------------------------------------------------------------\n");
                 File.AppendAllLines(outputPath, lines);
                 File.Delete(Path.Combine(resultsDirectory, filePath));
             }

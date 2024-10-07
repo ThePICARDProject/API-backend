@@ -21,21 +21,21 @@ namespace API_backend.Services.Experiments
         private readonly string _jarBasePath;
         private readonly string _repositoryBasePath;
 
-        public ExperimentService(IOptions<ExperimentOptions> options) 
+        public ExperimentService(ExperimentOptions options, string scriptPath) 
         {
             // Check our Docker-Swarm path
-            _repositoryBasePath = options.Value.RepositoryBasePath;
+            _repositoryBasePath = options.RepositoryBasePath;
             if (string.IsNullOrEmpty(_repositoryBasePath))
-                throw new ArgumentNullException(nameof(options.Value.RepositoryBasePath));
+                throw new ArgumentNullException(nameof(options.RepositoryBasePath));
             if (!Directory.Exists(_repositoryBasePath))
-                throw new DirectoryNotFoundException($"The directory \"{options.Value.RepositoryBasePath}\" could not be found or does not exist.");
+                throw new DirectoryNotFoundException($"The directory \"{options.RepositoryBasePath}\" could not be found or does not exist.");
 
             // Initialize the base path for the .jar file storage and verify it exists
-            _jarBasePath = options.Value.JarFileBasePath;
+            _jarBasePath = options.JarFileBasePath;
             if (string.IsNullOrEmpty(_jarBasePath))
-                throw new ArgumentNullException(nameof(options.Value.JarFileBasePath));
+                throw new ArgumentNullException(nameof(options.JarFileBasePath));
             if (!Directory.Exists(_jarBasePath))
-                throw new DirectoryNotFoundException($"The directory \"{options.Value.JarFileBasePath}\" could not be found or does not exist.");
+                throw new DirectoryNotFoundException($"The directory \"{options.JarFileBasePath}\" could not be found or does not exist.");
         }
 
         /// <summary>
@@ -74,7 +74,7 @@ namespace API_backend.Services.Experiments
                 
                 // Add docker-swarm path and dataset
                 arguments.Add(_repositoryBasePath);
-                arguments.Add(data.DatasetName);
+                arguments.Add(data.DatasetPath);
 
                 // Add Trials
                 arguments.Add(data.Trials.ToString());
@@ -86,13 +86,13 @@ namespace API_backend.Services.Experiments
 
                 // Add Driver data
                 arguments.Add(data.DriverMemory);
-                arguments.Add(data.DriverCores);
+                //arguments.Add(data.DriverCores);
 
                 // Add Executer data
-                arguments.Add(data.ExecutorNumber);
+                //arguments.Add(data.ExecutorNumber);
                 arguments.Add(data.ExecutorMemory);
-                arguments.Add(data.ExecuterCores);
-                arguments.Add(data.MemoryOverhead);
+                arguments.Add(data.ExecuterCores.ToString());
+                arguments.Add(data.MemoryOverhead.ToString());
                 
                 // Add required algorithm arguments
                 arguments.Add(data.NumberOfClasses.ToString());
