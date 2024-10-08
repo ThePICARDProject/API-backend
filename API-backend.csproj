@@ -12,6 +12,8 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Services\Experiments\algorithms\SupervisedMLRF\target\global-logging\" />
+    <Folder Include="Services\Experiments\algorithms\SupervisedMLRF\target\task-temp-directory\" />
     <Folder Include="Services\FileProcessing\Test Files\" />
   </ItemGroup>
 

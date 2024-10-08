@@ -1,0 +1,60 @@
+version: '3.9'
+# the services block specifies templates for containers
+services:
+  master:
+    image: spark-hadoop:latest
+    build: 
+      context: ./docker-images/spark-hadoop
+      dockerfile: Dockerfile
+    entrypoint: "bash -c 'if [ ! -f /opt/hadoop/data/nameNode/current/VERSION ]; then hdfs namenode -format; fi && hdfs --daemon start namenode && yarn resourcemanager'"
+    networks:
+      - cluster-network
+    volumes:
+      - 'namenode-vol:/opt/hadoop/data'
+    deploy:
+      endpoint_mode: dnsrr
+      restart_policy:
+        condition: none
+      # This block specifies max resources allocated to this container (cpus and ram).
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: '2048m'
+
+  worker:
+    image: spark-hadoop:latest
+    build: 
+      context: ./docker-images/spark-hadoop
+      dockerfile: Dockerfile
+    entrypoint: "bash -c 'hdfs --daemon start datanode && yarn nodemanager'"
+    networks:
+      - cluster-network
+    deploy:
+      restart_policy:
+        condition: none
+      resources:
+        limits:
+          cpus: '0.5'
+          memory: '2048m'
+    # The depends_on block specifies other services that need to be healthy before this one can come online.
+    # Compose uses it, but I'm not sure if swarm does.
+    depends_on:
+      - master
+
+  # It rewrites some of the responses - I had it working for the spark dashboard on compose but will have to redo some of it to account for hadoop and yarn.
+  webui-proxy:
+    image: webui-proxy:latest
+    build: 
+      context: ./docker-images/webui-proxy
+      dockerfile: Dockerfile
+    networks:
+      - cluster-network
+    ports:
+      - '8080:8080'
+
+networks:
+  cluster-network:
+    attachable: true
+
+volumes:
+  namenode-vol:

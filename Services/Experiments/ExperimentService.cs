@@ -18,25 +18,7 @@ namespace API_backend.Services.Experiments
     /// <seealso href="https://hadoop.apache.org/docs/r2.4.1/hadoop-project-dist/hadoop-hdfs/hdfs-default.xml"/>
     public class ExperimentService
     {
-        private readonly string _jarBasePath;
-        private readonly string _repositoryBasePath;
-
-        public ExperimentService(ExperimentOptions options, string scriptPath) 
-        {
-            // Check our Docker-Swarm path
-            _repositoryBasePath = options.RepositoryBasePath;
-            if (string.IsNullOrEmpty(_repositoryBasePath))
-                throw new ArgumentNullException(nameof(options.RepositoryBasePath));
-            if (!Directory.Exists(_repositoryBasePath))
-                throw new DirectoryNotFoundException($"The directory \"{options.RepositoryBasePath}\" could not be found or does not exist.");
-
-            // Initialize the base path for the .jar file storage and verify it exists
-            _jarBasePath = options.JarFileBasePath;
-            if (string.IsNullOrEmpty(_jarBasePath))
-                throw new ArgumentNullException(nameof(options.JarFileBasePath));
-            if (!Directory.Exists(_jarBasePath))
-                throw new DirectoryNotFoundException($"The directory \"{options.JarFileBasePath}\" could not be found or does not exist.");
-        }
+        public ExperimentService(ExperimentOptions options, string scriptPath) {}
 
         /// <summary>
         /// Adds containers to Docker-Swarm and configures Hadoop.
@@ -50,21 +32,17 @@ namespace API_backend.Services.Experiments
         /// <exception cref="FileNotFoundException"></exception>
         public async Task<string> SubmitExperiment(ExperimentParameters data)
         {
-            // Construct paths
-            string submitPath = Path.Combine(_repositoryBasePath, "submit-experiment.sh");
-
             // Create submit process
             string error;
             using (Process submit = new Process())
             {
                 // Setup Process
-                submit.StartInfo.FileName = submitPath;
+                submit.StartInfo.FileName = "./scripts/submit-experiment.sh";
 
                 Collection<string> arguments = new Collection<string>();
-                
-                // Add docker-swarm path and dataset
-                arguments.Add(_repositoryBasePath);
+
                 arguments.Add(data.DatasetBasePath);
+                arguments.Add(data.DatasetName);
 
                 // Add Node Counts
                 arguments.Add(data.NodeCount.ToString());
@@ -76,10 +54,14 @@ namespace API_backend.Services.Experiments
                 arguments.Add(data.ExecuterCores.ToString());
                 arguments.Add(data.ExecutorMemory);
                 arguments.Add(data.MemoryOverhead.ToString());
+
+                arguments.Add(data.ClassName);
+                arguments.Add(data.JarName);
                
                 // Add output paths
                 arguments.Add(data.HdfsOutputDirectory.ToString());
                 arguments.Add(data.LocalOutputDirectory.ToString());
+                arguments.Add(data.OutputFileName);
              
                 submit.StartInfo.CreateNoWindow = true;
 

@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 
 namespace API_backend.Models
 {
@@ -17,17 +18,20 @@ namespace API_backend.Models
         public string RelativeJarPath { get; set; }
 
         public string DatasetBasePath { get; set; }
+        public string DatasetName { get; set; }
         
         // Docker Arguments
-        public List<int> NodeCount { get; set; }
+        public int NodeCount { get; set; }
 
         // Spark Arguments
         public string DriverMemory { get; set; }
         public string DriverCores { get; set; }
         public string ExecutorNumber { get; set; }
-        public string ExecutorMemory { get; set; }
         public int ExecuterCores { get; set; }
+        public string ExecutorMemory { get; set; }
         public int MemoryOverhead { get; set; }
+
+        public string JarName { get; set; }
 
         // Required Algorithm Arguments
         Dictionary<int, object> arguments = new Dictionary<int, object>(); // Map of arguments, Position and value
@@ -35,5 +39,6 @@ namespace API_backend.Models
         // File Paths
         public string HdfsOutputDirectory { get; set; } // Location in Hdfs where results are output to
         public string LocalOutputDirectory { get; set; } // Location in local file system where results should be stored
+        public string OutputFileName { get; set; }
     }
 }
