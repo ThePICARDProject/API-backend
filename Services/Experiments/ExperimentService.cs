@@ -3,6 +3,10 @@ using API_backend.Services.FileProcessing;
 using Microsoft.Extensions.Options;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Reflection;
+using System.Text;
+using System.Text.RegularExpressions;
+using System.Text.Unicode;
 using System.Xml;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
@@ -18,6 +22,9 @@ namespace API_backend.Services.Experiments
     /// <seealso href="https://hadoop.apache.org/docs/r2.4.1/hadoop-project-dist/hadoop-hdfs/hdfs-default.xml"/>
     public class ExperimentService
     {
+        private readonly string _experimentOutputBasePath = "./docker-swarm/results";
+        private readonly string _dataBasePath = "./docker-swarm/data";
+
         public ExperimentService(ExperimentOptions options, string scriptPath) {}
 
         /// <summary>
@@ -32,12 +39,19 @@ namespace API_backend.Services.Experiments
         /// <exception cref="FileNotFoundException"></exception>
         public async Task<string> SubmitExperiment(ExperimentParameters data)
         {
+            // Generate specific experiment paths and submission DateTime
+            string outputPath = Path.Combine(_experimentOutputBasePath, data.UserId, data.ExperimentId);
+            string dataBasePath = Path.Combine(_dataBasePath, data.UserId);
+            string submissionDateTime = DateTime.UtcNow.ToString();
+
+            this.UpdateJarPath(data.UserId); // Update the Dockerfile
+
             // Create submit process
             string error;
             using (Process submit = new Process())
             {
                 // Setup Process
-                submit.StartInfo.FileName = "./scripts/submit-experiment.sh";
+                submit.StartInfo.FileName = "./docker-swarm/scripts/submit-experiment.sh";
 
                 Collection<string> arguments = new Collection<string>();
 
@@ -60,8 +74,8 @@ namespace API_backend.Services.Experiments
                
                 // Add output paths
                 arguments.Add(data.HdfsOutputDirectory.ToString());
-                arguments.Add(data.LocalOutputDirectory.ToString());
-                arguments.Add(data.OutputFileName);
+                arguments.Add(outputPath);
+                arguments.Add($"{data.ExperimentId}_{submissionDateTime}.txt");
              
                 submit.StartInfo.CreateNoWindow = true;
 
@@ -72,6 +86,33 @@ namespace API_backend.Services.Experiments
             }
             return error;
         }
-    
+
+        /// <summary>
+        /// Updates the Dockerfile to reference Jar files for a specific userId.
+        /// </summary>
+        /// <param name="userId"></param>
+        private void UpdateJarPath(string userId)
+        {
+            // Generate the path and the jar line regex pattern
+            string dockerfilePath = "./docker-swarm/docker-images/spark-hadoop/Dockerfile";
+            Regex linePattern = new Regex("COPY ./jars/[a-zA-Z0-9]+/* opt/jars");
+
+            // Copy each line from the old dockerfile to a string
+            string newFileContent = "";
+            using(StreamReader dockerfile = new StreamReader(dockerfilePath))
+            {
+                while(!dockerfile.EndOfStream)
+                {
+                    string line = dockerfile.ReadLine();
+                    Match match = linePattern.Match(line);
+                    if(match.Length == line.Length) // If the pattern matches the line, update the line
+                        line = $"COPY ./jars/{userId}/* opt/jars";
+                    newFileContent.Concat($"{line}\n");
+                }
+            }
+
+            // Write all bytes in the new file content to a new Dockerfile
+            File.WriteAllBytes(dockerfilePath, Encoding.UTF8.GetBytes(newFileContent));
+        }
     }
 }

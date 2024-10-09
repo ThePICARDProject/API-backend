@@ -14,6 +14,7 @@ namespace API_backend.Models
     {
         // User Data
         public string UserId { get; set; }
+        public string ExperimentId { get; set; }
         public string ClassName { get; set; }
         public string RelativeJarPath { get; set; }
 
@@ -38,7 +39,5 @@ namespace API_backend.Models
 
         // File Paths
         public string HdfsOutputDirectory { get; set; } // Location in Hdfs where results are output to
-        public string LocalOutputDirectory { get; set; } // Location in local file system where results should be stored
-        public string OutputFileName { get; set; }
     }
 }

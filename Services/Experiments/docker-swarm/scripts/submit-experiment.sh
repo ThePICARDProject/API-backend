@@ -13,10 +13,8 @@ executer_number=$6
 executer_cores=$7
 executer_memory=$8
 memory_overhead=$9
-
 class_name=${10}
 jar_path=${11}
-
 hdfs_output_directory=${12}
 results_output_directory=${13}
 output_name=${14}

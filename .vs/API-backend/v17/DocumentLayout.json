@@ -1,13 +1,17 @@
 {
   "Version": 1,
-  "WorkspaceRootPath": "C:\\Users\\Justin\\source\\repos\\ThePICARDProject\\API-backend\\",
+  "WorkspaceRootPath": "D:\\ThePICARDProject\\API-backend\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{0019D4AE-BE09-4833-81C1-0506B3B220E4}|API-backend.csproj|c:\\users\\justin\\source\\repos\\thepicardproject\\api-backend\\services\\experiments\\experimentservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{0019D4AE-BE09-4833-81C1-0506B3B220E4}|API-backend.csproj|d:\\thepicardproject\\api-backend\\services\\experiments\\experimentservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{0019D4AE-BE09-4833-81C1-0506B3B220E4}|API-backend.csproj|solutionrelative:services\\experiments\\experimentservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{0019D4AE-BE09-4833-81C1-0506B3B220E4}|API-backend.csproj|c:\\users\\justin\\source\\repos\\thepicardproject\\api-backend\\models\\experimentparameters.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{0019D4AE-BE09-4833-81C1-0506B3B220E4}|API-backend.csproj|d:\\thepicardproject\\api-backend\\services\\experiments\\docker-swarm\\docker-images\\spark-hadoop\\dockerfile||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{0019D4AE-BE09-4833-81C1-0506B3B220E4}|API-backend.csproj|solutionrelative:services\\experiments\\docker-swarm\\docker-images\\spark-hadoop\\dockerfile||{8B382828-6202-11D1-8870-0000F87579D2}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{0019D4AE-BE09-4833-81C1-0506B3B220E4}|API-backend.csproj|d:\\thepicardproject\\api-backend\\models\\experimentparameters.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{0019D4AE-BE09-4833-81C1-0506B3B220E4}|API-backend.csproj|solutionrelative:models\\experimentparameters.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
@@ -18,21 +22,8 @@
       "DocumentGroups": [
         {
           "DockedWidth": 156,
-          "SelectedChildIndex": 2,
+          "SelectedChildIndex": 1,
           "Children": [
-            {
-              "$type": "Document",
-              "DocumentIndex": 1,
-              "Title": "ExperimentParameters.cs",
-              "DocumentMoniker": "C:\\Users\\Justin\\source\\repos\\ThePICARDProject\\API-backend\\Models\\ExperimentParameters.cs",
-              "RelativeDocumentMoniker": "Models\\ExperimentParameters.cs",
-              "ToolTip": "C:\\Users\\Justin\\source\\repos\\ThePICARDProject\\API-backend\\Models\\ExperimentParameters.cs",
-              "RelativeToolTip": "Models\\ExperimentParameters.cs",
-              "ViewState": "AQIAAAAAAAAAAAAAAAAAABIAAAAAAAAA",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-10-08T01:53:36.451Z",
-              "EditorCaption": ""
-            },
             {
               "$type": "Bookmark",
               "Name": "ST:0:0:{1c4feeaa-4718-4aa9-859d-94ce25d182ba}"
@@ -41,13 +32,45 @@
               "$type": "Document",
               "DocumentIndex": 0,
               "Title": "ExperimentService.cs",
-              "DocumentMoniker": "C:\\Users\\Justin\\source\\repos\\ThePICARDProject\\API-backend\\Services\\Experiments\\ExperimentService.cs",
+              "DocumentMoniker": "D:\\ThePICARDProject\\API-backend\\Services\\Experiments\\ExperimentService.cs",
               "RelativeDocumentMoniker": "Services\\Experiments\\ExperimentService.cs",
-              "ToolTip": "C:\\Users\\Justin\\source\\repos\\ThePICARDProject\\API-backend\\Services\\Experiments\\ExperimentService.cs",
+              "ToolTip": "D:\\ThePICARDProject\\API-backend\\Services\\Experiments\\ExperimentService.cs",
               "RelativeToolTip": "Services\\Experiments\\ExperimentService.cs",
-              "ViewState": "AQIAAAAAAAAAAAAAAAAAABEAAABwAAAA",
+              "ViewState": "AQIAADoAAAAAAAAAAAAAADcAAAAuAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2024-10-07T20:25:41.466Z",
+              "EditorCaption": ""
+            }
+          ]
+        },
+        {
+          "DockedWidth": 156,
+          "SelectedChildIndex": 1,
+          "Children": [
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "ExperimentParameters.cs",
+              "DocumentMoniker": "D:\\ThePICARDProject\\API-backend\\Models\\ExperimentParameters.cs",
+              "RelativeDocumentMoniker": "Models\\ExperimentParameters.cs",
+              "ToolTip": "D:\\ThePICARDProject\\API-backend\\Models\\ExperimentParameters.cs",
+              "RelativeToolTip": "Models\\ExperimentParameters.cs",
+              "ViewState": "AQIAAAYAAAAAAAAAAAAAAB0AAAAPAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-10-08T01:53:36.451Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "Dockerfile",
+              "DocumentMoniker": "D:\\ThePICARDProject\\API-backend\\Services\\Experiments\\docker-swarm\\docker-images\\spark-hadoop\\Dockerfile",
+              "RelativeDocumentMoniker": "Services\\Experiments\\docker-swarm\\docker-images\\spark-hadoop\\Dockerfile",
+              "ToolTip": "D:\\ThePICARDProject\\API-backend\\Services\\Experiments\\docker-swarm\\docker-images\\spark-hadoop\\Dockerfile",
+              "RelativeToolTip": "Services\\Experiments\\docker-swarm\\docker-images\\spark-hadoop\\Dockerfile",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAABUAAAAbAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
+              "WhenOpened": "2024-10-09T19:47:42.117Z",
               "EditorCaption": ""
             }
           ]
