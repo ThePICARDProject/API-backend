@@ -1,4 +1,3 @@
-
 /******************************************************************************
 * SupervisedMLRF.scala
 * @author zennisarix
@@ -8,8 +7,6 @@
 * training data, used to make predictions on the testing data, and evaluated
 * for classification performance. The calculated metrics and model are sent
 * to the hdfs with the provided filename.
-* 
-* Updated to work with the API-backend 10/7/2024
 ******************************************************************************/
 package edu.wvu.rascl.driver
 
@@ -41,13 +38,12 @@ object SupervisedMLRF {
     val maxDepth = args(6).toInt
     val maxBins = args(7).toInt
     /* CORRECTION: fix master url */
-    val outFile =  "hdfs://master:8020/" + outPath + outName
+    val outFile =  "hdfs://master:8020" + outPath + "/" + outName
     val percentLabeled = args(8).toDouble * 0.01
-         
+    
     // initialize spark 
     val sparkConf = new SparkConf().setAppName("SupervisedMLRF")
     val sc = new SparkContext(sparkConf)
-    
     // configure hdfs for output
     val hadoopConf = new org.apache.hadoop.conf.Configuration()
     val hdfs = org.apache.hadoop.fs.FileSystem.get(
@@ -187,9 +183,9 @@ object SupervisedMLRF {
     }
     
     // write string to file
+  
     val outRDD= sc.parallelize(Seq(out.toString()))
     outRDD.saveAsTextFile(outFile)
-
     sc.stop()
   }
   

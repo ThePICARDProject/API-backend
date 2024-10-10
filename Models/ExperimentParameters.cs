@@ -16,9 +16,7 @@ namespace API_backend.Models
         public string UserId { get; set; }
         public string ExperimentId { get; set; }
         public string ClassName { get; set; }
-        public string RelativeJarPath { get; set; }
 
-        public string DatasetBasePath { get; set; }
         public string DatasetName { get; set; }
         
         // Docker Arguments
@@ -26,8 +24,8 @@ namespace API_backend.Models
 
         // Spark Arguments
         public string DriverMemory { get; set; }
-        public string DriverCores { get; set; }
-        public string ExecutorNumber { get; set; }
+        public int DriverCores { get; set; }
+        public int ExecutorNumber { get; set; }
         public int ExecuterCores { get; set; }
         public string ExecutorMemory { get; set; }
         public int MemoryOverhead { get; set; }
@@ -35,7 +33,7 @@ namespace API_backend.Models
         public string JarName { get; set; }
 
         // Required Algorithm Arguments
-        Dictionary<int, object> arguments = new Dictionary<int, object>(); // Map of arguments, Position and value
+        public List<string> Arguments = new List<string>(); // Map of arguments, Position and value
 
         // File Paths
         public string HdfsOutputDirectory { get; set; } // Location in Hdfs where results are output to
