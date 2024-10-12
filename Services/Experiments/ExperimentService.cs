@@ -29,10 +29,6 @@ namespace API_backend.Services.Experiments
         public ExperimentService() {}
 
         /// <summary>
-        /// Adds containers to Docker-Swarm and configures Hadoop.
-        ///
-        /// Executes an experiment consisting of the number of trials defined in SubmitExperiment
-        /// for each nodeCount in the list.
         /// </summary>
         /// <param name="data"></param>
         /// <returns>Error returned from the process</returns>
@@ -40,12 +36,12 @@ namespace API_backend.Services.Experiments
         /// <exception cref="FileNotFoundException"></exception>
         public async Task<string> SubmitExperiment(ExperimentParameters data)
         {
-            // Generate specific experiment paths and submission DateTime
+            // Generate experiment directory and create it if it does not exist
             string outputPath = Path.Combine(_experimentOutputBasePath, data.UserId, data.ExperimentId);
             string dataBasePath = Path.Combine(_dataBasePath, data.UserId);
             DateTime dateTime = DateTime.Now;
-            string submissionDateTime = $"{dateTime.Year.ToString()}.{dateTime.Month.ToString()}.{dateTime.Day.ToString()}" +
-                $"_{dateTime.Hour.ToString()}.{dateTime.Minute.ToString()}.{dateTime.Second.ToString()}";
+            string submissionDateTime = $"{dateTime.Year.ToString()}-{dateTime.Month.ToString()}-{dateTime.Day.ToString()}" +
+                $"_{dateTime.Hour.ToString()}-{dateTime.Minute.ToString()}-{dateTime.Second.ToString()}";
 
             this.UpdateJarPath(data.UserId); // Update the Dockerfile
 
@@ -57,38 +53,37 @@ namespace API_backend.Services.Experiments
                 submit.StartInfo.FileName = "./scripts/submit-experiment.sh";
                 submit.StartInfo.CreateNoWindow = false;
 
-                Collection<string> arguments = new Collection<string>();
-
-                arguments.Add($"{_dataBasePath}/{data.UserId}");
-                arguments.Add(data.DatasetName);
+                submit.StartInfo.ArgumentList.Add($"{_dataBasePath}/{data.UserId}");
+                submit.StartInfo.ArgumentList.Add(data.DatasetName);
 
                 // Add Node Counts
-                arguments.Add(data.NodeCount.ToString());
+                submit.StartInfo.ArgumentList.Add(data.NodeCount.ToString());
 
                 // Add Spark arguments
-                arguments.Add(data.DriverMemory);
-                arguments.Add(data.DriverCores.ToString());
-                arguments.Add(data.ExecutorNumber.ToString());
-                arguments.Add(data.ExecuterCores.ToString());
-                arguments.Add(data.ExecutorMemory);
-                arguments.Add(data.MemoryOverhead.ToString());
+                submit.StartInfo.ArgumentList.Add(data.DriverMemory);
+                submit.StartInfo.ArgumentList.Add(data.DriverCores.ToString());
+                submit.StartInfo.ArgumentList.Add(data.ExecutorNumber.ToString());
+                submit.StartInfo.ArgumentList.Add(data.ExecuterCores.ToString());
+                submit.StartInfo.ArgumentList.Add(data.ExecutorMemory);
+                submit.StartInfo.ArgumentList.Add(data.MemoryOverhead.ToString());
 
-                arguments.Add(data.ClassName);
-                arguments.Add(data.JarName);
+                submit.StartInfo.ArgumentList.Add(data.ClassName);
+                submit.StartInfo.ArgumentList.Add(data.JarName);
                
                 // Add output paths
-                arguments.Add(data.HdfsOutputDirectory.ToString());
-                arguments.Add(outputPath);
-                arguments.Add($"{data.ExperimentId}_{submissionDateTime}.txt");
-             
-                submit.StartInfo.CreateNoWindow = true;
+                submit.StartInfo.ArgumentList.Add(data.HdfsOutputDirectory.ToString());
+                submit.StartInfo.ArgumentList.Add(outputPath);
+                submit.StartInfo.ArgumentList.Add($"{data.ExperimentId}_{submissionDateTime}.txt");
+
+                // Add algorithm parameters
+                foreach(string item in data.Arguments)
+                    submit.StartInfo.ArgumentList.Add(item);
 
                 // Start and wait for error
                 submit.Start();
-                error = await submit.StandardError.ReadToEndAsync();
                 await submit.WaitForExitAsync();
             }
-            return error;
+            return null;
         }
 
         /// <summary>
