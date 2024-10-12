@@ -61,6 +61,9 @@ dlldata.c
 # Benchmark Results
 BenchmarkDotNet.Artifacts/
 
+# Exclude development appsettings
+appsettings.Development.json
+
 # .NET
 project.lock.json
 project.fragment.lock.json

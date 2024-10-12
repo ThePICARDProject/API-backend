@@ -1,13 +1,42 @@
 {
   "Version": 1,
-  "WorkspaceRootPath": "C:\\Users\\Justin\\source\\repos\\ThePICARDProject\\API-backend\\",
+  "WorkspaceRootPath": "D:\\ThePICARDProject\\API-backend\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{7608C21E-4609-486B-B554-9FFB3F27D03E}|..\\..\\FileProcessorTest\\FileProcessorTest\\FileProcessorTest.csproj|c:\\users\\justin\\source\\repos\\fileprocessortest\\fileprocessortest\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{0019D4AE-BE09-4833-81C1-0506B3B220E4}|API-backend.csproj|d:\\thepicardproject\\api-backend\\services\\dockerswarm\\dockerswarm.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{0019D4AE-BE09-4833-81C1-0506B3B220E4}|API-backend.csproj|solutionrelative:services\\dockerswarm\\dockerswarm.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{0019D4AE-BE09-4833-81C1-0506B3B220E4}|API-backend.csproj|c:\\users\\justin\\source\\repos\\thepicardproject\\api-backend\\services\\experiments\\experimentservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{0019D4AE-BE09-4833-81C1-0506B3B220E4}|API-backend.csproj|solutionrelative:services\\experiments\\experimentservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{0019D4AE-BE09-4833-81C1-0506B3B220E4}|API-backend.csproj|d:\\thepicardproject\\api-backend\\controllers\\experimentcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{0019D4AE-BE09-4833-81C1-0506B3B220E4}|API-backend.csproj|solutionrelative:controllers\\experimentcontroller.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{0019D4AE-BE09-4833-81C1-0506B3B220E4}|API-backend.csproj|d:\\thepicardproject\\api-backend\\services\\fileprocessing\\experimentservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{0019D4AE-BE09-4833-81C1-0506B3B220E4}|API-backend.csproj|solutionrelative:services\\fileprocessing\\experimentservice.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{0019D4AE-BE09-4833-81C1-0506B3B220E4}|API-backend.csproj|d:\\thepicardproject\\api-backend\\models\\experimentrequest.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{0019D4AE-BE09-4833-81C1-0506B3B220E4}|API-backend.csproj|solutionrelative:models\\experimentrequest.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{0019D4AE-BE09-4833-81C1-0506B3B220E4}|API-backend.csproj|d:\\thepicardproject\\api-backend\\models\\algorithm.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{0019D4AE-BE09-4833-81C1-0506B3B220E4}|API-backend.csproj|solutionrelative:models\\algorithm.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{0019D4AE-BE09-4833-81C1-0506B3B220E4}|API-backend.csproj|d:\\thepicardproject\\api-backend\\models\\algorithmrequestparameters.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{0019D4AE-BE09-4833-81C1-0506B3B220E4}|API-backend.csproj|solutionrelative:models\\algorithmrequestparameters.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{0019D4AE-BE09-4833-81C1-0506B3B220E4}|API-backend.csproj|d:\\thepicardproject\\api-backend\\models\\algorithmparameter.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{0019D4AE-BE09-4833-81C1-0506B3B220E4}|API-backend.csproj|solutionrelative:models\\algorithmparameter.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{0019D4AE-BE09-4833-81C1-0506B3B220E4}|API-backend.csproj|d:\\thepicardproject\\api-backend\\models\\clusterparameters.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{0019D4AE-BE09-4833-81C1-0506B3B220E4}|API-backend.csproj|solutionrelative:models\\clusterparameters.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{0019D4AE-BE09-4833-81C1-0506B3B220E4}|API-backend.csproj|d:\\thepicardproject\\api-backend\\services\\dockerswarm\\algorithms\\supervisedmlrf\\src\\main\\scala\\edu\\wvu\\rascl\\driver\\supervisedmlrf.scala||{8B382828-6202-11D1-8870-0000F87579D2}",
+      "RelativeMoniker": "D:0:0:{0019D4AE-BE09-4833-81C1-0506B3B220E4}|API-backend.csproj|solutionrelative:services\\dockerswarm\\algorithms\\supervisedmlrf\\src\\main\\scala\\edu\\wvu\\rascl\\driver\\supervisedmlrf.scala||{8B382828-6202-11D1-8870-0000F87579D2}"
     }
   ],
   "DocumentGroupContainers": [
@@ -16,7 +45,7 @@
       "VerticalTabListWidth": 256,
       "DocumentGroups": [
         {
-          "DockedWidth": 203,
+          "DockedWidth": 212,
           "SelectedChildIndex": 1,
           "Children": [
             {
@@ -26,33 +55,124 @@
             {
               "$type": "Document",
               "DocumentIndex": 0,
-              "Title": "Program.cs",
-              "DocumentMoniker": "C:\\Users\\Justin\\source\\repos\\FileProcessorTest\\FileProcessorTest\\Program.cs",
-              "RelativeDocumentMoniker": "..\\..\\FileProcessorTest\\FileProcessorTest\\Program.cs",
-              "ToolTip": "C:\\Users\\Justin\\source\\repos\\FileProcessorTest\\FileProcessorTest\\Program.cs",
-              "RelativeToolTip": "..\\..\\FileProcessorTest\\FileProcessorTest\\Program.cs",
-              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAUAAAAVAAAA",
+              "Title": "DockerSwarm.cs",
+              "DocumentMoniker": "D:\\ThePICARDProject\\API-backend\\Services\\DockerSwarm\\DockerSwarm.cs",
+              "RelativeDocumentMoniker": "Services\\DockerSwarm\\DockerSwarm.cs",
+              "ToolTip": "D:\\ThePICARDProject\\API-backend\\Services\\DockerSwarm\\DockerSwarm.cs",
+              "RelativeToolTip": "Services\\DockerSwarm\\DockerSwarm.cs",
+              "ViewState": "AQIAADkAAAAAAAAAAAAIwD8AAAAAAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-10-09T23:47:57.571Z",
+              "WhenOpened": "2024-10-12T21:14:54.648Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 8,
+              "Title": "SupervisedMLRF.scala",
+              "DocumentMoniker": "D:\\ThePICARDProject\\API-backend\\Services\\DockerSwarm\\algorithms\\SupervisedMLRF\\src\\main\\scala\\edu\\wvu\\rascl\\driver\\SupervisedMLRF.scala",
+              "RelativeDocumentMoniker": "Services\\DockerSwarm\\algorithms\\SupervisedMLRF\\src\\main\\scala\\edu\\wvu\\rascl\\driver\\SupervisedMLRF.scala",
+              "ToolTip": "D:\\ThePICARDProject\\API-backend\\Services\\DockerSwarm\\algorithms\\SupervisedMLRF\\src\\main\\scala\\edu\\wvu\\rascl\\driver\\SupervisedMLRF.scala",
+              "RelativeToolTip": "Services\\DockerSwarm\\algorithms\\SupervisedMLRF\\src\\main\\scala\\edu\\wvu\\rascl\\driver\\SupervisedMLRF.scala",
+              "ViewState": "AQIAABgAAAAAAAAAAAAAACgAAABBAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
+              "WhenOpened": "2024-10-12T20:49:28.289Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 7,
+              "Title": "ClusterParameters.cs",
+              "DocumentMoniker": "D:\\ThePICARDProject\\API-backend\\Models\\ClusterParameters.cs",
+              "RelativeDocumentMoniker": "Models\\ClusterParameters.cs",
+              "ToolTip": "D:\\ThePICARDProject\\API-backend\\Models\\ClusterParameters.cs",
+              "RelativeToolTip": "Models\\ClusterParameters.cs",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAA8AAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-10-12T20:37:42.251Z",
               "EditorCaption": ""
             }
           ]
         },
         {
-          "DockedWidth": 251,
-          "SelectedChildIndex": 0,
+          "DockedWidth": 194,
+          "SelectedChildIndex": 2,
           "Children": [
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 2,
               "Title": "ExperimentService.cs",
-              "DocumentMoniker": "C:\\Users\\Justin\\source\\repos\\ThePICARDProject\\API-backend\\Services\\Experiments\\ExperimentService.cs",
-              "RelativeDocumentMoniker": "Services\\Experiments\\ExperimentService.cs",
-              "ToolTip": "C:\\Users\\Justin\\source\\repos\\ThePICARDProject\\API-backend\\Services\\Experiments\\ExperimentService.cs",
-              "RelativeToolTip": "Services\\Experiments\\ExperimentService.cs",
-              "ViewState": "AQIAABIAAAAAAAAAAAAAAFQAAAANAAAA",
+              "DocumentMoniker": "D:\\ThePICARDProject\\API-backend\\Services\\FileProcessing\\ExperimentService.cs",
+              "RelativeDocumentMoniker": "Services\\FileProcessing\\ExperimentService.cs",
+              "ToolTip": "D:\\ThePICARDProject\\API-backend\\Services\\FileProcessing\\ExperimentService.cs",
+              "RelativeToolTip": "Services\\FileProcessing\\ExperimentService.cs",
+              "ViewState": "AQIAACQAAAAAAAAAAAAAACoAAAAzAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-10-07T20:25:41.466Z",
+              "WhenOpened": "2024-10-12T21:34:35.188Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "ExperimentRequest.cs",
+              "DocumentMoniker": "D:\\ThePICARDProject\\API-backend\\Models\\ExperimentRequest.cs",
+              "RelativeDocumentMoniker": "Models\\ExperimentRequest.cs",
+              "ToolTip": "D:\\ThePICARDProject\\API-backend\\Models\\ExperimentRequest.cs",
+              "RelativeToolTip": "Models\\ExperimentRequest.cs",
+              "ViewState": "AQIAADMAAAAAAAAAAAAAACwAAAAPAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-10-12T20:33:34.868Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "ExperimentController.cs",
+              "DocumentMoniker": "D:\\ThePICARDProject\\API-backend\\Controllers\\ExperimentController.cs",
+              "RelativeDocumentMoniker": "Controllers\\ExperimentController.cs",
+              "ToolTip": "D:\\ThePICARDProject\\API-backend\\Controllers\\ExperimentController.cs",
+              "RelativeToolTip": "Controllers\\ExperimentController.cs",
+              "ViewState": "AQIAAEgAAAAAAAAAAAAAAFMAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-10-12T21:01:22.255Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
+              "Title": "Algorithm.cs",
+              "DocumentMoniker": "D:\\ThePICARDProject\\API-backend\\Models\\Algorithm.cs",
+              "RelativeDocumentMoniker": "Models\\Algorithm.cs",
+              "ToolTip": "D:\\ThePICARDProject\\API-backend\\Models\\Algorithm.cs",
+              "RelativeToolTip": "Models\\Algorithm.cs",
+              "ViewState": "AQIAAAwAAAAAAAAAAAAAABUAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-10-12T21:36:50.778Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 5,
+              "Title": "AlgorithmRequestParameters.cs",
+              "DocumentMoniker": "D:\\ThePICARDProject\\API-backend\\Models\\AlgorithmRequestParameters.cs",
+              "RelativeDocumentMoniker": "Models\\AlgorithmRequestParameters.cs",
+              "ToolTip": "D:\\ThePICARDProject\\API-backend\\Models\\AlgorithmRequestParameters.cs",
+              "RelativeToolTip": "Models\\AlgorithmRequestParameters.cs",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAABQAAAAAAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-10-12T21:35:27.227Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 6,
+              "Title": "AlgorithmParameter.cs",
+              "DocumentMoniker": "D:\\ThePICARDProject\\API-backend\\Models\\AlgorithmParameter.cs",
+              "RelativeDocumentMoniker": "Models\\AlgorithmParameter.cs",
+              "ToolTip": "D:\\ThePICARDProject\\API-backend\\Models\\AlgorithmParameter.cs",
+              "RelativeToolTip": "Models\\AlgorithmParameter.cs",
+              "ViewState": "AQIAAAMAAAAAAAAAAAAAABQAAAAsAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-10-12T20:53:19.918Z",
               "EditorCaption": ""
             }
           ]
