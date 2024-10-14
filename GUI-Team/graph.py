@@ -142,7 +142,7 @@ def main():
                 + geom_smooth(method='lm', alpha=0.1)  # Set alpha to 1 to make the line fully opaque
                 + labs(x=x_axis_column, y=y_axis_column)
                 + facet_grid(facet_dimension)  #TODO: Temporarily removed color=color_dimension due to error # causing weird box
-                + guides(color=guide_legend(nrow=5))  # Adjust the number of rows in the legend
+                + guides(color=guide_legend(nrow=5))  #TODO: this line causes errors when setting to scatter # Adjust the number of rows in the legend
                 + theme_linedraw()
         )
     elif arguments['-g'][0].lower() == "box":

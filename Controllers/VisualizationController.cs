@@ -20,12 +20,16 @@ namespace API_backend.Controllers
         [HttpPost]
         public IActionResult GetValues([FromForm] VisualizationRequest visRequest)
         {
-            //TODO: remove debug line
-            Console.WriteLine("Reached GetTest function");
 
-            _dataVisualization.GraphInput(visRequest);
-
-            return Ok();
+            bool result = _dataVisualization.GraphInput(visRequest);
+            if (result)
+            {
+                return Ok("Graph successfully generated");
+            }
+            else
+            {
+                return StatusCode(500); // internal service error
+            }
         }
     }
 }
