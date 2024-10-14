@@ -38,7 +38,7 @@ object SupervisedMLRF {
     val maxDepth = args(6).toInt
     val maxBins = args(7).toInt
     /* CORRECTION: fix master url */
-    val outFile =  "hdfs://master:8020" + outPath + "/" + outName
+    val outFile =  outPath + "/" + outName
     val percentLabeled = args(8).toDouble * 0.01
     
     // initialize spark 
