@@ -22,9 +22,9 @@ namespace API_backend.Controller
         }
 
         [HttpPost("createCsv")]
-        public IActionResult csvCreate()
+        public IActionResult csvCreate([FromBody] List<string> desiredMetrics, string inputFile)
         {
-            _fileProcessor.GetCsvTest();
+            _fileProcessor.GetCsvTest(desiredMetrics, inputFile);
             
             return Ok();
         }

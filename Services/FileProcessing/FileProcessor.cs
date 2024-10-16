@@ -1,8 +1,12 @@
-﻿using Microsoft.Extensions.Options;
+﻿using CsvHelper;
+using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Dynamic;
+using System.Globalization;
 using System.Linq.Expressions;
+using System.Numerics;
 using System.Text;
 using static System.Net.Mime.MediaTypeNames;
 using static System.Runtime.InteropServices.JavaScript.JSType;
@@ -129,69 +133,91 @@ namespace API_backend.Services.FileProcessing
 
 
 
-        public void GetCsvTest()
+        public void GetCsvTest(List<string> desiredMetrics, string inputFile)
         {
 
-            // will be replaced with parameter
-            int classifications = 4;
+            // TODO: add SQL query, store list of .txt files, create loop appending csv file with values of each file
+            // Simulate successful SQL query by storing all three example results in a list and looping
+
 
             // Get the base directory of the application
             var baseDirectory = _env.ContentRootPath;
+            string inputAppendPath = "\\Services\\FileProcessing\\Test Files\\";
+            string inputFilePath = baseDirectory + inputAppendPath + inputFile;
 
-            string path = "\\Services\\FileProcessing\\Test Files\\PICARD Example 2 Results.txt";
-                
-            Console.WriteLine(baseDirectory);
+            string outputFile = "output1.csv"; // TODO: replace with output file from function parameter
 
-            string fullPath = baseDirectory + path;
+            string outputDirectoryPath = baseDirectory + "\\Services\\FileProcessing\\OutputCSV\\";
+            string outputFilePath = outputDirectoryPath + outputFile;
+            Console.WriteLine("base directory: " + baseDirectory);
 
-            Console.WriteLine(fullPath);
 
-            using (StreamReader output = new StreamReader(Path.Combine(fullPath)))
+            using (StreamReader output = new StreamReader(Path.Combine(inputFilePath)))
             {
-                // Print header
-                string header = "Survey,Classifier,Multiclass,Executors,Trees,Labeled,Recall,Precision,FPR,F1,F4,Time.Split,Time.Train,Time.Test,Repitition,SupervisedTrees,Semi-SupervisedTrees,Ratio.S-SSL\n";
+                // string header = "Survey,Classifier,Multiclass,Executors,Trees,Labeled,Recall,Precision,FPR,F1,F4,Time.Split,Time.Train,Time.Test,Repitition,SupervisedTrees,Semi-SupervisedTrees,Ratio.S-SSL\n";
 
-                var metrics = new Dictionary<string, double?>
-                {
-                    {"SplittingTime", null },
-                    {"TrainingTime", null },
-                    {"TestingTime", null },
 
-                };
+                // Dictory of key value pairs representing metric to obtain from .txt file and corresponding value (initially set to null)
+                var metrics = desiredMetrics.ToDictionary(metric => metric, metric => (double?)null);
 
-                for (int i = 0; i < classifications; i++)
-                {
-                    metrics.Add($"Recall({i}.0)", null);
-                    metrics.Add($"Precision({i}.0)", null);
-                    metrics.Add($"F1-Score({i}.0)", null);
-                    metrics.Add($"FPR({i}.0)", null);
-
-                }
-
-                int count = 1;
 
                 while (!output.EndOfStream)
                 {
-                    string line = output.ReadLine();
+                    string? line = output.ReadLine();
 
-                    Console.Write(count + ": ");
-
+                    // parse .txt doc for metric and store corresponding value in dictionary
                     foreach (var metricKey in metrics.Keys.ToList())
                     {
-                        if (line.StartsWith(metricKey, StringComparison.OrdinalIgnoreCase))
+                        if (line != null && line.StartsWith(metricKey, StringComparison.OrdinalIgnoreCase))
                         {
                             var value = Double.Parse(line.Split('=')[1].Trim());
                             metrics[metricKey] = value;
-                            Console.WriteLine(metricKey + ": " + metrics[metricKey]);   
-
                         }
                     }
-
-                    count++;
                 }
 
+                // Check if the csv output directory exists
+                if (!Directory.Exists(outputDirectoryPath))
+                {
+                    Directory.CreateDirectory(outputDirectoryPath);
+                }
+
+
+                // get list of headers, store in comma separated string, append new line
+                var headerList = metrics.Keys.ToList();
+                string csvHeaders = System.String.Join(",", headerList.ToArray()) + "\n";
+
+                // get list of values, store in comma separated string, append new line
+                var valueList = metrics.Values.ToList();
+                string csvValues = System.String.Join(",", valueList.ToArray()) + "\n";
+
+
+
+                // If file exists, append new values -- otherwise, create new file and add headers and values
+                if (File.Exists(outputFilePath))
+                {
+                    // TODO: add try catch block
+                    File.AppendAllText(outputFilePath, csvValues);
+
+                } else
+                {
+
+                    // combine headers and values into csv formatted string
+                    string csv = csvHeaders + csvValues;
+
+
+                    // TODO: add try catch block
+                    File.WriteAllText(outputFilePath, csv);
+
+                }
             }
             return;
         }
     }
 }
+
+// "SplittingTime",
+// "TrainingTime",
+// "TestingTime"
+// "Recall(1.0)"
+// "Precision(1.0)"
