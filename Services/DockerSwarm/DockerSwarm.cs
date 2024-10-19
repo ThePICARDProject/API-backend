@@ -4,6 +4,7 @@ using API_Backend.Models;
 using Microsoft.Extensions.Options;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
+using System.Diagnostics.Eventing.Reader;
 using System.Net;
 using System.Reflection;
 using System.Text;
@@ -32,7 +33,14 @@ namespace API_backend.Services.Docker_Swarm
         public string ExperimentOutputBasePath { get  { return _experimentOutputBasePath; } }
         public string HadoopOutputBasePath {  get { return _hadoopOutputBasePath; } }
 
-        public DockerSwarm() {}
+        public DockerSwarm() 
+        {
+            // Verify the required paths exist in the directory
+            if (!Directory.Exists(_dataBasePath))
+                throw new Exception($"Path {_dataBasePath} does not exist.");
+            if (!Directory.Exists(_experimentOutputBasePath))
+                Directory.CreateDirectory(_experimentOutputBasePath);
+        }
 
         /// <summary>
         /// </summary>
@@ -59,6 +67,7 @@ namespace API_backend.Services.Docker_Swarm
                 submit.StartInfo.FileName = "./scripts/submit-experiment.sh";
                 submit.StartInfo.CreateNoWindow = false;
 
+                submit.StartInfo.ArgumentList.Add(Environment.UserName);
                 submit.StartInfo.ArgumentList.Add($"{_dataBasePath}/{requestData.UserID}");
                 submit.StartInfo.ArgumentList.Add(requestData.AlgorithmParameters.DatasetName);
 
@@ -73,11 +82,11 @@ namespace API_backend.Services.Docker_Swarm
                 submit.StartInfo.ArgumentList.Add(requestData.ClusterParameters.ExecutorMemory);
                 submit.StartInfo.ArgumentList.Add(requestData.ClusterParameters.MemoryOverhead.ToString());
 
-                submit.StartInfo.ArgumentList.Add(Path.GetFileName(requestData.Algorithm.JarFilePath));
                 submit.StartInfo.ArgumentList.Add(requestData.Algorithm.MainClassName);
-
+                submit.StartInfo.ArgumentList.Add(Path.GetFileName(requestData.Algorithm.JarFilePath));
+                
                 // Add output paths
-                submit.StartInfo.ArgumentList.Add(requestData.AlgorithmParameters.ParameterValues.FirstOrDefault(x => x.AlgorithmParameter.ParameterName == "Hadoop Output Path").Value);
+                submit.StartInfo.ArgumentList.Add($"{_hadoopOutputBasePath}/data/{requestData.UserID}/{requestData.ExperimentID}");
                 submit.StartInfo.ArgumentList.Add(outputPath);
                 submit.StartInfo.ArgumentList.Add($"{requestData.ExperimentID}_{submissionDateTime}.txt");
 
@@ -85,7 +94,7 @@ namespace API_backend.Services.Docker_Swarm
                 List<(int, string)> parameters = new List<(int, string)>();
                 foreach (ExperimentAlgorithmParameterValue item in requestData.AlgorithmParameters.ParameterValues)
                     parameters.Add((item.AlgorithmParameter.DriverIndex, item.Value.ToString()));
-                parameters.Sort();
+                //parameters.Sort();
 
                 // Add algorithm parameters
                 foreach ((int, string) arg in parameters)
@@ -109,7 +118,7 @@ namespace API_backend.Services.Docker_Swarm
             string dockerfilePath = "./docker-images/spark-hadoop/Dockerfile";
             if (!File.Exists(dockerfilePath))
                 throw new FileNotFoundException("Dockerfile was not found");
-            Regex linePattern = new Regex("COPY ./jars/[a-zA-Z0-9]+/* opt/jars");
+            Regex linePattern = new Regex("COPY \\.\\/jars\\/(?:[a-zA-Z0-9]+\\/\\*|\\*) \\/opt\\/jars");
 
             // Copy each line from the old dockerfile to a string
             string newFileContent = "";
@@ -119,8 +128,9 @@ namespace API_backend.Services.Docker_Swarm
                 {
                     string line = dockerfile.ReadLine();
                     Match match = linePattern.Match(line);
-                    if(match.Length == line.Length) // If the pattern matches the line, update the line
-                        line = $"COPY ./jars/{userId}/* opt/jars";
+                    if (line.Length != 0 && match.Value.Length == line.Length) // If the pattern matches the line, update the line
+                            line = $"COPY ./jars/{userId}/* opt/jars";
+                    
                     newFileContent = $"{newFileContent}{line}\n";
                 }
             }

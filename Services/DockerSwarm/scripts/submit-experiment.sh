@@ -4,22 +4,24 @@
 # Based on instructions from hadoop-startup.md, autotest.sh, ...
 
 # Get command line arg:
-dataset_path=$1
-dataset_name=$2
-node_count=$3
-driver_memory=$4
-driver_cores=$5
-executer_number=$6
-executer_cores=$7
-executer_memory=$8
-memory_overhead=$9
+current_user=$1
+echo $current_user
+dataset_path=$2
+dataset_name=$3
+node_count=$4
+driver_memory=$5
+driver_cores=$6
+executer_number=$7
+executer_cores=$8
+executer_memory=$9
+memory_overhead=${10}
 
-class_name=${10}
-jar_path=${11}
+class_name=${11}
+jar_path=${12}
 
-hdfs_output_directory=${12}
-results_output_directory=${13}
-output_name=${14}
+hdfs_output_directory=${13}
+results_output_directory=${14}
+output_name=${15}
 
 echo "-----Attempting to add nodes-----"
 docker stack deploy -c docker-compose.yml "$(basename $(pwd) | sed 's/\./_/g')"
@@ -55,7 +57,7 @@ docker exec "$(docker inspect --format '{{.Status.ContainerStatus.ContainerID}}'
     --executor-cores $executer_cores \
     --executor-memory "$executer_memory" \
     --conf spark.executor.memoryOverhead=$memory_overhead \
-    --class "$class_name" "/opt/jars/$jar_path" $dataset_name $hdfs_output_directory $output_name ${@:15}
+    --class "$class_name" "/opt/jars/$jar_path" $dataset_name $hdfs_output_directory $output_name ${@:16}
 
 
 echo "-----Attempting to output results for experiment-----"
@@ -64,8 +66,8 @@ if [ ! -d $results_output_directory ] ; then
 fi
 
 fileowner="$(stat -c '%U' "${results_output_directory}")"
-if [ "${fileowner}" != "justinh225" ] ; then 
-	sudo chown -R justinh225 "${results_output_directory}"
+if [ "${fileowner}" != "${current_user}" ] ; then 
+	sudo chown -R "${current_user}" "${results_output_directory}"
 fi
 docker run --rm --name results-extractor --network "$(basename $(pwd) | sed 's/\./_/g')_cluster-network" -v "${results_output_directory}:/mnt/results" \
     spark-hadoop:latest hdfs dfs -getmerge ${hdfs_output_directory}/${output_name} /mnt/results/${output_name}
