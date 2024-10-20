@@ -5,7 +5,6 @@
 
 # Get command line arg:
 current_user=$1
-echo $current_user
 dataset_path=$2
 dataset_name=$3
 node_count=$4
@@ -19,9 +18,9 @@ memory_overhead=${10}
 class_name=${11}
 jar_path=${12}
 
-hdfs_output_directory=${13}
+hdfs_url=${13}
 results_output_directory=${14}
-output_name=${15}
+hdfs_relative_output=${15}
 
 echo "-----Attempting to add nodes-----"
 docker stack deploy -c docker-compose.yml "$(basename $(pwd) | sed 's/\./_/g')"
@@ -57,7 +56,7 @@ docker exec "$(docker inspect --format '{{.Status.ContainerStatus.ContainerID}}'
     --executor-cores $executer_cores \
     --executor-memory "$executer_memory" \
     --conf spark.executor.memoryOverhead=$memory_overhead \
-    --class "$class_name" "/opt/jars/$jar_path" $dataset_name $hdfs_output_directory $output_name ${@:16}
+    --class "$class_name" "/opt/jars/$jar_path" $dataset_name $hdfs_url $hdfs_relative_output ${@:16}
 
 
 echo "-----Attempting to output results for experiment-----"
@@ -70,7 +69,8 @@ if [ "${fileowner}" != "${current_user}" ] ; then
 	sudo chown -R "${current_user}" "${results_output_directory}"
 fi
 docker run --rm --name results-extractor --network "$(basename $(pwd) | sed 's/\./_/g')_cluster-network" -v "${results_output_directory}:/mnt/results" \
-    spark-hadoop:latest hdfs dfs -getmerge ${hdfs_output_directory}/${output_name} /mnt/results/${output_name}
+    spark-hadoop:latest hdfs dfs -getmerge ${hdfs_url
+}/${hdfs_relative_output} /mnt/results/${hdfs_relative_output}
 
 
 echo "-----Cleaning up experiment files-----"

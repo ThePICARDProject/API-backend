@@ -48,7 +48,7 @@ object SupervisedMLRF {
     val hadoopConf = new org.apache.hadoop.conf.Configuration()
     val hdfs = org.apache.hadoop.fs.FileSystem.get(
           /* CORRECTION: fix master url */
-          new java.net.URI("hdfs://master:8020"), hadoopConf
+          new java.net.URI(outPath), hadoopConf
         )    
     /**************************************************************************
      * Read in data and prepare for sampling
