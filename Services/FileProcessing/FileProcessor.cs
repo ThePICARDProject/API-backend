@@ -49,21 +49,20 @@ namespace API_Backend.Services.FileProcessing
                 throw new Exception($"Export with the Id {requestId} already exists.");
             else
             {
-                Directory.CreateDirectory(exportPath);
-                this.SetFilePermissions(exportPath);
+                this.CreateDirectories(exportPath);
             }
 
-                // For each results file, append the results to the aggregate file
-                foreach (var filePath in filePaths)
-                {
-                    List<string> lines = File.ReadLines(filePath).ToList();
-                    lines.Insert(0, $"-----\nOutput Results for {Path.GetFileName(filePath)}\n-----\n");
-                    File.AppendAllLines(exportPath, lines);
-                }
+            // For each results file, append the results to the aggregate file
+            exportPath = Path.Combine(exportPath, $"{requestId}.txt");
+            foreach (var filePath in filePaths)
+            {
+                List<string> lines = File.ReadLines(filePath).ToList();
+                lines.Insert(0, $"-----\nOutput Results for {Path.GetFileName(filePath)}\n-----\n");
+                File.AppendAllLines(exportPath, lines);
+            }
 
-                // Return the path of the saved file
-                return exportPath;
-
+            // Return the path of the saved file
+            return exportPath;
         }
 
         /// <summary>
@@ -119,12 +118,15 @@ namespace API_Backend.Services.FileProcessing
             return outputPath;
         }
     
-        private void SetFilePermissions(string filePath)
+        private void CreateDirectories(string filePath)
         {
             using(Process permissions = new Process())
             {
-                permissions.StartInfo.FileName = "/bin/bash";
-                permissions.StartInfo.Arguments = $"chmod +rwx ./{filePath}";
+                permissions.StartInfo.FileName = "./scripts/create_export_directory.sh";
+                permissions.StartInfo.Arguments = $"./{filePath}";
+
+                permissions.Start();
+                permissions.WaitForExit();
             }
         }
     }

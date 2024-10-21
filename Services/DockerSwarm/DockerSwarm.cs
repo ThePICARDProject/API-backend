@@ -76,6 +76,7 @@ namespace API_backend.Services.Docker_Swarm
                 submit.StartInfo.CreateNoWindow = false;
 
                 submit.StartInfo.ArgumentList.Add(Environment.UserName);
+                submit.StartInfo.ArgumentList.Add(Path.Combine(outputPath, "log.txt"));
                 submit.StartInfo.ArgumentList.Add($"{_dataBasePath}/{requestData.UserID}");
                 submit.StartInfo.ArgumentList.Add(requestData.AlgorithmParameters.DatasetName);
 
