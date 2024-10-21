@@ -1,4 +1,5 @@
 ﻿using API_backend.Models;
+using API_backend.Services.Docker_Swarm;
 using API_backend.Services.FileProcessing;
 using API_Backend.Models;
 using Microsoft.Extensions.Options;
@@ -11,6 +12,7 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Text.Unicode;
 using System.Xml;
+using static System.Net.Mime.MediaTypeNames;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace API_backend.Services.Docker_Swarm
@@ -49,7 +51,7 @@ namespace API_backend.Services.Docker_Swarm
         /// </summary>
         /// <param name="requestData"></param>
         /// <returns></returns>
-        public async Task<(int?, string?)> SubmitExperiment(ExperimentRequest requestData)
+        public async Task<ExperimentResponse> SubmitExperiment(ExperimentRequest requestData)
         {
             // Get the date and time of the submit request
             DateTime dateTime = DateTime.Now;
@@ -59,6 +61,7 @@ namespace API_backend.Services.Docker_Swarm
             // Generate user/experiment specific directories
             string outputPath = Path.Combine(_experimentOutputBasePath, requestData.UserID, requestData.ExperimentID);
             string dataBasePath = Path.Combine(_dataBasePath, requestData.UserID);
+            string outputName = $"{requestData.ExperimentID}_{submissionDateTime}.txt";
 
             // Update Docker images
             this.UpdateDockerfile(requestData.UserID);
@@ -93,7 +96,7 @@ namespace API_backend.Services.Docker_Swarm
                 // Add output paths
                 submit.StartInfo.ArgumentList.Add($"{_hadoopOutputBasePath}");
                 submit.StartInfo.ArgumentList.Add(outputPath);
-                submit.StartInfo.ArgumentList.Add($"data/{requestData.UserID}/{requestData.ExperimentID}/{requestData.ExperimentID}_{submissionDateTime}.txt");
+                submit.StartInfo.ArgumentList.Add($"data/{requestData.UserID}/{requestData.ExperimentID}/{outputName}");
 
                 // Get algorithm Parameters
                 List<(int, string)> parameters = new List<(int, string)>();
@@ -119,7 +122,12 @@ namespace API_backend.Services.Docker_Swarm
                 await submit.WaitForExitAsync();
                 exitCode = submit.ExitCode;
             }
-            return (exitCode, error);
+            return new ExperimentResponse() 
+            { 
+                ErrorCode = exitCode,
+                ErrorMessage = error,
+                OutputPath = Path.Combine(outputPath, outputName)
+            };
         }
 
         /// <summary>

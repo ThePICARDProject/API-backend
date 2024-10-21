@@ -22,6 +22,8 @@ hdfs_url=${13}
 results_output_directory=${14}
 hdfs_relative_output=${15}
 
+sleep 15
+
 echo "-----Rebuilding docker images-----"
 docker compose build
 

@@ -209,12 +209,12 @@ namespace API_backend.Services.FileProcessing
                     // Read output and error streams asynchronously
                     var error = await _dockerSwarm.SubmitExperiment(experiment);
 
-                    _logger.LogInformation("Experiment process exited with code {ExitCode} for ExperimentID {ExperimentID}", error.Item1, experiment.ExperimentID);
+                    _logger.LogInformation("Experiment process exited with code {ExitCode} for ExperimentID {ExperimentID}", error.ErrorCode, experiment.ExperimentID);
 
-                    if (error.Item1 != 0)
+                    if (error.ErrorCode != 0)
                     {
-                        _logger.LogError("ExperimentID {ExperimentID} failed with error: {Error}", experiment.ExperimentID, error.Item2);
-                        throw new Exception($"Experiment failed: {error.Item2}");
+                        _logger.LogError("ExperimentID {ExperimentID} failed with error: {Error}", experiment.ExperimentID, error.ErrorMessage);
+                        throw new Exception($"Experiment failed: {error.ErrorMessage}");
                     }
                     else
                     {

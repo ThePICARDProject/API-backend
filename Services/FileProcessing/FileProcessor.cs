@@ -7,6 +7,10 @@ using System.Linq.Expressions;
 using System.Text;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 ﻿using System.Diagnostics;
+using Org.BouncyCastle.Bcpg.Sig;
+using System.Security.AccessControl;
+using System.Security.Principal;
+using Microsoft.AspNetCore.Routing.Constraints;
 
 
 namespace API_Backend.Services.FileProcessing
@@ -20,70 +24,46 @@ namespace API_Backend.Services.FileProcessing
     /// <seealso href="https://github.com/ThePICARDProject/docker-swarm/"/>
     public class FileProcessor
     {
-        private readonly ILogger<FileProcessor> _logger;
+        private readonly string _outputBaseDirectory = "exports";
 
-        public FileProcessor(ILogger<FileProcessor> logger)
+        public FileProcessor()
         {
-            _logger = logger;
 
-            _logger.LogInformation("Initializing FileProcessor");
+            // Create Exports directory
+            if(!Directory.Exists(_outputBaseDirectory))
+                Directory.CreateDirectory(_outputBaseDirectory);
         }
 
-        /// <summary>
-        /// Aggregates all raw data files existing in a local filesystem folder into a single output file.
-        /// Data from each trial results file is given a header with the filename corresponsing to the 
-        /// trial that specific output came from.
-        /// 
-        /// </summary>
-        /// <param name="userId"></param>
-        /// <param name="algorithmName"></param>
-        /// <param name="experimentNumber"></param>
-        /// <returns></returns>
-        /// <exception cref="ArgumentNullException"></exception>
-        public string AggregateData(string userId, string algorithmName, string timestamp, string resultsDirectory)
+        public string AggregateData(string userId, string requestId, List<string> filePaths)
         {
-            _logger.LogInformation("Aggregating data for UserID {UserID}, Algorithm {AlgorithmName}, Survey {Survey}", userId, algorithmName);
 
             // Verify arguments
             if (string.IsNullOrEmpty(userId))
             {
-                _logger.LogError("Argument {Argument} is null or empty.", nameof(userId));
                 throw new ArgumentNullException(nameof(userId));
             }
-            if (string.IsNullOrEmpty(algorithmName))
+
+            // Construct output path
+            string exportPath = Path.Combine(_outputBaseDirectory, userId, requestId);
+            if (Directory.Exists(exportPath))
+                throw new Exception($"Export with the Id {requestId} already exists.");
+            else
             {
-                _logger.LogError("Argument {Argument} is null or empty.", nameof(algorithmName));
-                throw new ArgumentNullException(nameof(algorithmName));
+                Directory.CreateDirectory(exportPath);
+                this.SetFilePermissions(exportPath);
             }
 
-            // Check if out resultsDirectory exists
-            if (!Directory.Exists(resultsDirectory))
-                throw new DirectoryNotFoundException($"The directory \"{resultsDirectory}\" was not found");
-
-            try
-            {
-
-                // Generate an output file path and get all results files
-                string outputPath = Path.Combine(resultsDirectory, $"{algorithmName}_{timestamp}.txt");
-                var resultsFiles = Directory.EnumerateFiles(resultsDirectory);
-
                 // For each results file, append the results to the aggregate file
-                foreach (var filePath in resultsFiles)
+                foreach (var filePath in filePaths)
                 {
-                    List<string> lines = File.ReadLines(Path.Combine(resultsDirectory, filePath)).ToList();
-                    lines.Insert(0, $"---------------------------------------------------------------------------\nOutput Results for {Path.GetFileName(filePath)}\n---------------------------------------------------------------------------\n");
-                    File.AppendAllLines(outputPath, lines);
-                    File.Delete(Path.Combine(resultsDirectory, filePath));
+                    List<string> lines = File.ReadLines(filePath).ToList();
+                    lines.Insert(0, $"-----\nOutput Results for {Path.GetFileName(filePath)}\n-----\n");
+                    File.AppendAllLines(exportPath, lines);
                 }
 
                 // Return the path of the saved file
-                return outputPath;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "An error occurred while aggregating data.");
-                throw;
-            }
+                return exportPath;
+
         }
 
         /// <summary>
@@ -96,8 +76,6 @@ namespace API_Backend.Services.FileProcessing
         {
             if (!Directory.Exists(outputPath))
                 throw new DirectoryNotFoundException("Output directory not found.");
-
-            _logger.LogInformation("Generating CSV file from aggregated data.");
 
             try
             {
@@ -136,10 +114,18 @@ namespace API_Backend.Services.FileProcessing
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "An error occurred while generating CSV file.");
                 throw;
             }
             return outputPath;
+        }
+    
+        private void SetFilePermissions(string filePath)
+        {
+            using(Process permissions = new Process())
+            {
+                permissions.StartInfo.FileName = "/bin/bash";
+                permissions.StartInfo.Arguments = $"chmod +rwx ./{filePath}";
+            }
         }
     }
 }
