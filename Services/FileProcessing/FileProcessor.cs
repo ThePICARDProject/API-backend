@@ -28,10 +28,6 @@ namespace API_Backend.Services.FileProcessing
 
         public FileProcessor()
         {
-
-            // Create Exports directory
-            if(!Directory.Exists(_outputBaseDirectory))
-                Directory.CreateDirectory(_outputBaseDirectory);
         }
 
         public string AggregateData(string userId, string requestId, List<string> filePaths)
