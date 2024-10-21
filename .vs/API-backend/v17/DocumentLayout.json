@@ -1,29 +1,10 @@
 {
   "Version": 1,
-  "WorkspaceRootPath": "C:\\Users\\Justin\\source\\repos\\ThePICARDProject\\API-backend\\",
+  "WorkspaceRootPath": "D:\\ThePICARDProject\\API-backend\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{0019D4AE-BE09-4833-81C1-0506B3B220E4}|API-backend.csproj|c:\\users\\justin\\source\\repos\\thepicardproject\\api-backend\\services\\fileprocessing\\fileprocessor.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{0019D4AE-BE09-4833-81C1-0506B3B220E4}|API-backend.csproj|solutionrelative:services\\fileprocessing\\fileprocessor.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{0019D4AE-BE09-4833-81C1-0506B3B220E4}|API-backend.csproj|c:\\users\\justin\\source\\repos\\thepicardproject\\api-backend\\services\\dockerswarm\\dockerswarm.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{0019D4AE-BE09-4833-81C1-0506B3B220E4}|API-backend.csproj|d:\\thepicardproject\\api-backend\\services\\dockerswarm\\dockerswarm.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{0019D4AE-BE09-4833-81C1-0506B3B220E4}|API-backend.csproj|solutionrelative:services\\dockerswarm\\dockerswarm.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{7608C21E-4609-486B-B554-9FFB3F27D03E}|..\\..\\FileProcessorTest\\FileProcessorTest\\FileProcessorTest.csproj|c:\\users\\justin\\source\\repos\\fileprocessortest\\fileprocessortest\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{0019D4AE-BE09-4833-81C1-0506B3B220E4}|API-backend.csproj|c:\\users\\justin\\source\\repos\\thepicardproject\\api-backend\\services\\dockerswarm\\scripts\\submit-experiment.sh||{3B902123-F8A7-4915-9F01-361F908088D0}",
-      "RelativeMoniker": "D:0:0:{0019D4AE-BE09-4833-81C1-0506B3B220E4}|API-backend.csproj|solutionrelative:services\\dockerswarm\\scripts\\submit-experiment.sh||{3B902123-F8A7-4915-9F01-361F908088D0}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{0019D4AE-BE09-4833-81C1-0506B3B220E4}|API-backend.csproj|c:\\users\\justin\\source\\repos\\thepicardproject\\api-backend\\services\\dockerswarm\\experimentresponse.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{0019D4AE-BE09-4833-81C1-0506B3B220E4}|API-backend.csproj|solutionrelative:services\\dockerswarm\\experimentresponse.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{0019D4AE-BE09-4833-81C1-0506B3B220E4}|API-backend.csproj|c:\\users\\justin\\source\\repos\\thepicardproject\\api-backend\\services\\dockerswarm\\docker-compose.yml||{8B382828-6202-11D1-8870-0000F87579D2}",
-      "RelativeMoniker": "D:0:0:{0019D4AE-BE09-4833-81C1-0506B3B220E4}|API-backend.csproj|solutionrelative:services\\dockerswarm\\docker-compose.yml||{8B382828-6202-11D1-8870-0000F87579D2}"
     }
   ],
   "DocumentGroupContainers": [
@@ -33,75 +14,11 @@
       "DocumentGroups": [
         {
           "DockedWidth": 212,
-          "SelectedChildIndex": 3,
+          "SelectedChildIndex": -1,
           "Children": [
             {
               "$type": "Bookmark",
               "Name": "ST:0:0:{1c4feeaa-4718-4aa9-859d-94ce25d182ba}"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 3,
-              "Title": "submit-experiment.sh",
-              "DocumentMoniker": "C:\\Users\\Justin\\source\\repos\\ThePICARDProject\\API-backend\\Services\\DockerSwarm\\scripts\\submit-experiment.sh",
-              "RelativeDocumentMoniker": "Services\\DockerSwarm\\scripts\\submit-experiment.sh",
-              "ToolTip": "C:\\Users\\Justin\\source\\repos\\ThePICARDProject\\API-backend\\Services\\DockerSwarm\\scripts\\submit-experiment.sh",
-              "RelativeToolTip": "Services\\DockerSwarm\\scripts\\submit-experiment.sh",
-              "ViewState": "AQIAAAMAAAAAAAAAAAAAAA4AAAASAAAA",
-              "Icon": "00000000-0000-0000-0000-000000000000.000000|",
-              "WhenOpened": "2024-10-21T17:40:31.075Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 4,
-              "Title": "ExperimentResponse.cs",
-              "DocumentMoniker": "C:\\Users\\Justin\\source\\repos\\ThePICARDProject\\API-backend\\Services\\DockerSwarm\\ExperimentResponse.cs",
-              "RelativeDocumentMoniker": "Services\\DockerSwarm\\ExperimentResponse.cs",
-              "ToolTip": "C:\\Users\\Justin\\source\\repos\\ThePICARDProject\\API-backend\\Services\\DockerSwarm\\ExperimentResponse.cs",
-              "RelativeToolTip": "Services\\DockerSwarm\\ExperimentResponse.cs",
-              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAQAAAAdAAAA",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-10-21T17:05:20.576Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 0,
-              "Title": "FileProcessor.cs",
-              "DocumentMoniker": "C:\\Users\\Justin\\source\\repos\\ThePICARDProject\\API-backend\\Services\\FileProcessing\\FileProcessor.cs",
-              "RelativeDocumentMoniker": "Services\\FileProcessing\\FileProcessor.cs",
-              "ToolTip": "C:\\Users\\Justin\\source\\repos\\ThePICARDProject\\API-backend\\Services\\FileProcessing\\FileProcessor.cs*",
-              "RelativeToolTip": "Services\\FileProcessing\\FileProcessor.cs*",
-              "ViewState": "AQIAAC0AAAAAAAAAAAAAADcAAAA5AAAA",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-10-21T16:22:37.504Z",
-              "EditorCaption": ""
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 5,
-              "Title": "docker-compose.yml",
-              "DocumentMoniker": "C:\\Users\\Justin\\source\\repos\\ThePICARDProject\\API-backend\\Services\\DockerSwarm\\docker-compose.yml",
-              "RelativeDocumentMoniker": "Services\\DockerSwarm\\docker-compose.yml",
-              "ToolTip": "C:\\Users\\Justin\\source\\repos\\ThePICARDProject\\API-backend\\Services\\DockerSwarm\\docker-compose.yml",
-              "RelativeToolTip": "Services\\DockerSwarm\\docker-compose.yml",
-              "ViewState": "AQIAABgAAAAAAAAAAAAAACkAAAAOAAAA",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.003775|",
-              "WhenOpened": "2024-10-20T23:19:47.353Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 2,
-              "Title": "Program.cs",
-              "DocumentMoniker": "C:\\Users\\Justin\\source\\repos\\FileProcessorTest\\FileProcessorTest\\Program.cs",
-              "RelativeDocumentMoniker": "..\\..\\FileProcessorTest\\FileProcessorTest\\Program.cs",
-              "ToolTip": "C:\\Users\\Justin\\source\\repos\\FileProcessorTest\\FileProcessorTest\\Program.cs",
-              "RelativeToolTip": "..\\..\\FileProcessorTest\\FileProcessorTest\\Program.cs",
-              "ViewState": "AQIAABUAAAAAAAAAAAAAADQAAAAHAAAA",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-10-20T22:23:34.676Z",
-              "EditorCaption": ""
             }
           ]
         },
@@ -111,13 +28,13 @@
           "Children": [
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 0,
               "Title": "DockerSwarm.cs",
-              "DocumentMoniker": "C:\\Users\\Justin\\source\\repos\\ThePICARDProject\\API-backend\\Services\\DockerSwarm\\DockerSwarm.cs",
+              "DocumentMoniker": "D:\\ThePICARDProject\\API-backend\\Services\\DockerSwarm\\DockerSwarm.cs",
               "RelativeDocumentMoniker": "Services\\DockerSwarm\\DockerSwarm.cs",
-              "ToolTip": "C:\\Users\\Justin\\source\\repos\\ThePICARDProject\\API-backend\\Services\\DockerSwarm\\DockerSwarm.cs",
+              "ToolTip": "D:\\ThePICARDProject\\API-backend\\Services\\DockerSwarm\\DockerSwarm.cs",
               "RelativeToolTip": "Services\\DockerSwarm\\DockerSwarm.cs",
-              "ViewState": "AQIAADoAAAAAAAAAAAAYwEoAAAAvAAAA",
+              "ViewState": "AQIAAB4AAAAAAAAAAAAAADYAAAAJAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2024-10-19T21:30:42.465Z",
               "EditorCaption": ""
