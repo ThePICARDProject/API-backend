@@ -22,11 +22,13 @@ hdfs_url=${13}
 results_output_directory=${14}
 hdfs_relative_output=${15}
 
+echo "-----Rebuilding docker images-----"
+docker compose build
+
 echo "-----Attempting to add nodes-----"
 docker stack deploy -c docker-compose.yml "$(basename $(pwd) | sed 's/\./_/g')"
 docker service scale "$(basename $(pwd) | sed 's/\./_/g')_worker"=0
 docker service update --mount-add 'type=volume,source=datanode-vol-SERV{{.Service.Name}}-NODE{{.Node.ID}}-TASK{{.Task.Slot}},target=/opt/hadoop/data' "$(basename $(pwd) | sed 's/\./_/g')"
-
 
 echo "-----Attempting to setup hadoop-----"
 docker exec "$(docker inspect --format '{{.Status.ContainerStatus.ContainerID}}' "$(docker service ps -q "$(basename $(pwd) | sed 's/\./_/g')_master" --filter desired-state=running)")" \
@@ -56,12 +58,12 @@ docker exec "$(docker inspect --format '{{.Status.ContainerStatus.ContainerID}}'
     --executor-cores $executer_cores \
     --executor-memory "$executer_memory" \
     --conf spark.executor.memoryOverhead=$memory_overhead \
-    --class "$class_name" "/opt/jars/$jar_path" $dataset_name $hdfs_url $hdfs_relative_output ${@:16}
+    --class "${class_name}" "/opt/jars/${jar_path}" $dataset_name $hdfs_url $hdfs_relative_output ${@:16}
 
 
 echo "-----Attempting to output results for experiment-----"
 if [ ! -d $results_output_directory ] ; then
-	mkdir $results_output_directory
+	mkdir -p $results_output_directory
 fi
 
 fileowner="$(stat -c '%U' "${results_output_directory}")"
@@ -69,8 +71,7 @@ if [ "${fileowner}" != "${current_user}" ] ; then
 	sudo chown -R "${current_user}" "${results_output_directory}"
 fi
 docker run --rm --name results-extractor --network "$(basename $(pwd) | sed 's/\./_/g')_cluster-network" -v "${results_output_directory}:/mnt/results" \
-    spark-hadoop:latest hdfs dfs -getmerge ${hdfs_url
-}/${hdfs_relative_output} /mnt/results/${hdfs_relative_output}
+	spark-hadoop:latest hdfs dfs -getmerge ${hdfs_url}/${hdfs_relative_output} "/mnt/results/$(basename ${hdfs_relative_output})"
 
 
 echo "-----Cleaning up experiment files-----"

@@ -86,9 +86,9 @@ namespace API_backend.Services.Docker_Swarm
                 submit.StartInfo.ArgumentList.Add(Path.GetFileName(requestData.Algorithm.JarFilePath));
                 
                 // Add output paths
-                submit.StartInfo.ArgumentList.Add($"{_hadoopOutputBasePath}/data/{requestData.UserID}/{requestData.ExperimentID}");
+                submit.StartInfo.ArgumentList.Add($"{_hadoopOutputBasePath}");
                 submit.StartInfo.ArgumentList.Add(outputPath);
-                submit.StartInfo.ArgumentList.Add($"{requestData.ExperimentID}_{submissionDateTime}.txt");
+                submit.StartInfo.ArgumentList.Add($"data/{requestData.UserID}/{requestData.ExperimentID}/{requestData.ExperimentID}_{submissionDateTime}.txt");
 
                 // Get algorithm Parameters
                 List<(int, string)> parameters = new List<(int, string)>();
@@ -129,7 +129,7 @@ namespace API_backend.Services.Docker_Swarm
                     string line = dockerfile.ReadLine();
                     Match match = linePattern.Match(line);
                     if (line.Length != 0 && match.Value.Length == line.Length) // If the pattern matches the line, update the line
-                            line = $"COPY ./jars/{userId}/* opt/jars";
+                            line = $"COPY ./jars/{userId}/* /opt/jars";
                     
                     newFileContent = $"{newFileContent}{line}\n";
                 }
