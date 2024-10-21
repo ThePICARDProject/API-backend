@@ -16,13 +16,13 @@ using static System.Runtime.InteropServices.JavaScript.JSType;
 namespace API_backend.Services.Docker_Swarm
 {
     /// <summary>
-    /// Service for intiating experiments using Docker-Swarm.
+    /// Service for working with experiments and Docker-Swarm.
     /// </summary>
-    /// /// <remarks>
-    /// Implemented based off of bash scripts provided in the docker-swarm repository.
+    /// <remarks>
+    /// Implemented based off of scripts provided in the docker-swarm repository.
+    /// Modified for enhanced modularity and use within the API.
     /// </remarks>
     /// <seealso href="https://github.com/ThePICARDProject/docker-swarm/"/>
-    /// <seealso href="https://hadoop.apache.org/docs/r2.4.1/hadoop-project-dist/hadoop-hdfs/hdfs-default.xml"/>
     public class DockerSwarm
     {
         private readonly string _dataBasePath = "./data";
@@ -35,32 +35,37 @@ namespace API_backend.Services.Docker_Swarm
 
         public DockerSwarm() 
         {
-            // Verify the required paths exist in the directory
+            // Verify the data path exists
             if (!Directory.Exists(_dataBasePath))
                 throw new Exception($"Path {_dataBasePath} does not exist.");
+            
+            // If we do not have a results folder, create it
             if (!Directory.Exists(_experimentOutputBasePath))
                 Directory.CreateDirectory(_experimentOutputBasePath);
         }
 
         /// <summary>
+        /// Submits an experiment to Docker-Swarm based on the request data.
         /// </summary>
         /// <param name="requestData"></param>
-        /// <returns>Error returned from the process</returns>
-        /// <exception cref="ArgumentNullException"></exception>
-        /// <exception cref="FileNotFoundException"></exception>
-        public async Task<(int, string)> SubmitExperiment(ExperimentRequest requestData)
+        /// <returns></returns>
+        public async Task<(int?, string?)> SubmitExperiment(ExperimentRequest requestData)
         {
-            // Generate experiment directory and create it if it does not exist
-            string outputPath = Path.Combine(_experimentOutputBasePath, requestData.UserID, requestData.ExperimentID);
-            string dataBasePath = Path.Combine(_dataBasePath, requestData.UserID);
+            // Get the date and time of the submit request
             DateTime dateTime = DateTime.Now;
             string submissionDateTime = $"{dateTime.Year.ToString()}-{dateTime.Month.ToString()}-{dateTime.Day.ToString()}" +
                 $"_{dateTime.Hour.ToString()}-{dateTime.Minute.ToString()}-{dateTime.Second.ToString()}";
 
-            this.UpdateJarPath(requestData.UserID); // Update the Dockerfile
+            // Generate user/experiment specific directories
+            string outputPath = Path.Combine(_experimentOutputBasePath, requestData.UserID, requestData.ExperimentID);
+            string dataBasePath = Path.Combine(_dataBasePath, requestData.UserID);
+
+            // Update Docker images
+            this.UpdateDockerfile(requestData.UserID);
 
             // Create submit process
-            string error;
+            int? exitCode = null;
+            string error = null;
             using (Process submit = new Process())
             {
                 // Setup Process
@@ -94,7 +99,16 @@ namespace API_backend.Services.Docker_Swarm
                 List<(int, string)> parameters = new List<(int, string)>();
                 foreach (ExperimentAlgorithmParameterValue item in requestData.AlgorithmParameters.ParameterValues)
                     parameters.Add((item.AlgorithmParameter.DriverIndex, item.Value.ToString()));
-                //parameters.Sort();
+                
+                // Sort according to each values DriverIndex
+                parameters.Sort(delegate((int, string) item1, (int, string) item2)
+                {
+                    if (item1.Item1 > item2.Item1)
+                        return 1;
+                    if (item1.Item1 < item2.Item1)
+                        return -1;
+                    return 0;
+                });
 
                 // Add algorithm parameters
                 foreach ((int, string) arg in parameters)
@@ -102,17 +116,18 @@ namespace API_backend.Services.Docker_Swarm
 
                 // Start and wait for error
                 submit.Start();
-                
                 await submit.WaitForExitAsync();
+                exitCode = submit.ExitCode;
             }
-            return (-1, null);
+            return (exitCode, error);
         }
 
         /// <summary>
-        /// Updates the Dockerfile to reference Jar files for a specific userId.
+        /// Updates the docker images with user specific data.
         /// </summary>
         /// <param name="userId"></param>
-        private void UpdateJarPath(string userId)
+        /// <exception cref="FileNotFoundException"></exception>
+        private void UpdateDockerfile(string userId)
         {
             // Generate the path and the jar line regex pattern
             string dockerfilePath = "./docker-images/spark-hadoop/Dockerfile";
