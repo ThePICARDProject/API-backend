@@ -1,24 +1,42 @@
-#!/bin/bash
+##!/bin/bash
 
-$current_user=$1
-$docker_images_dir=$2
-$results_dir=$3
-$data_directory=$4
+current_user=$1
+
+advertise_ip=$2
+advertise_port=$3
+
+docker_images_dir=$4
+results_dir=$5
+data_directory=$6
+
+echo $current_user
 
 # Add user to docker group if not already
 echo "-----Checking if user is in the docker group-----"
-if ! groups $current_user | grep -qc 'docker' 
-then
-    echo "-----Adding user ${current_user} to docker group-----"
-    sudo usermod -aG docker $current_user
-fi
+if ! groups $current_user | grep -qc 'docker'
+then 
+    echo "Error: ${current_user} is not in the docker group." >&2
+    exit -1
+fi 
 
 # Check Docker-Swarm is active
 echo "-----Checking if docker swarm is active-----"
 if ! docker info | grep -qc 'Swarm: active'
 then
     echo "-----Initializing Docker Swarm-----"
-    docker swarm init --advertise-addr "0.0.0.0:0000" #change this accordingly
+    if [[ $advertise_ip == "-1" && $advertise_port == "-1" ]] ; then
+        echo "-----Initializing Docker Swarm with address ${advertise_ip}:$advertise_port-----"
+        docker swarm init | $response
+    else
+        echo "-----Initializing Docker Swarm with default address-----"
+        docker swarm init --advertise-addr "${advertise_ip}:$advertise_port" | $response
+    fi
+
+    if ! $response | grep -c "Swarm initialized"
+    then
+        echo "Error: Failed to initialize swarm." >&2
+        exit -2
+    fi 
 fi
 
 # Check we have the manager node added
@@ -34,7 +52,8 @@ if
 echo "-----Setting docker-images permissions-----"
 if [ ! -d $docker_images_dir] 
 then
-    exit 1
+    echo "Error: Docker-images directory does not exist." >&2
+    exit -3
 else
     setfacl -Rm u:$current_user:rwx $docker_images_dir
 fi
@@ -43,7 +62,8 @@ fi
 echo "-----Setting data permissions-----"
 if [ ! -d $data_directory]
 then
-    exit 2
+    echo "Error: Data directory does not exist." >&2
+    exit -4
 else
     setfacl -Rm u:$current_user:rwx $data_dir
 fi

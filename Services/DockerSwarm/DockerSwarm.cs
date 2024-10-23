@@ -6,6 +6,7 @@ using Microsoft.Extensions.Options;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Diagnostics.Eventing.Reader;
+using System.Linq.Expressions;
 using System.Net;
 using System.Reflection;
 using System.Text;
@@ -29,26 +30,36 @@ namespace API_backend.Services.Docker_Swarm
     {
         private readonly string _dataBasePath = "./data";
         private readonly string _experimentOutputBasePath = "./results";
-        private readonly string _dockerImagesBasePath = "./docker-images";
+        private readonly string _dockerImagesBasePath = "../docker-images";
         private readonly string _hadoopOutputBasePath = "hdfs://master:8020";
 
         public string DataBasePath { get { return _dataBasePath; } }
         public string ExperimentOutputBasePath { get  { return _experimentOutputBasePath; } }
         public string HadoopOutputBasePath {  get { return _hadoopOutputBasePath; } }
 
-        public DockerSwarm() 
+        public DockerSwarm() : this("-1", "-1") { }
+
+        public DockerSwarm(string advertiseIP, string advertisePort)
         {
+            int errorCode;
             using (Process dockerSwarmInit = new Process())
             {
-                dockerSwarmInit.StartInfo.FileName = "./scripts/dockerswarm-init.sh";
+                dockerSwarmInit.StartInfo.FileName = "./scripts/dockerswarm_init.sh";
                 dockerSwarmInit.StartInfo.ArgumentList.Add(Environment.UserName);
+                dockerSwarmInit.StartInfo.ArgumentList.Add(advertiseIP);
+                dockerSwarmInit.StartInfo.ArgumentList.Add(advertisePort);
                 dockerSwarmInit.StartInfo.ArgumentList.Add(_dockerImagesBasePath);
                 dockerSwarmInit.StartInfo.ArgumentList.Add(_experimentOutputBasePath);
                 dockerSwarmInit.StartInfo.ArgumentList.Add(_dataBasePath);
 
                 dockerSwarmInit.Start();
                 dockerSwarmInit.WaitForExit();
+                errorCode = dockerSwarmInit.ExitCode;
+           
             }
+
+            if (errorCode == 255)
+                throw new Exception("An unexpected error occured.");
         }
 
         /// <summary>
