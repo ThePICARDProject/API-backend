@@ -1,5 +1,5 @@
 /*
- * Need GET request to receive all algortithms (ids & names) for current logged in user
+ * Need GET request to receive all Results (ids & names) for current logged in user
  * Model after getDataSetByID getrequest
  */
 using System.Diagnostics;
