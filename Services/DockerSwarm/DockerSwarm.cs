@@ -29,6 +29,7 @@ namespace API_backend.Services.Docker_Swarm
     {
         private readonly string _dataBasePath = "./data";
         private readonly string _experimentOutputBasePath = "./results";
+        private readonly string _dockerImagesBasePath = "./docker-images";
         private readonly string _hadoopOutputBasePath = "hdfs://master:8020";
 
         public string DataBasePath { get { return _dataBasePath; } }
@@ -37,13 +38,17 @@ namespace API_backend.Services.Docker_Swarm
 
         public DockerSwarm() 
         {
-            // Verify the data path exists
-            if (!Directory.Exists(_dataBasePath))
-                throw new Exception($"Path {_dataBasePath} does not exist.");
-            
-            // If we do not have a results folder, create it
-            if (!Directory.Exists(_experimentOutputBasePath))
-                Directory.CreateDirectory(_experimentOutputBasePath);
+            using (Process dockerSwarmInit = new Process())
+            {
+                dockerSwarmInit.StartInfo.FileName = "./scripts/dockerswarm-init.sh";
+                dockerSwarmInit.StartInfo.ArgumentList.Add(Environment.UserName);
+                dockerSwarmInit.StartInfo.ArgumentList.Add(_dockerImagesBasePath);
+                dockerSwarmInit.StartInfo.ArgumentList.Add(_experimentOutputBasePath);
+                dockerSwarmInit.StartInfo.ArgumentList.Add(_dataBasePath);
+
+                dockerSwarmInit.Start();
+                dockerSwarmInit.WaitForExit();
+            }
         }
 
         /// <summary>
