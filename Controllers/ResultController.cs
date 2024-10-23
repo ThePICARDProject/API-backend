@@ -1,54 +1,75 @@
+/*
+ * Need GET request to receive all algortithms (ids & names) for current logged in user
+ * Model after getDataSetByID getrequest
+ */
+using System.Diagnostics;
+using API_Backend.Data;
 using API_Backend.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using API_backend.Services.FileProcessing;
+using Microsoft.EntityFrameworkCore;
 
 namespace API_Backend.Controllers
 {
     [Authorize]
     [ApiController]
-    [Route("api/result")]
-    public class ResultController(ExperimentService experimentService, ILogger<ResultController> logger)
+    [Route("api/results")]
+    public class ResultController(
+        ApplicationDbContext dbContext,
+        //IWebHostEnvironment environment,
+        //IDatasetService ResultService,
+        ILogger<ResultController> logger)
         : ControllerBase
     {
         /// <summary>
-        /// Gets the processed results of an experiment.
+        /// Retrieves a Results set by its Users ID.
         /// </summary>
-        [HttpGet("data/{experimentId}")]
-        public async Task<IActionResult> GetProcessedResults(string experimentId)
+        /// <param name="id">The ID of the Result.</param>
+        /// <returns>Returns the Result IDs and Names for given User.</returns>
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetResultById(int id)
         {
+            // Check current user 
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            logger.LogInformation("User {UserID} is requesting results for ExperimentID {ExperimentID}", userId, experimentId);
+            logger.LogInformation("User {userID} Retrieving result with ID {ResultID}", userId, id);
 
-            var experiment = await experimentService.GetExperimentByIdAsync(experimentId);
+            // Fetch the ResultSet from the database
+            var ResultSet = await dbContext.Results
+                                              .Where(a => a.UserID == userId)  // Filter by user ID
+                                              .ToListAsync();  // Fetch all matching records as a list
 
-            if (experiment is not { Status: ExperimentStatus.Finished })
+
+            // Check if the ResultSet is empty, return 404
+            if (ResultSet == null)
             {
-                logger.LogWarning("Results not available for ExperimentID {ExperimentID}", experimentId);
-                return NotFound(new { message = "Results not available or experiment not completed." });
+                logger.LogWarning("Results for user with ID: {ID} not found for user's request.", id);
+                return NotFound(new { message = "Results not found." });
             }
 
-            // Ensure the requesting user is the owner of the experiment
-            if (experiment.UserID != userId)
+            //iterate through each received Result in list and verify its assigned userID
+            foreach (var result in ResultSet)
             {
-                logger.LogWarning("User {UserID} is not authorized to access results for ExperimentID {ExperimentID}", userId, experimentId);
-                return Forbid();
+                if (result.UserID != userId)
+                {
+                    // Log a warning and return 403 Forbidden for unauthorized access
+                    logger.LogWarning("User {userID} is not authorized to access this Result {ResultID}", userId, result.ResultID);
+                    return Forbid();
+                }
             }
 
-            // Retrieve result data
-            var result = await experimentService.GetExperimentResultAsync(experimentId);
+            var listOfResultIDsAndNames = ResultSet
+                .Select(a => new { a.ResultID, a.ResultName })  // Pair ResultID with Name
+                .ToList();
 
-            if (result == null)
-            {
-                logger.LogWarning("Experiment results not found for ExperimentID {ExperimentID}", experimentId);
-                return NotFound(new { message = "Experiment results not found." });
-            }
+            // Convert the list of Result IDs and names to a formatted string
+            var ResultIDNameString = string.Join(", ", listOfResultIDsAndNames.Select(a => $"{a.ResultID} ({a.ResultName})"));
 
-            logger.LogInformation("Returning results for ExperimentID {ExperimentID}", experimentId);
+            //now log authorization of user to access all Results in returned set, with created a string 
+            logger.LogInformation("User {UserID} is authorized to access all Results in returned set: {resultIDNameString}", userId, ResultIDNameString);
 
-            // Return the result data
-            return Ok(new { experimentId, result });
+            return Ok(listOfResultIDsAndNames);
         }
     }
 }
