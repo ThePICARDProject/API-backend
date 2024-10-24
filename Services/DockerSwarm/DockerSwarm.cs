@@ -41,9 +41,13 @@ namespace API_backend.Services.Docker_Swarm
 
         public DockerSwarm(string advertiseIP, string advertisePort)
         {
+            string error = "";
             int errorCode;
             using (Process dockerSwarmInit = new Process())
             {
+                dockerSwarmInit.StartInfo.RedirectStandardError = true;
+                dockerSwarmInit.StartInfo.UseShellExecute = false;
+
                 dockerSwarmInit.StartInfo.FileName = "./scripts/dockerswarm_init.sh";
                 dockerSwarmInit.StartInfo.ArgumentList.Add(Environment.UserName);
                 dockerSwarmInit.StartInfo.ArgumentList.Add(advertiseIP);
@@ -52,14 +56,20 @@ namespace API_backend.Services.Docker_Swarm
                 dockerSwarmInit.StartInfo.ArgumentList.Add(_experimentOutputBasePath);
                 dockerSwarmInit.StartInfo.ArgumentList.Add(_dataBasePath);
 
+
+                dockerSwarmInit.ErrorDataReceived += (sender, args) => error += args.Data ?? "";
                 dockerSwarmInit.Start();
+
+                dockerSwarmInit.BeginErrorReadLine();
+
+
                 dockerSwarmInit.WaitForExit();
+                
                 errorCode = dockerSwarmInit.ExitCode;
-           
             }
 
-            if (errorCode == 255)
-                throw new Exception("An unexpected error occured.");
+            if (errorCode == 1)
+                throw new Exception(error);
         }
 
         /// <summary>

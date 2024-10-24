@@ -7,15 +7,11 @@
       "RelativeMoniker": "D:0:0:{0019D4AE-BE09-4833-81C1-0506B3B220E4}|API-backend.csproj|solutionrelative:services\\dockerswarm\\scripts\\dockerswarm_init.sh||{3B902123-F8A7-4915-9F01-361F908088D0}"
     },
     {
+      "AbsoluteMoniker": "D:0:0:{7608C21E-4609-486B-B554-9FFB3F27D03E}|..\\..\\FileProcessorTest\\FileProcessorTest\\FileProcessorTest.csproj|c:\\users\\justin\\source\\repos\\fileprocessortest\\fileprocessortest\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
       "AbsoluteMoniker": "D:0:0:{0019D4AE-BE09-4833-81C1-0506B3B220E4}|API-backend.csproj|c:\\users\\justin\\source\\repos\\thepicardproject\\api-backend\\services\\dockerswarm\\dockerswarm.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{0019D4AE-BE09-4833-81C1-0506B3B220E4}|API-backend.csproj|solutionrelative:services\\dockerswarm\\dockerswarm.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{0019D4AE-BE09-4833-81C1-0506B3B220E4}|API-backend.csproj|c:\\users\\justin\\source\\repos\\thepicardproject\\api-backend\\services\\dockerswarm\\scripts\\submit-experiment.sh||{3B902123-F8A7-4915-9F01-361F908088D0}",
-      "RelativeMoniker": "D:0:0:{0019D4AE-BE09-4833-81C1-0506B3B220E4}|API-backend.csproj|solutionrelative:services\\dockerswarm\\scripts\\submit-experiment.sh||{3B902123-F8A7-4915-9F01-361F908088D0}"
-    },
-    {
-      "AbsoluteMoniker": "D:0:0:{7608C21E-4609-486B-B554-9FFB3F27D03E}|..\\..\\FileProcessorTest\\FileProcessorTest\\FileProcessorTest.csproj|c:\\users\\justin\\source\\repos\\fileprocessortest\\fileprocessortest\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
@@ -39,7 +35,7 @@
               "RelativeDocumentMoniker": "Services\\DockerSwarm\\scripts\\dockerswarm_init.sh",
               "ToolTip": "C:\\Users\\Justin\\source\\repos\\ThePICARDProject\\API-backend\\Services\\DockerSwarm\\scripts\\dockerswarm_init.sh",
               "RelativeToolTip": "Services\\DockerSwarm\\scripts\\dockerswarm_init.sh",
-              "ViewState": "AQIAAAAAAAAAAAAAAAAAADIAAAAqAAAA",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAAAUAAAARAAAA",
               "Icon": "00000000-0000-0000-0000-000000000000.000000|",
               "WhenOpened": "2024-10-23T17:28:57.086Z",
               "EditorCaption": ""
@@ -47,39 +43,28 @@
             {
               "$type": "Document",
               "DocumentIndex": 2,
-              "Title": "submit-experiment.sh",
-              "DocumentMoniker": "C:\\Users\\Justin\\source\\repos\\ThePICARDProject\\API-backend\\Services\\DockerSwarm\\scripts\\submit-experiment.sh",
-              "RelativeDocumentMoniker": "Services\\DockerSwarm\\scripts\\submit-experiment.sh",
-              "ToolTip": "C:\\Users\\Justin\\source\\repos\\ThePICARDProject\\API-backend\\Services\\DockerSwarm\\scripts\\submit-experiment.sh",
-              "RelativeToolTip": "Services\\DockerSwarm\\scripts\\submit-experiment.sh",
-              "ViewState": "AQIAABgAAAAAAAAAAAAAACIAAAAAAAAA",
-              "Icon": "00000000-0000-0000-0000-000000000000.000000|",
-              "WhenOpened": "2024-10-23T17:14:17.576Z"
-            },
-            {
-              "$type": "Document",
-              "DocumentIndex": 1,
               "Title": "DockerSwarm.cs",
               "DocumentMoniker": "C:\\Users\\Justin\\source\\repos\\ThePICARDProject\\API-backend\\Services\\DockerSwarm\\DockerSwarm.cs",
               "RelativeDocumentMoniker": "Services\\DockerSwarm\\DockerSwarm.cs",
               "ToolTip": "C:\\Users\\Justin\\source\\repos\\ThePICARDProject\\API-backend\\Services\\DockerSwarm\\DockerSwarm.cs",
               "RelativeToolTip": "Services\\DockerSwarm\\DockerSwarm.cs",
-              "ViewState": "AQIAACQAAAAAAAAAAAAAACoAAAAJAAAA",
+              "ViewState": "AQIAAB4AAAAAAAAAAAAAAEQAAAANAAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2024-10-23T14:02:02.022Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
+              "DocumentIndex": 1,
               "Title": "Program.cs",
               "DocumentMoniker": "C:\\Users\\Justin\\source\\repos\\FileProcessorTest\\FileProcessorTest\\Program.cs",
               "RelativeDocumentMoniker": "..\\..\\FileProcessorTest\\FileProcessorTest\\Program.cs",
               "ToolTip": "C:\\Users\\Justin\\source\\repos\\FileProcessorTest\\FileProcessorTest\\Program.cs",
               "RelativeToolTip": "..\\..\\FileProcessorTest\\FileProcessorTest\\Program.cs",
-              "ViewState": "AQIAAA8AAAAAAAAAAAAAAB0AAAAmAAAA",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAABAAAAA2AAAA",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2024-10-23T13:36:56.805Z"
+              "WhenOpened": "2024-10-23T13:36:56.805Z",
+              "EditorCaption": ""
             }
           ]
         }
