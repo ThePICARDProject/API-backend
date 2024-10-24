@@ -8,7 +8,7 @@
         public string? ColorDimension { get; set; }
         public string? FacetDimension { get; set; }
         public string GraphType { get; set; } = null!;
-        public string? OutputFileName { get; set; }
+        public string OutputFileName { get; set; } = null!;
 
 
     }

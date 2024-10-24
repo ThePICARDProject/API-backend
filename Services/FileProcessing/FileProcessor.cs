@@ -10,8 +10,14 @@ using System.Numerics;
 using System.Text;
 using static System.Net.Mime.MediaTypeNames;
 using static System.Runtime.InteropServices.JavaScript.JSType;
+﻿using System.Diagnostics;
+using Org.BouncyCastle.Bcpg.Sig;
+using System.Security.AccessControl;
+using System.Security.Principal;
+using Microsoft.AspNetCore.Routing.Constraints;
 
-namespace API_backend.Services.FileProcessing
+
+namespace API_Backend.Services.FileProcessing
 {
     /// <summary>
     /// Service for aggregating experiment data and parsing the data into a .csv file.
@@ -28,36 +34,41 @@ namespace API_backend.Services.FileProcessing
         {
             _env = env;
         }
+        private readonly string _outputBaseDirectory = "exports";
 
-        /// <summary>
-        /// Aggregates all raw data files existing in a local filesystem folder into a single output file.
-        /// Data from each trial results file is given a header with the filename corresponsing to the 
-        /// trial that specific output came from.
-        /// 
-        /// </summary>
-        /// <param name="userId"></param>
-        /// <param name="algorithmName"></param>
-        /// <param name="experimentNumber"></param>
-        /// <returns></returns>
-        /// <exception cref="ArgumentNullException"></exception>
-        public void AggregateData(string survey, string algorithmName, string timestamp, string resultsDirectory)
+        public FileProcessor()
         {
-            // Check if out resultsDirectory exists
-            if (!Directory.Exists(resultsDirectory))
-                throw new DirectoryNotFoundException($"The directory \"{resultsDirectory}\" was not found");
+        }
 
-            // Generate an output file path and get all results files
-            string outputPath = Path.Combine(resultsDirectory, $"{survey}_{algorithmName}_{timestamp}.txt");
-            var resultsFiles = Directory.EnumerateFiles(resultsDirectory);
-            
-            // For each results file, append the results to the aggregate file
-            foreach (var filePath in resultsFiles)
+        public string AggregateData(string userId, string requestId, List<string> filePaths)
+        {
+
+            // Verify arguments
+            if (string.IsNullOrEmpty(userId))
             {
-                List<string> lines = File.ReadLines(Path.Combine(resultsDirectory, filePath)).ToList();
-                lines.Insert(0, $"---------------------------------------------------------------------------\nOutput Results for { Path.GetFileName(filePath)}\n---------------------------------------------------------------------------\n");
-                File.AppendAllLines(outputPath, lines);
-                File.Delete(Path.Combine(resultsDirectory, filePath));
+                throw new ArgumentNullException(nameof(userId));
             }
+
+            // Construct output path
+            string exportPath = Path.Combine(_outputBaseDirectory, userId, requestId);
+            if (Directory.Exists(exportPath))
+                throw new Exception($"Export with the Id {requestId} already exists.");
+            else
+            {
+                this.CreateDirectories(exportPath);
+            }
+
+            // For each results file, append the results to the aggregate file
+            exportPath = Path.Combine(exportPath, $"{requestId}.txt");
+            foreach (var filePath in filePaths)
+            {
+                List<string> lines = File.ReadLines(filePath).ToList();
+                lines.Insert(0, $"-----\nOutput Results for {Path.GetFileName(filePath)}\n-----\n");
+                File.AppendAllLines(exportPath, lines);
+            }
+
+            // Return the path of the saved file
+            return exportPath;
         }
 
         /// <summary>
@@ -71,62 +82,44 @@ namespace API_backend.Services.FileProcessing
             if (!Directory.Exists(outputPath))
                 throw new DirectoryNotFoundException("Output directory not found.");
 
-            using (StreamReader output = new StreamReader(Path.Combine(resultsPath)))
+            try
             {
-
-                // Will need to be changed to be dynamic
-                // Print header
-                string header = "Survey,Classifier,Multiclass,Executors,Trees,Labeled,Recall,Precision,FPR,F1,F4,Time.Split,Time.Train,Time.Test,Repitition,SupervisedTrees,Semi-SupervisedTrees,Ratio.S-SSL\n";
-                
-                string splittingTimeId = "SplittingTime";
-                double splittingTime;
-
-                string trainingTimeId = "TrainingTime";
-                double trainingTime;
-
-                string testingTimeId = "TestingTime";
-                double testingTime;
-
-                string recallId = "Recall(1.0)";
-                double recall;
-
-                string precisionId = "Precision(1.0)";
-                double precision;
-
-                while(!output.EndOfStream)
+                using (StreamReader output = new StreamReader(Path.Combine(resultsPath)))
                 {
-                    string line = output.ReadLine();
-                    if (line.ToUpper().Substring(0, splittingTimeId.Length) == splittingTimeId.ToUpper())
-                    {
-                        splittingTime = Double.Parse(line.Split('=')[1].Trim());
-                        Console.Write(splittingTime);
-                    }
-                    else if (line.ToUpper().Substring(0, trainingTimeId.Length) == splittingTimeId.ToUpper())
-                    {
-                        trainingTime = Double.Parse(line.Split('=')[1].Trim());
-                        Console.Write(trainingTime);
+                    // Print header
+                    string header = "Survey,Classifier,Multiclass,Executors,Trees,Labeled,Recall,Precision,FPR,F1,F4,Time.Split,Time.Train,Time.Test,Repitition,SupervisedTrees,Semi-SupervisedTrees,Ratio.S-SSL\n";
 
-                    }
-                    else if (line.ToUpper().Substring(0, testingTimeId.Length) == testingTimeId.ToUpper())
-                    {
-                        testingTime = Double.Parse(line.Split('=')[1].Trim());
-                        Console.Write(testingTime);
+                    string splittingTimeId = "SplittingTime";
+                    double splittingTime;
 
-                    }
-                    else if (line.ToUpper().Substring(0, precisionId.Length) == precisionId.ToUpper())
-                    {
-                        precision = Double.Parse(line.Split("=")[1].Trim());
-                        Console.Write(precision);
+                    string trainingTimeId = "TrainingTime";
+                    double trainingTime;
 
-                    }
-                    else if (line.ToUpper().Substring(0, recallId.Length) == recallId.ToUpper())
-                    {
-                        recall = Double.Parse(line.Split("=")[1].Trim());
-                        Console.Write(recall);
+                    string testingTimeId = "TestingTime";
+                    double testingTime;
 
+                    while (!output.EndOfStream)
+                    {
+                        string line = output.ReadLine();
+                        if (line.ToUpper().Substring(0, splittingTimeId.Length) == splittingTimeId.ToUpper())
+                        {
+                            splittingTime = Double.Parse(line.Split('=')[1].Trim());
+                        }
+                        else if (line.ToUpper().Substring(0, trainingTimeId.Length) == splittingTimeId.ToUpper())
+                        {
+                            trainingTime = Double.Parse(line.Split('=')[1].Trim());
+                        }
+                        else if (line.ToUpper().Substring(0, testingTimeId.Length) == testingTimeId.ToUpper())
+                        {
+                            testingTime = Double.Parse(line.Split('=')[1].Trim());
+                        }
                     }
+
                 }
-                
+            }
+            catch (Exception ex)
+            {
+                throw;
             }
             return outputPath;
         }
@@ -230,3 +223,17 @@ namespace API_backend.Services.FileProcessing
 // "TestingTime"
 // "Recall(1.0)"
 // "Precision(1.0)"
+    
+        private void CreateDirectories(string filePath)
+        {
+            using(Process permissions = new Process())
+            {
+                permissions.StartInfo.FileName = "./scripts/create_export_directory.sh";
+                permissions.StartInfo.Arguments = $"./{filePath}";
+
+                permissions.Start();
+                permissions.WaitForExit();
+            }
+        }
+    }
+}

@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <title>Picard Web UI Ingress</title>
+        <style>          
+            body {
+                font-family: sans-serif;
+                margin: 0;
+            }
+
+            header {
+                background-color: #0f2d53;
+                display: flex;
+                padding: 0 40px;
+            }
+
+            h1 {
+                font-size: 3rem;
+                color: #e7aa28;
+            }
+
+            main {
+                display: flex;
+                flex-direction: column;
+                padding: 10px 30px;
+                gap: 10px;
+            }
+
+            .links-tray {
+                display: flex;
+                flex-direction: column;
+                gap: 10px;
+                font-size: 1.4rem;
+                margin: 20px 0px;
+            }
+
+            .links-tray a:before {
+                content:"• ";
+            }
+
+            p {
+                margin: 0;
+            }
+        </style>
+    </head>
+    <body>
+        <header>
+            <h1>~ The Picard ~</h1>
+        </header>
+        <main>
+            <div class="links-tray">
+                <p>Where would you like to go</p>
+                <a href="/master:4040/">Spark dashboard</a>
+                <a href="/master:8088/">Hadoop dashboard</a>
+                <a href="/master:9870/">HDFS dashboard</a>
+                <a href="/master:9870/explorer.html#/">HDFS dashboard - browse filesystem</a>
+            </div>
+            <p>Note: 502 gateway error indicates that the service was not reachable, likely because it has not started yet</p>
+            <p>The spark dashboard only runs while a spark job is running - it will return 502 before a job is submitted and after it finishes</p>
+        </main>
+    </body>
+</html>
