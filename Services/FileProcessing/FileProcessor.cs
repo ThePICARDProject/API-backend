@@ -131,19 +131,28 @@ namespace API_backend.Services.FileProcessing
             return outputPath;
         }
 
+        // TODO: sqlQuery function will take a set of parameters and form an SQL query to search db
+        public string sqlQuery(List<string> queryParams)
+        {
+
+            return "";
+        }
 
 
-        public void GetCsvTest(List<string> desiredMetrics, string inputFile)
+
+        public void GetCsvTest(List<string> desiredMetrics, string aggregatedDataFile)
         {
 
             // TODO: add SQL query, store list of .txt files, create loop appending csv file with values of each file
             // Simulate successful SQL query by storing all three example results in a list and looping
 
+            // TODO: change to accomodate aggregate data
+
 
             // Get the base directory of the application
             var baseDirectory = _env.ContentRootPath;
             string inputAppendPath = "\\Services\\FileProcessing\\Test Files\\";
-            string inputFilePath = baseDirectory + inputAppendPath + inputFile;
+            string inputFilePath = baseDirectory + inputAppendPath + aggregatedDataFile;
 
             string outputFile = "output1.csv"; // TODO: replace with output file from function parameter
 

@@ -21,11 +21,23 @@ namespace API_backend.Controller
             _fileProcessor = fileProcessor;
         }
 
+
+        // TODO: update to handle other status codes
         [HttpPost("createCsv")]
         public IActionResult csvCreate([FromBody] List<string> desiredMetrics, string inputFile)
         {
             _fileProcessor.GetCsvTest(desiredMetrics, inputFile);
             
+            return Ok();
+        }
+
+
+        // TODO: update to handle other status codes
+        [HttpPost("sqlQuery")]
+        public IActionResult sqlQuery([FromBody] List<string> queryParams)
+        {
+            _fileProcessor.sqlQuery(queryParams);
+
             return Ok();
         }
     }
