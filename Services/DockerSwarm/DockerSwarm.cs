@@ -1,6 +1,6 @@
-﻿using API_backend.Models;
-using API_backend.Services.Docker_Swarm;
-using API_backend.Services.FileProcessing;
+﻿using API_Backend.Models;
+using API_Backend.Services.Docker_Swarm;
+using API_Backend.Services.FileProcessing;
 using API_Backend.Models;
 using Microsoft.Extensions.Options;
 using System.Collections.ObjectModel;
@@ -16,7 +16,7 @@ using System.Xml;
 using static System.Net.Mime.MediaTypeNames;
 using static System.Runtime.InteropServices.JavaScript.JSType;
 
-namespace API_backend.Services.Docker_Swarm
+namespace API_Backend.Services.Docker_Swarm
 {
     /// <summary>
     /// Service for working with experiments and Docker-Swarm.

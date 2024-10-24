@@ -36,9 +36,9 @@ namespace API_Backend.Services.FileProcessing
         }
         private readonly string _outputBaseDirectory = "exports";
 
-        public FileProcessor()
-        {
-        }
+        //public FileProcessor()
+        //{
+        //}
 
         public string AggregateData(string userId, string requestId, List<string> filePaths)
         {
@@ -215,18 +215,10 @@ namespace API_Backend.Services.FileProcessing
             }
             return;
         }
-    }
-}
 
-// "SplittingTime",
-// "TrainingTime",
-// "TestingTime"
-// "Recall(1.0)"
-// "Precision(1.0)"
-    
         private void CreateDirectories(string filePath)
         {
-            using(Process permissions = new Process())
+            using (Process permissions = new Process())
             {
                 permissions.StartInfo.FileName = "./scripts/create_export_directory.sh";
                 permissions.StartInfo.Arguments = $"./{filePath}";
@@ -237,3 +229,10 @@ namespace API_Backend.Services.FileProcessing
         }
     }
 }
+
+// "SplittingTime",
+// "TrainingTime",
+// "TestingTime"
+// "Recall(1.0)"
+// "Precision(1.0)"
+    

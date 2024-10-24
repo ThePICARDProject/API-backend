@@ -1,4 +1,4 @@
-﻿namespace API_backend.Models
+﻿namespace API_Backend.Models
 {
     public class VisualizationRequest
     {

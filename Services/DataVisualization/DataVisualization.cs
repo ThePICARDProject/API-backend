@@ -1,10 +1,10 @@
-﻿using API_backend.Models;
+﻿using API_Backend.Models;
 using Microsoft.AspNetCore.Http;
 using System;
 using System.Diagnostics;
 using System.Text;
 
-namespace API_backend.Services.DataVisualization
+namespace API_Backend.Services.DataVisualization
 {
     public class DataVisualization
     {

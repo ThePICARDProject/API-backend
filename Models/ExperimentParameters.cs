@@ -2,7 +2,7 @@
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
 using Microsoft.Extensions.Diagnostics.HealthChecks;
 
-namespace API_backend.Models
+namespace API_Backend.Models
 {
     /// <summary>
     /// All experiment parameters for submit.

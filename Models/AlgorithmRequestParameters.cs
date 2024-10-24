@@ -2,7 +2,7 @@
 using System.ComponentModel.DataAnnotations.Schema;
 using System.ComponentModel.DataAnnotations;
 
-namespace API_backend.Models
+namespace API_Backend.Models
 {
     public class AlgorithmRequestParameters
     {

@@ -1,9 +1,9 @@
-﻿using API_backend.Models;
-using API_backend.Services.DataVisualization;
+﻿using API_Backend.Models;
+using API_Backend.Services.DataVisualization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
-namespace API_backend.Controllers
+namespace API_Backend.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]

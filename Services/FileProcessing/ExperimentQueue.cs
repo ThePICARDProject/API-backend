@@ -2,9 +2,9 @@
 
 using API_Backend.Models;
 using System.Threading.Channels;
-using API_backend.Models;
+using API_Backend.Models;
 
-namespace API_backend.Services.FileProcessing
+namespace API_Backend.Services.FileProcessing
 {
     /// <summary>
     /// Implementation of a background task queue for experiments.

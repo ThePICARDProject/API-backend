@@ -1,9 +1,9 @@
-using API_backend.Services.Docker_Swarm;
-using API_backend.Services.DataVisualization;
+using API_Backend.Services.Docker_Swarm;
+using API_Backend.Services.DataVisualization;
 using API_Backend.Data;
 using API_Backend.Models;
-using API_backend.Logging;
-using API_backend.Services.FileProcessing;
+using API_Backend.Logging;
+using API_Backend.Services.FileProcessing;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Authentication.OAuth;
@@ -14,7 +14,7 @@ using Serilog.Events;
 using Serilog.Sinks.MariaDB.Extensions;
 using System.Reflection;
 using System.Security.Claims;
-using API_backend.Models;
+using API_Backend.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -49,6 +49,8 @@ builder.Services.AddScoped<DataVisualization>();
 builder.Services.AddScoped<IDatasetService, DatasetService>();
 builder.Services.AddHostedService<ExperimentWorkerService>();
 builder.Services.AddSingleton<IExperimentQueue, ExperimentQueue>();
+builder.Services.AddScoped<FileProcessor>();
+
 
 // Register DbContext with MySQL
 builder.Services.AddDbContext<ApplicationDbContext>(options =>

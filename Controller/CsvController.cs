@@ -3,10 +3,10 @@ using Microsoft.OpenApi.Models;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authorization;
 using System.Text.Json.Nodes;
-using API_backend.Services.FileProcessing;
+using API_Backend.Services.FileProcessing;
 using Microsoft.AspNetCore.Mvc.Rendering;
 
-namespace API_backend.Controller
+namespace API_Backend.Controller
 {
     [ApiController]
     [Route("[controller]")]
