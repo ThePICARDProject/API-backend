@@ -43,4 +43,8 @@
     <Compile Remove="Logging\UserIdEnricher.cs" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Include="FileProcessorTest.csproj" />
+  </ItemGroup>
+
 </Project>

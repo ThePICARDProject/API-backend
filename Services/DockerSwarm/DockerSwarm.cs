@@ -94,7 +94,7 @@ namespace API_backend.Services.Docker_Swarm
 
             // Create submit process
             int? exitCode = null;
-            string error = null;
+            string error = "";
             using (Process submit = new Process())
             {
                 // Setup Process
@@ -146,6 +146,11 @@ namespace API_backend.Services.Docker_Swarm
 
                 // Start and wait for error
                 submit.Start();
+                submit.ErrorDataReceived += (sender, args) => error += args.Data ?? "";
+                submit.Start();
+
+                submit.BeginErrorReadLine();
+
                 await submit.WaitForExitAsync();
                 exitCode = submit.ExitCode;
             }
