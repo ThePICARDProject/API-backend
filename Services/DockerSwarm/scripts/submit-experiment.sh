@@ -59,10 +59,9 @@ docker compose build | tee -a $log_path
 echo "-----Attempting to add nodes-----"
 docker stack deploy -c docker-compose.yml "$(basename $(pwd) | sed 's/\./_/g')" | tee -a $log_path
 docker service scale "$(basename $(pwd) | sed 's/\./_/g')_worker"=0 | tee -a $log_path
-
 docker service update --mount-add 'type=volume,source=datanode-vol-SERV{{.Service.Name}}-NODE{{.Node.ID}}-TASK{{.Task.Slot}},target=/opt/hadoop/data' "$(basename $(pwd) | sed 's/\./_/g')_worker" | tee -a $log_path
 
-sleep 15
+sleep 30
 
 echo "-----Attempting to setup hadoop-----" | tee -a $log_path
 docker exec "$(docker inspect --format '{{.Status.ContainerStatus.ContainerID}}' "$(docker service ps -q "$(basename $(pwd) | sed 's/\./_/g')_master" --filter desired-state=running)")" \

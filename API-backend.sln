@@ -5,7 +5,7 @@ VisualStudioVersion = 17.10.35122.118
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "API-backend", "API-backend.csproj", "{0019D4AE-BE09-4833-81C1-0506B3B220E4}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FileProcessorTest", "..\..\FileProcessorTest\FileProcessorTest\FileProcessorTest.csproj", "{45030366-5787-4A36-A943-C65CA0066405}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "DockerSwarmTest", "..\..\FileProcessorTest\DockerSwarmTest\DockerSwarmTest.csproj", "{FD375F97-00D3-40DF-B0CA-355CF24209D3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -17,10 +17,10 @@ Global
 		{0019D4AE-BE09-4833-81C1-0506B3B220E4}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0019D4AE-BE09-4833-81C1-0506B3B220E4}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0019D4AE-BE09-4833-81C1-0506B3B220E4}.Release|Any CPU.Build.0 = Release|Any CPU
-		{45030366-5787-4A36-A943-C65CA0066405}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{45030366-5787-4A36-A943-C65CA0066405}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{45030366-5787-4A36-A943-C65CA0066405}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{45030366-5787-4A36-A943-C65CA0066405}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FD375F97-00D3-40DF-B0CA-355CF24209D3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FD375F97-00D3-40DF-B0CA-355CF24209D3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FD375F97-00D3-40DF-B0CA-355CF24209D3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FD375F97-00D3-40DF-B0CA-355CF24209D3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
