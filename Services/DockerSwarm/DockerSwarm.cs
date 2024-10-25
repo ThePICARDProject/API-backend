@@ -48,7 +48,8 @@ namespace API_Backend.Services.Docker_Swarm
                 dockerSwarmInit.StartInfo.RedirectStandardError = true;
                 dockerSwarmInit.StartInfo.UseShellExecute = false;
 
-                dockerSwarmInit.StartInfo.FileName = "./scripts/dockerswarm_init.sh";
+                dockerSwarmInit.StartInfo.FileName = @"C:/Users/jacom/Documents/Fall 2024/CSEE 481/API-backend/Services/DockerSwarm/scripts/dockerswarm_init.sh"; // TODO: revert back to relative path
+
                 dockerSwarmInit.StartInfo.ArgumentList.Add(Environment.UserName);
                 dockerSwarmInit.StartInfo.ArgumentList.Add(advertiseIP);
                 dockerSwarmInit.StartInfo.ArgumentList.Add(advertisePort);
@@ -98,7 +99,8 @@ namespace API_Backend.Services.Docker_Swarm
             using (Process submit = new Process())
             {
                 // Setup Process
-                submit.StartInfo.FileName = "./scripts/submit-experiment.sh";
+                submit.StartInfo.FileName = @"C:/Users/jacom/Documents/Fall 2024/CSEE 481/API-backend/Services/DockerSwarm/scripts/dockerswarm_init.sh"; // TODO: revert back to relative
+
                 submit.StartInfo.CreateNoWindow = false;
 
                 submit.StartInfo.ArgumentList.Add(Environment.UserName);

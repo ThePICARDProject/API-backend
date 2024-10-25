@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authorization;
 using System.Text.Json.Nodes;
 using API_Backend.Services.FileProcessing;
 using Microsoft.AspNetCore.Mvc.Rendering;
+using API_Backend.Models;
 
 namespace API_Backend.Controller
 {
@@ -24,9 +25,9 @@ namespace API_Backend.Controller
 
         // TODO: update to handle other status codes
         [HttpPost("createCsv")]
-        public IActionResult csvCreate([FromBody] List<string> desiredMetrics, string inputFile)
+        public IActionResult csvCreate([FromBody] List<string> desiredMetrics, string inputFile, string outputFilePath)
         {
-            _fileProcessor.GetCsvTest(desiredMetrics, inputFile);
+            _fileProcessor.GetCsvTest(desiredMetrics, inputFile, outputFilePath);
             
             return Ok();
         }
@@ -34,9 +35,9 @@ namespace API_Backend.Controller
 
         // TODO: update to handle other status codes
         [HttpPost("sqlQuery")]
-        public IActionResult sqlQuery([FromBody] List<string> queryParams)
+        public IActionResult sqlQuery([FromBody] QueryExperiment request)
         {
-            _fileProcessor.sqlQuery(queryParams);
+            _fileProcessor.sqlQuery(request.DesiredMetrics, request.QueryParams);
 
             return Ok();
         }

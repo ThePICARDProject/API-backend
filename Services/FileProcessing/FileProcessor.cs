@@ -36,9 +36,9 @@ namespace API_Backend.Services.FileProcessing
         }
         private readonly string _outputBaseDirectory = "exports";
 
-        //public FileProcessor()
-        //{
-        //}
+        public FileProcessor()
+        {
+        }
 
         public string AggregateData(string userId, string requestId, List<string> filePaths)
         {
@@ -125,32 +125,48 @@ namespace API_Backend.Services.FileProcessing
         }
 
         // TODO: sqlQuery function will take a set of parameters and form an SQL query to search db
-        public string sqlQuery(List<string> queryParams)
+        public string sqlQuery(List<string> desiredMetrics, List<string> queryParams)
         {
+
+            // TODO: data sanitization
+
+            /**
+             * User input breakdown:
+             * desiredMetrics - will be passed to getCSV
+             * queryParams: 
+             *      - each query param consists of [field] (> | < | >= | <= | = ) [value]
+             * 
+             */
+
+            /**
+             * Expected tokens:
+             * >
+             * <
+             * =
+             * 
+             */
 
             return "";
         }
 
 
 
-        public void GetCsvTest(List<string> desiredMetrics, string aggregatedDataFile)
+        public void GetCsvTest(List<string> desiredMetrics, string inputFile, string outputFilePath)
         {
 
             // TODO: add SQL query, store list of .txt files, create loop appending csv file with values of each file
             // Simulate successful SQL query by storing all three example results in a list and looping
 
-            // TODO: change to accomodate aggregate data
-
 
             // Get the base directory of the application
             var baseDirectory = _env.ContentRootPath;
             string inputAppendPath = "\\Services\\FileProcessing\\Test Files\\";
-            string inputFilePath = baseDirectory + inputAppendPath + aggregatedDataFile;
+            string inputFilePath = baseDirectory + inputAppendPath + inputFile;
 
             string outputFile = "output1.csv"; // TODO: replace with output file from function parameter
 
             string outputDirectoryPath = baseDirectory + "\\Services\\FileProcessing\\OutputCSV\\";
-            string outputFilePath = outputDirectoryPath + outputFile;
+            string tempOutputFilePath = outputDirectoryPath + outputFile;
             Console.WriteLine("base directory: " + baseDirectory);
 
 
@@ -196,10 +212,10 @@ namespace API_Backend.Services.FileProcessing
 
 
                 // If file exists, append new values -- otherwise, create new file and add headers and values
-                if (File.Exists(outputFilePath))
+                if (File.Exists(tempOutputFilePath))
                 {
                     // TODO: add try catch block
-                    File.AppendAllText(outputFilePath, csvValues);
+                    File.AppendAllText(tempOutputFilePath, csvValues);
 
                 } else
                 {
@@ -209,7 +225,7 @@ namespace API_Backend.Services.FileProcessing
 
 
                     // TODO: add try catch block
-                    File.WriteAllText(outputFilePath, csv);
+                    File.WriteAllText(tempOutputFilePath, csv);
 
                 }
             }

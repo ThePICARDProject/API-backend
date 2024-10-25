@@ -14,7 +14,6 @@ using Serilog.Events;
 using Serilog.Sinks.MariaDB.Extensions;
 using System.Reflection;
 using System.Security.Claims;
-using API_Backend.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,7 +22,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowSpecificOriginWithCredentials",
         corsBuilder =>
         {
-            corsBuilder.WithOrigins("http://localhost:5173") 
+            corsBuilder.WithOrigins("http://localhost:5173")
                 .AllowAnyHeader()
                 .AllowAnyMethod()
                 .AllowCredentials();
@@ -72,7 +71,7 @@ Log.Logger = new LoggerConfiguration()
     .WriteTo.MariaDB(
         connectionString: builder.Configuration.GetConnectionString("DefaultConnection"),
         tableName: "Logs",
-        autoCreateTable: true 
+        autoCreateTable: true
     )
     .CreateLogger();
 
@@ -174,3 +173,81 @@ app.UseAuthorization();
 app.MapControllers();
 
 app.Run();
+
+
+
+//using API_Backend.Models;
+//using API_Backend.Services.Docker_Swarm;
+//using API_Backend.Models;
+//using API_Backend.Services.FileProcessing;
+//using Microsoft.AspNetCore.Mvc;
+//using Microsoft.EntityFrameworkCore.Query.Internal;
+//using ZstdSharp.Unsafe;
+
+//Console.WriteLine("Starting Service");
+
+//try
+//{
+//    // Setup
+//    DockerSwarm experimentService;
+//    //experimentService = new DockerSwarm();
+//    experimentService = new DockerSwarm("10.0.0.42", "2333");
+//    FileProcessor fileProcessor = new FileProcessor();
+
+//    List<string> experimentIds = new List<string>() { "EX1" };
+//    List<string> resultsPaths = new List<string>();
+
+//    // Submit three experiments
+//    foreach (string experimentId in experimentIds)
+//    {
+//        ExperimentResponse response = await experimentService.SubmitExperiment(new API_Backend.Models.ExperimentRequest()
+//        {
+//            UserID = "UA124",
+//            ExperimentID = experimentId,
+//            Algorithm = new API_Backend.Models.Algorithm()
+//            {
+//                MainClassName = "edu.wvu.rascl.driver.SupervisedMLRF",
+//                JarFilePath = "Jars/supervisedmlrf_2.12-1.0.jar",
+//            },
+//            AlgorithmParameters = new API_Backend.Models.AlgorithmRequestParameters()
+//            {
+//                DatasetName = "gbt350drift_2class_labeled.csv",
+//                ParameterValues = new List<API_Backend.Models.ExperimentAlgorithmParameterValue>()
+//        {
+//            new API_Backend.Models.ExperimentAlgorithmParameterValue() { Value = "4", AlgorithmParameter = new AlgorithmParameter() { DriverIndex = 1 } },
+//            new API_Backend.Models.ExperimentAlgorithmParameterValue() { Value = "10", AlgorithmParameter = new AlgorithmParameter() { DriverIndex = 5 } },
+//            new API_Backend.Models.ExperimentAlgorithmParameterValue() { Value = "gini", AlgorithmParameter = new AlgorithmParameter() { DriverIndex = 2 } },
+//            new API_Backend.Models.ExperimentAlgorithmParameterValue() { Value = "32", AlgorithmParameter = new AlgorithmParameter() { DriverIndex = 4 } },
+//            new API_Backend.Models.ExperimentAlgorithmParameterValue() { Value = "4", AlgorithmParameter = new AlgorithmParameter() { DriverIndex = 3 } },
+//            new API_Backend.Models.ExperimentAlgorithmParameterValue() { Value = "2", AlgorithmParameter = new AlgorithmParameter() { DriverIndex = 0 } },
+//        }
+//            },
+//            ClusterParameters = new API_Backend.Models.ClusterParameters()
+//            {
+//                NodeCount = 1,
+//                DriverMemory = "2048m",
+//                DriverCores = 1,
+//                ExecutorNumber = 1,
+//                ExecutorCores = 1,
+//                ExecutorMemory = "2048m",
+//                MemoryOverhead = 972,
+//            }
+//        });
+//        if (response.ErrorCode != 0)
+//            throw new Exception(response.ErrorMessage);
+//        resultsPaths.Add(response.OutputPath);
+//    }
+
+//    // Aggregate Data for three experiments
+//    Console.WriteLine("Aggregating Data");
+//    fileProcessor.AggregateData("UA124", "0001", resultsPaths);
+//    // fileProcessor.GetCsv("UA124", "0001", resultsPaths)
+
+//    Console.WriteLine("Finished");
+
+//}
+//catch (Exception ex)
+//{
+//    Console.WriteLine($"An unknown exception has occured: {ex.Message}");
+//}
+
