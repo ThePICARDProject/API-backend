@@ -131,3 +131,5 @@ check_error
 
 ./scripts/cleanup.sh $dataset_name &>> $log_path
 
+echo "-----Attempting to shutdown containers-----" | tee -a $log_path
+docker stack rm "$(basename $(pwd) | sed 's/\./_/g')" | tee -a $log_path

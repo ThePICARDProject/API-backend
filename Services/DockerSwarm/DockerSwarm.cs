@@ -62,7 +62,6 @@ namespace API_backend.Services.Docker_Swarm
 
                 dockerSwarmInit.BeginErrorReadLine();
 
-
                 dockerSwarmInit.WaitForExit();
                 
                 errorCode = dockerSwarmInit.ExitCode;
@@ -94,12 +93,15 @@ namespace API_backend.Services.Docker_Swarm
 
             // Create submit process
             int? exitCode = null;
-            string error = null;
+            string error = "";
             using (Process submit = new Process())
             {
                 // Setup Process
                 submit.StartInfo.FileName = "./scripts/submit-experiment.sh";
                 submit.StartInfo.CreateNoWindow = false;
+
+                submit.StartInfo.RedirectStandardError = true;
+                submit.StartInfo.UseShellExecute = false;
 
                 submit.StartInfo.ArgumentList.Add(Environment.UserName);
                 submit.StartInfo.ArgumentList.Add(Path.Combine(outputPath, "log.txt"));
@@ -145,7 +147,10 @@ namespace API_backend.Services.Docker_Swarm
                     submit.StartInfo.ArgumentList.Add(arg.Item2);
 
                 // Start and wait for error
+                submit.ErrorDataReceived += (sender, args) => error += args.Data ?? "";
                 submit.Start();
+                submit.BeginErrorReadLine();
+
                 await submit.WaitForExitAsync();
                 exitCode = submit.ExitCode;
             }
