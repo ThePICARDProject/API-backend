@@ -9,8 +9,6 @@ docker_images_dir=$4
 results_dir=$5
 data_directory=$6
 
-echo $current_user
-
 # Add user to docker group if not already
 echo "-----Checking if user is in the docker group-----"
 if ! groups $current_user | grep -qc 'docker'
