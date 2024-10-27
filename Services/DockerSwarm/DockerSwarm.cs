@@ -28,19 +28,17 @@ namespace API_backend.Services.Docker_Swarm
     /// <seealso href="https://github.com/ThePICARDProject/docker-swarm/"/>
     public class DockerSwarm
     {
+        // File Paths in the applications local directory
         private readonly string _dataBasePath = "./data";
         private readonly string _experimentOutputBasePath = "./results";
         private readonly string _dockerImagesBasePath = "../docker-images";
         private readonly string _hadoopOutputBasePath = "hdfs://master:8020";
 
-        public string DataBasePath { get { return _dataBasePath; } }
-        public string ExperimentOutputBasePath { get  { return _experimentOutputBasePath; } }
-        public string HadoopOutputBasePath {  get { return _hadoopOutputBasePath; } }
-
-        public DockerSwarm() : this("-1", "-1") { }
+        public DockerSwarm() : this("-1", "-1") { } // Default Constructor
 
         public DockerSwarm(string advertiseIP, string advertisePort)
         {
+            // Run DockerSwarm_Init scripts
             string error = "";
             int errorCode;
             using (Process dockerSwarmInit = new Process())
@@ -48,6 +46,7 @@ namespace API_backend.Services.Docker_Swarm
                 dockerSwarmInit.StartInfo.RedirectStandardError = true;
                 dockerSwarmInit.StartInfo.UseShellExecute = false;
 
+                // Add Arguments
                 dockerSwarmInit.StartInfo.FileName = "./scripts/dockerswarm_init.sh";
                 dockerSwarmInit.StartInfo.ArgumentList.Add(Environment.UserName);
                 dockerSwarmInit.StartInfo.ArgumentList.Add(advertiseIP);
@@ -56,18 +55,16 @@ namespace API_backend.Services.Docker_Swarm
                 dockerSwarmInit.StartInfo.ArgumentList.Add(_experimentOutputBasePath);
                 dockerSwarmInit.StartInfo.ArgumentList.Add(_dataBasePath);
 
-
+                // Start process and read stderror
                 dockerSwarmInit.ErrorDataReceived += (sender, args) => error += args.Data ?? "";
                 dockerSwarmInit.Start();
-
                 dockerSwarmInit.BeginErrorReadLine();
-
                 dockerSwarmInit.WaitForExit();
-                
                 errorCode = dockerSwarmInit.ExitCode;
             }
 
-            if (errorCode == 1)
+            // If an error occurs, throw an exception
+            if (errorCode != 0)
                 throw new Exception(error);
         }
 
@@ -127,12 +124,12 @@ namespace API_backend.Services.Docker_Swarm
                 submit.StartInfo.ArgumentList.Add(outputPath);
                 submit.StartInfo.ArgumentList.Add($"data/{requestData.UserID}/{requestData.ExperimentID}/{outputName}");
 
-                // Get algorithm Parameters
+                // Get algorithm parameters
                 List<(int, string)> parameters = new List<(int, string)>();
                 foreach (ExperimentAlgorithmParameterValue item in requestData.AlgorithmParameters.ParameterValues)
                     parameters.Add((item.AlgorithmParameter.DriverIndex, item.Value.ToString()));
                 
-                // Sort according to each values DriverIndex
+                // Sort according to each arguments DriverIndex
                 parameters.Sort(delegate((int, string) item1, (int, string) item2)
                 {
                     if (item1.Item1 > item2.Item1)
@@ -142,18 +139,19 @@ namespace API_backend.Services.Docker_Swarm
                     return 0;
                 });
 
-                // Add algorithm parameters
+                // Add algorithm arguments
                 foreach ((int, string) arg in parameters)
                     submit.StartInfo.ArgumentList.Add(arg.Item2);
 
-                // Start and wait for error
+                // Start and read from stderror
                 submit.ErrorDataReceived += (sender, args) => error += args.Data ?? "";
                 submit.Start();
                 submit.BeginErrorReadLine();
-
                 await submit.WaitForExitAsync();
                 exitCode = submit.ExitCode;
             }
+
+            // Generate and return an experiment response
             return new ExperimentResponse() 
             { 
                 ErrorCode = exitCode,

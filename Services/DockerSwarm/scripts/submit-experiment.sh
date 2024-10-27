@@ -10,9 +10,9 @@ dataset_name=$4
 node_count=$5
 driver_memory=$6
 driver_cores=$7
-executer_number=$8
-executer_cores=$9
-executer_memory=${10}
+executor_number=$8
+executor_cores=$9
+executor_memory=${10}
 memory_overhead=${11}
 class_name=${12}
 jar_path=${13}
@@ -31,19 +31,18 @@ check_error() {
 }
 
 
-echo "-----Setting up directories-----"
+echo "-----Creating user specific directories-----"
 if [ ! -d $results_output_directory ] ; then
         mkdir -p $results_output_directory
 fi
-fileowner="$(stat -c '%U' "${results_output_directory}")"
-if [ "${fileowner}" != "${current_user}" ] ; then
-        sudo chown -R "${current_user}" "${results_output_directory}"
-fi
 
-# DANGER, CHANGE THIS
-chmod o+rwx "${results_output_directory}"
+echo "-----Setting permissions-----"
+setfacl -Rm u:hadoop:rwx $results_output_directory # Give the hadoop user full results access
+setfacl -Rm u:${current_user}:rwx $results_output_directory # Give current user full results access
 
-sleep 15
+setfacl -Rm u:hadoop:rwx $dataset_path # Give the hadoop user full data access
+setfacl -Rm u:$current_user:rwx $dataset_path # Give the current user full data access
+
 
 echo "-----Attempting to run experiment with args:" | tee -a $log_path
 echo "current_user: ${current_user}" | tee -a $log_path
@@ -53,9 +52,9 @@ echo "dataset_name: ${dataset_name}" | tee -a $log_path
 echo "node_count: ${node_count}" | tee -a $log_path
 echo "driver_memory: ${driver_memory}" | tee -a $log_path
 echo "driver_cores: ${driver_cores}" | tee -a $log_path
-echo "executer_number: ${executer_number}" | tee -a $log_path
-echo "executer_cores: ${executer_cores}" | tee -a $log_path
-echo "executer_memory: ${executer_memory}" | tee -a $log_path
+echo "executor_number: ${executor_number}" | tee -a $log_path
+echo "executor_cores: ${executor_cores}" | tee -a $log_path
+echo "executor_memory: ${executor_memory}" | tee -a $log_path
 echo "memory_overhead: ${memory_overhead}" | tee -a $log_path
 echo "class_name: ${class_name}" | tee -a $log_path
 echo "jar_path: ${jar_path}" | tee -a $log_path
@@ -115,9 +114,9 @@ docker exec "$(docker inspect --format '{{.Status.ContainerStatus.ContainerID}}'
     --master yarn \
     --driver-memory "$driver_memory" \
     --driver-cores $driver_cores \
-    --num-executors $executer_number \
-    --executor-cores $executer_cores \
-    --executor-memory "$executer_memory" \
+    --num-executors $executor_number \
+    --executor-cores $executor_cores \
+    --executor-memory "$executor_memory" \
     --conf spark.executor.memoryOverhead=$memory_overhead \
     --class "${class_name}" "/opt/jars/${jar_path}" $dataset_name $hdfs_url $hdfs_relative_output ${@:17} &>> $log_path
 check_error

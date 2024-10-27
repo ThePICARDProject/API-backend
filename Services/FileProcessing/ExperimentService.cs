@@ -79,12 +79,6 @@ namespace API_backend.Services.FileProcessing
                     Value = pv.Value
                 }).ToList();
 
-                // Update the Hadoop Output parameter value
-                var hadoopOutputParam = parameterValues.FirstOrDefault(x => x.AlgorithmParameter.ParameterName == "Hadoop Output Path");
-                if (hadoopOutputParam is null)
-                    throw new Exception("A parameter titled \"Hadoop Output Path\", must be provided");
-                hadoopOutputParam.Value = $"{_dockerSwarm.HadoopOutputBasePath}/data/{userId}/{experimentId}";
-
                 // Add entities to the context
                 _dbContext.ExperimentRequests.Add(experimentRequest);
                 _dbContext.DockerSwarmParameters.Add(dockerParams);
@@ -207,7 +201,7 @@ namespace API_backend.Services.FileProcessing
                     _logger.LogInformation("Starting experiment process for ExperimentID {ExperimentID}", experiment.ExperimentID);
 
                     // Read output and error streams asynchronously
-                    var error = await _dockerSwarm.SubmitExperiment(experiment);
+                    ExperimentResponse error = await _dockerSwarm.SubmitExperiment(experiment);
 
                     _logger.LogInformation("Experiment process exited with code {ExitCode} for ExperimentID {ExperimentID}", error.ErrorCode, experiment.ExperimentID);
 

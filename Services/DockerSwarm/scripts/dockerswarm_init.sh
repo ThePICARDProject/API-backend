@@ -76,6 +76,7 @@ then
     exit 1
 else
     setfacl -Rm u:$current_user:rwx $data_dir
+    chmod 777 -R $data_dir
 fi
 
 
