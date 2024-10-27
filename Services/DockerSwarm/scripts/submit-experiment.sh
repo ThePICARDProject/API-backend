@@ -22,9 +22,9 @@ hdfs_relative_output=${16}
 
 
 # Function for checking a scripts error code and cleaning up
-check_error() { 
-    if [[ $? != 0 ]] 
-    then 
+check_error() {
+    if [[ $? != 0 ]]
+    then
         ./scripts/cleanup.sh $dataset_name &>> $log_path
         exit 1
     fi
@@ -33,13 +33,15 @@ check_error() {
 
 echo "-----Setting up directories-----"
 if [ ! -d $results_output_directory ] ; then
-	mkdir -p $results_output_directory
+        mkdir -p $results_output_directory
 fi
 fileowner="$(stat -c '%U' "${results_output_directory}")"
 if [ "${fileowner}" != "${current_user}" ] ; then
-	sudo chown -R "${current_user}" "${results_output_directory}"
+        sudo chown -R "${current_user}" "${results_output_directory}"
 fi
-touch $log_path
+
+# DANGER, CHANGE THIS
+chmod o+rwx "${results_output_directory}"
 
 sleep 15
 
@@ -83,8 +85,8 @@ sleep 30
 
 echo "-----Attempting to setup hadoop-----" | tee -a $log_path
 docker exec "$(docker inspect --format '{{.Status.ContainerStatus.ContainerID}}' "$(docker service ps -q "$(basename $(pwd) | sed 's/\./_/g')_master" --filter desired-state=running)")" \
-       	sh -c 'hdfs dfs -mkdir -p /user/hadoop && hdfs dfs -chown hadoop:hadoop /user/hadoop' &>> $log_path
-    
+        sh -c 'hdfs dfs -mkdir -p /user/hadoop && hdfs dfs -chown hadoop:hadoop /user/hadoop' &>> $log_path
+
 check_error
 
 
@@ -94,12 +96,12 @@ check_error
 
 
 echo "-----Giving time for Hadoop to come online-----" | tee -a $log_path
-sleep 15
+sleep 30
 # Force hadoop out of safemode REMOVE LATER
 docker run --rm --name delete_dataset --network "$(basename $(pwd) | sed 's/\./_/g')_cluster-network" \
-	spark-hadoop:latest hdfs dfsadmin -safemode leave &>> $log_path
-
+        spark-hadoop:latest hdfs dfsadmin -safemode leave &>> $log_path
 check_error
+sleep 15
 
 
 # Add data set
@@ -118,14 +120,12 @@ docker exec "$(docker inspect --format '{{.Status.ContainerStatus.ContainerID}}'
     --executor-memory "$executer_memory" \
     --conf spark.executor.memoryOverhead=$memory_overhead \
     --class "${class_name}" "/opt/jars/${jar_path}" $dataset_name $hdfs_url $hdfs_relative_output ${@:17} &>> $log_path
-
 check_error
 
 
 echo "-----Attempting to output results for experiment-----" | tee -a $log_path
 docker run --rm --name results-extractor --network "$(basename $(pwd) | sed 's/\./_/g')_cluster-network" -v "${results_output_directory}:/mnt/results" \
-	spark-hadoop:latest hdfs dfs -getmerge ${hdfs_url}/${hdfs_relative_output} "/mnt/results/$(basename ${hdfs_relative_output})" &>> $log_path
-
+        spark-hadoop:latest hdfs dfs -getmerge ${hdfs_url}/${hdfs_relative_output} "/mnt/results/$(basename ${hdfs_relative_output})" &>> $log_path
 check_error
 
 

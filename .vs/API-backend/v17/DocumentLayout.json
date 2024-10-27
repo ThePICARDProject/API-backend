@@ -1,7 +1,15 @@
 {
   "Version": 1,
   "WorkspaceRootPath": "C:\\Users\\Justin\\source\\repos\\ThePICARDProject\\API-backend\\",
-  "Documents": [],
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{03701A3A-DA32-474A-A195-FABF8EA006C7}|..\\API-backend-docker-swarm\\API-backend-docker-swarm\\API-backend-docker-swarm.csproj|c:\\users\\justin\\source\\repos\\thepicardproject\\api-backend-docker-swarm\\api-backend-docker-swarm\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{0019D4AE-BE09-4833-81C1-0506B3B220E4}|API-backend.csproj|c:\\users\\justin\\source\\repos\\thepicardproject\\api-backend\\services\\dockerswarm\\scripts\\submit-experiment.sh||{3B902123-F8A7-4915-9F01-361F908088D0}",
+      "RelativeMoniker": "D:0:0:{0019D4AE-BE09-4833-81C1-0506B3B220E4}|API-backend.csproj|solutionrelative:services\\dockerswarm\\scripts\\submit-experiment.sh||{3B902123-F8A7-4915-9F01-361F908088D0}"
+    }
+  ],
   "DocumentGroupContainers": [
     {
       "Orientation": 0,
@@ -9,11 +17,37 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": -1,
+          "SelectedChildIndex": 2,
           "Children": [
             {
               "$type": "Bookmark",
               "Name": "ST:0:0:{1c4feeaa-4718-4aa9-859d-94ce25d182ba}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "submit-experiment.sh",
+              "DocumentMoniker": "C:\\Users\\Justin\\source\\repos\\ThePICARDProject\\API-backend\\Services\\DockerSwarm\\scripts\\submit-experiment.sh",
+              "RelativeDocumentMoniker": "Services\\DockerSwarm\\scripts\\submit-experiment.sh",
+              "ToolTip": "C:\\Users\\Justin\\source\\repos\\ThePICARDProject\\API-backend\\Services\\DockerSwarm\\scripts\\submit-experiment.sh",
+              "RelativeToolTip": "Services\\DockerSwarm\\scripts\\submit-experiment.sh",
+              "ViewState": "AQIAAAAAAAAAAAAAAAAAABEAAAAOAAAA",
+              "Icon": "00000000-0000-0000-0000-000000000000.000000|",
+              "WhenOpened": "2024-10-27T02:28:57.219Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "Program.cs",
+              "DocumentMoniker": "C:\\Users\\Justin\\source\\repos\\ThePICARDProject\\API-backend-docker-swarm\\API-backend-docker-swarm\\Program.cs",
+              "RelativeDocumentMoniker": "..\\API-backend-docker-swarm\\API-backend-docker-swarm\\Program.cs",
+              "ToolTip": "C:\\Users\\Justin\\source\\repos\\ThePICARDProject\\API-backend-docker-swarm\\API-backend-docker-swarm\\Program.cs",
+              "RelativeToolTip": "..\\API-backend-docker-swarm\\API-backend-docker-swarm\\Program.cs",
+              "ViewState": "AQIAAB4AAAAAAAAAAAAAAAkAAAAMAAAA",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2024-10-26T22:41:22.729Z",
+              "EditorCaption": ""
             }
           ]
         }
