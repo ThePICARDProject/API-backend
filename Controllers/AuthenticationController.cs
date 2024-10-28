@@ -54,9 +54,8 @@ namespace API_Backend.Controllers
         {
             var allowedUrls = new List<string>
             {
-                "http://localhost:5173/dashboard",
-                "http://localhost:5173/home",
-                //FRONT END TEAM: Add other allowed URLs here
+                "https://localhost:5173/dashboard",
+                "https://localhost:5173/home",
             };
 
             return allowedUrls.Contains(returnUrl);
