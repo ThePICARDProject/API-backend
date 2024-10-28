@@ -1,25 +1,27 @@
 {
   "format": 1,
   "restore": {
-    "/Users/dylancaldwell/RiderProjects/API-backend/API-backend.csproj": {}
+    "C:\\Users\\Jorda\\Desktop\\PICARD_Backend\\API-backend\\API-backend.csproj": {}
   },
   "projects": {
-    "/Users/dylancaldwell/RiderProjects/API-backend/API-backend.csproj": {
+    "C:\\Users\\Jorda\\Desktop\\PICARD_Backend\\API-backend\\API-backend.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "/Users/dylancaldwell/RiderProjects/API-backend/API-backend.csproj",
+        "projectUniqueName": "C:\\Users\\Jorda\\Desktop\\PICARD_Backend\\API-backend\\API-backend.csproj",
         "projectName": "API-backend",
-        "projectPath": "/Users/dylancaldwell/RiderProjects/API-backend/API-backend.csproj",
-        "packagesPath": "/Users/dylancaldwell/.nuget/packages/",
-        "outputPath": "/Users/dylancaldwell/RiderProjects/API-backend/obj/",
+        "projectPath": "C:\\Users\\Jorda\\Desktop\\PICARD_Backend\\API-backend\\API-backend.csproj",
+        "packagesPath": "C:\\Users\\Jorda\\.nuget\\packages\\",
+        "outputPath": "C:\\Users\\Jorda\\Desktop\\PICARD_Backend\\API-backend\\obj\\",
         "projectStyle": "PackageReference",
         "configFilePaths": [
-          "/Users/dylancaldwell/.nuget/NuGet/NuGet.Config"
+          "C:\\Users\\Jorda\\AppData\\Roaming\\NuGet\\NuGet.Config",
+          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
         ],
         "originalTargetFrameworks": [
           "net8.0"
         ],
         "sources": {
+          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
@@ -115,7 +117,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "/usr/local/share/dotnet/sdk/8.0.200/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\8.0.204/PortableRuntimeIdentifierGraph.json"
         }
       }
     }
