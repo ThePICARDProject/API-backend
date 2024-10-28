@@ -223,13 +223,13 @@ namespace API_Backend.Controllers
             }
 
             // Validate file extension
-            var extension = Path.GetExtension(dto.File.FileName).ToLowerInvariant();
+           /* var extension = Path.GetExtension(dto.File.FileName).ToLowerInvariant();
             if (string.IsNullOrEmpty(extension) || !_permittedExtensions.Contains(extension))
             {
                 _logger.LogWarning("Unsupported file type: {Extension}.", extension);
                 return BadRequest(new { message = "Unsupported file type. Only CSV files are allowed." });
             }
-
+    */
             try
             {
                 // Define uploads folder
@@ -306,12 +306,13 @@ namespace API_Backend.Controllers
             }
 
             // Validate file extension
-            var extension = Path.GetExtension(dto.File.FileName).ToLowerInvariant();
-            if (string.IsNullOrEmpty(extension) || !_permittedExtensions.Contains(extension))
+           // var extension = Path.GetExtension(dto.File.FileName).ToLowerInvariant();
+           /* if (string.IsNullOrEmpty(extension) || !_permittedExtensions.Contains(extension))
             {
                 _logger.LogWarning("Unsupported file type in chunk {ChunkNumber}: {Extension}.", chunkNumber, extension);
                 return BadRequest(new { message = "Unsupported file type. Only CSV files are allowed." });
             }
+            */
 
             try
             {
