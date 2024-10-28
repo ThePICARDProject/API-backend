@@ -9,3 +9,4 @@
 2024-10-25T14:23:51.4295448Z Unable to write 1 log events to the database due to following error: Unable to connect to any of the specified MySQL hosts.
 2024-10-25T14:24:05.5234429Z Unable to write 1 log events to the database due to following error: Unable to connect to any of the specified MySQL hosts.
 2024-10-25T14:26:24.8672040Z Unable to write 1 log events to the database due to following error: Access denied for user 'root'@'localhost' (using password: YES)
+2024-10-28T13:25:35.5493213Z Unable to write 1 log events to the database due to following error: Unable to connect to any of the specified MySQL hosts.

@@ -15,6 +15,9 @@ using Org.BouncyCastle.Bcpg.Sig;
 using System.Security.AccessControl;
 using System.Security.Principal;
 using Microsoft.AspNetCore.Routing.Constraints;
+using API_Backend.Data;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Mvc;
 
 
 namespace API_Backend.Services.FileProcessing
@@ -29,10 +32,12 @@ namespace API_Backend.Services.FileProcessing
     public class FileProcessor
     {
         private readonly IWebHostEnvironment _env;
+        private readonly ApplicationDbContext _dbContext;
 
-        public FileProcessor(IWebHostEnvironment env)
+        public FileProcessor(IWebHostEnvironment env, ApplicationDbContext dbContext)
         {
             _env = env;
+            _dbContext = dbContext;
         }
         private readonly string _outputBaseDirectory = "exports";
 
@@ -124,8 +129,9 @@ namespace API_Backend.Services.FileProcessing
             return outputPath;
         }
 
-        // TODO: sqlQuery function will take a set of parameters and form an SQL query to search db
-        public string sqlQuery(List<string> desiredMetrics, List<string> queryParams)
+        // TODO: sqlQuery function will take a set of parameters and form an SQL query
+        // to search db, getting a list of file paths and storing them to pass to getCSV and aggregate data
+        public async Task sqlQuery(List<string> desiredMetrics, List<string> queryParams)
         {
 
             // TODO: data sanitization
@@ -134,19 +140,60 @@ namespace API_Backend.Services.FileProcessing
              * User input breakdown:
              * desiredMetrics - will be passed to getCSV
              * queryParams: 
-             *      - each query param consists of [field] (> | < | >= | <= | = ) [value]
+             *      - each query param consists of [field] (> | < | >= | <= | = | != | BETWEEN | LIKE) [value]
+             *      
              * 
              */
 
             /**
-             * Expected tokens:
-             * >
-             * <
-             * =
+             * Example sql query:
+             *      - SELECT resultFilePath, resultFileName
+             *        FROM experimentResults eres
+             *        JOIN experimentRequests ereq on ereq.ExperimentID = eres.ExperimentID
+             *        JOIN dockerSwarmParameters dsp on ereq.ExperimentID = dsp.ExperimentID
+             *        WHERE queryParams[0];
              * 
              */
 
-            return "";
+            var data = await (from resultsList in _dbContext.ExperimentResults
+                        join clusterList in _dbContext.ClusterParameters
+                        on resultsList.ExperimentID
+                        equals clusterList.ExperimentID
+                        select new
+                        {
+                            Results = resultsList,
+                            Clusters = clusterList
+                        }).
+                        ToListAsync();
+
+
+            foreach (var item in data)
+            {
+                Console.WriteLine($"Result File Path: {item.Results.CSVFilePath}, Result File Name: {item.Results.CSVFileName}, " +
+                                  $"Driver Memory: {item.Clusters.DriverMemory}, Driver Cores: {item.Clusters.DriverCores}");
+            }
+
+            /** TODO: Clarify changes needed in the db
+             *      - Should experimentResults have a resultFilePath rather than a csvFilePath? 
+             *          - each experiment results in one raw data .txt file, multiple experiment results are then later aggregated into a csv file after a sql query
+             *      - What tables need to be joined in order to query for all relevant metrics?
+             *          - experimentResults will have .txt file path
+             *          - dockerSwarmParameters has:
+             *              - driver memory
+             *              - driver cores
+             *              - executor cores
+             *              - executor memory
+             *              - memory overhead
+             *          - Not clear if algorithm parameters will need to be queried
+             *              - these are dynamically stored (variable parameters)
+             *              - likely difficult to safely query (front end would require text input and sanitization)
+             *                  - possibly prone to errors
+             *          - experimentRequests
+             *              - has a field "parameters" with text data type
+             *      - Insert test db values to query from
+             */
+
+            return;
         }
 
 

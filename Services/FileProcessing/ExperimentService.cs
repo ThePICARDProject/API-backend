@@ -87,7 +87,7 @@ namespace API_Backend.Services.FileProcessing
 
                 // Add entities to the context
                 _dbContext.ExperimentRequests.Add(experimentRequest);
-                _dbContext.DockerSwarmParameters.Add(dockerParams);
+                _dbContext.ClusterParameters.Add(dockerParams);
                 if (parameterValues.Any())
                 {
                     _dbContext.ExperimentAlgorithmParameterValues.AddRange(parameterValues);

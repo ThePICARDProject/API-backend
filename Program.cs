@@ -151,6 +151,14 @@ builder.Services.AddAuthentication(options =>
 
 var app = builder.Build();
 
+// Migrate db
+using (var scope = app.Services.CreateScope())
+{
+    var context = scope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    context.Database.Migrate();
+    ApplicationDbContext.Seed(context);
+}
+
 // Configure the HTTP request pipeline
 if (app.Environment.IsDevelopment())
 {
