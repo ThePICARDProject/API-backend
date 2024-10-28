@@ -81,13 +81,40 @@ builder.Logging.AddSerilog();
 // Enable Serilog self-logging
 SelfLog.Enable(msg => File.AppendAllText("serilog-selflog.txt", msg + Environment.NewLine));
 
-// Configure authentication
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultScheme = CookieAuthenticationDefaults.AuthenticationScheme;
     options.DefaultChallengeScheme = GoogleDefaults.AuthenticationScheme;
 })
-.AddCookie()
+.AddCookie(options =>
+{
+    // Prevent redirects for API endpoints and exclude OPTIONS requests
+    options.Events = new CookieAuthenticationEvents
+    {
+        OnRedirectToLogin = context =>
+        {
+            if (context.Request.Path.StartsWithSegments("/api") && 
+                !context.Request.Method.Equals("OPTIONS", StringComparison.OrdinalIgnoreCase))
+            {
+                context.Response.StatusCode = StatusCodes.Status401Unauthorized;
+                return Task.CompletedTask;
+            }
+            context.Response.Redirect(context.RedirectUri);
+            return Task.CompletedTask;
+        },
+        OnRedirectToAccessDenied = context =>
+        {
+            if (context.Request.Path.StartsWithSegments("/api") && 
+                !context.Request.Method.Equals("OPTIONS", StringComparison.OrdinalIgnoreCase))
+            {
+                context.Response.StatusCode = StatusCodes.Status403Forbidden;
+                return Task.CompletedTask;
+            }
+            context.Response.Redirect(context.RedirectUri);
+            return Task.CompletedTask;
+        }
+    };
+})
 .AddGoogle(options =>
 {
     var googleAuthNSection = builder.Configuration.GetSection("Authentication:Google");
