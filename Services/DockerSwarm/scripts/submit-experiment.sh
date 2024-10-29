@@ -20,7 +20,6 @@ hdfs_url=${14}
 results_output_directory=${15}
 hdfs_relative_output=${16}
 
-
 # Function for checking a scripts error code and cleaning up
 check_error() {
     if [[ $? != 0 ]]
@@ -30,6 +29,9 @@ check_error() {
     fi
 }
 
+echo "-----Submitting new Experiment-----"
+
+sleep 15
 
 echo "-----Creating user specific directories-----"
 if [ ! -d $results_output_directory ] ; then

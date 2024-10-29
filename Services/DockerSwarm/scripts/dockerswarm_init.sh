@@ -59,9 +59,9 @@ fi
 
 # Enable access to docker-images directory
 echo "-----Setting docker-images permissions-----"
-if [ ! -d $docker_images_dir] 
+if [[ ! -d $docker_images_dir ]] 
 then
-    echo "Error: Docker-images directory does not exist." >&2
+    echo "Error: docker-images directory does not exist." >&2
     exit 1
 else
     setfacl -Rm u:$current_user:rwx $docker_images_dir
@@ -70,20 +70,20 @@ fi
 
 # Enable access to data directory
 echo "-----Setting data permissions-----"
-if [ ! -d $data_directory]
+if [[ ! -d $data_directory ]]
 then
     echo "Error: Data directory does not exist." >&2
     exit 1
 else
     setfacl -Rm u:$current_user:rwx $data_dir
-    chmod 777 -R $data_dir
+    setfacl -Rm u:"hadoop":rwx $data_dir
 fi
 
 
 # Make sure a results directory exists and/or enable access
 echo "-----Setting results permissions-----"
-if [ ! -d $result_dir]
+if [[ ! -d $results_dir ]]
 then
-    mkdir $result_dir
+    mkdir $results_dir
 fi
-setfacl -Rm u:$current_user:rwx $result_dir
+setfacl -Rm u:$current_user:rwx $results_dir
