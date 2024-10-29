@@ -118,7 +118,41 @@ namespace API_Backend.Data
                         Parameters = "{\"param1\": \"value1\", \"param2\": \"value2\"}",
                         StartTime = DateTime.UtcNow,
                         EndTime = DateTime.UtcNow,
-                    }
+                    },
+                    new ExperimentRequest
+                    {
+                        ExperimentID = Guid.NewGuid().ToString(),
+                        UserID = context.Users.First().UserID, // Assigning to Jacob
+                        AlgorithmID = context.Algorithms.First().AlgorithmID,
+                        CreatedAt = DateTime.UtcNow,
+                        Status = ExperimentStatus.Finished,
+                        Parameters = "{\"param1\": \"value1\", \"param2\": \"value2\"}",
+                        StartTime = DateTime.UtcNow,
+                        EndTime = DateTime.UtcNow,
+                    },
+                    new ExperimentRequest
+                    {
+                        ExperimentID = Guid.NewGuid().ToString(),
+                        UserID = context.Users.First().UserID, // Assigning to Jacob
+                        AlgorithmID = context.Algorithms.First().AlgorithmID,
+                        CreatedAt = DateTime.UtcNow,
+                        Status = ExperimentStatus.Finished,
+                        Parameters = "{\"param1\": \"value1\", \"param2\": \"value2\"}",
+                        StartTime = DateTime.UtcNow,
+                        EndTime = DateTime.UtcNow,
+                    },
+                    new ExperimentRequest
+                    {
+                        ExperimentID = Guid.NewGuid().ToString(),
+                        UserID = context.Users.First().UserID, // Assigning to Jacob
+                        AlgorithmID = context.Algorithms.First().AlgorithmID,
+                        CreatedAt = DateTime.UtcNow,
+                        Status = ExperimentStatus.Finished,
+                        Parameters = "{\"param1\": \"value1\", \"param2\": \"value2\"}",
+                        StartTime = DateTime.UtcNow,
+                        EndTime = DateTime.UtcNow,
+                    },
+
                 };
 
                 context.ExperimentRequests.AddRange(experimentRequests);
@@ -128,17 +162,26 @@ namespace API_Backend.Data
             // Seed Experiment Results
             if (!context.ExperimentResults.Any())
             {
-                var experimentResults = new List<ExperimentResult>
+                var experimentResults = new List<ExperimentResult>();
+
+                int i = 1;
+
+                foreach (var experimentRequest in context.ExperimentRequests.ToList())
                 {
-                    new ExperimentResult
-                    {
-                        ExperimentID = context.ExperimentRequests.First().ExperimentID,
-                        CSVFilePath = "C:\\Users\\jacom\\Documents\\Fall 2024\\CSEE 481\\API-backend\\Services\\FileProcessing\\Test Files\\",
-                        CSVFileName = "PICARD Example 1 Results.txt",
-                        MetaDataFilePath = "C:\\Users\\jacom\\Documents\\Fall 2024\\CSEE 481\\API-backend\\Services\\FileProcessing\\Test Files\\Meta",
-                        CreatedAt = DateTime.UtcNow
-                    }
-                };
+                    experimentResults.Add(
+                        new ExperimentResult
+                        {
+                            ExperimentID = experimentRequest.ExperimentID,
+                            CSVFilePath = "C:\\Users\\jacom\\Documents\\Fall 2024\\CSEE 481\\API-backend\\Services\\FileProcessing\\Test Files\\",
+                            CSVFileName = $"PICARD Example {i} Results.txt",
+                            MetaDataFilePath = "C:\\Users\\jacom\\Documents\\Fall 2024\\CSEE 481\\API-backend\\Services\\FileProcessing\\Test Files\\Meta",
+                            CreatedAt = DateTime.UtcNow
+                        }
+                    );
+
+                    i++;
+                }
+
 
                 context.ExperimentResults.AddRange(experimentResults);
                 context.SaveChanges();
@@ -147,20 +190,27 @@ namespace API_Backend.Data
             // Seed Cluster Parameters
             if (!context.ClusterParameters.Any())
             {
-                var clusterParams = new List<ClusterParameters>
+                var clusterParams = new List<ClusterParameters>();
+
+                int i = 2;
+
+                foreach (var experimentRequest in context.ExperimentRequests.ToList())
                 {
+                    clusterParams.Add(
                     new ClusterParameters
                     {
-                        ExperimentID = context.ExperimentRequests.First().ExperimentID,
-                        NodeCount = 5,
+                        ExperimentID = experimentRequest.ExperimentID,
+                        NodeCount = i,
                         DriverMemory = "2 GB",
                         DriverCores = 2,
                         ExecutorNumber = 3,
                         ExecutorCores = 2,
                         ExecutorMemory = "4 GB",
                         MemoryOverhead = 512
-                    }
-                };
+                    });
+
+                    i = i + 2;
+                }
 
                 context.ClusterParameters.AddRange(clusterParams);
                 context.SaveChanges();

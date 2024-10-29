@@ -18,6 +18,10 @@ using Microsoft.AspNetCore.Routing.Constraints;
 using API_Backend.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Mvc;
+using API_Backend.Models;
+using static Mysqlx.Error.Types;
+using System;
+using System.Linq.Dynamic.Core;
 
 
 namespace API_Backend.Services.FileProcessing
@@ -155,16 +159,35 @@ namespace API_Backend.Services.FileProcessing
              * 
              */
 
-            var data = await (from resultsList in _dbContext.ExperimentResults
-                        join clusterList in _dbContext.ClusterParameters
-                        on resultsList.ExperimentID
-                        equals clusterList.ExperimentID
-                        select new
-                        {
-                            Results = resultsList,
-                            Clusters = clusterList
-                        }).
-                        ToListAsync();
+
+            StringBuilder dynamicQuery = new StringBuilder("x => ");
+
+            foreach (var queryParam in queryParams)
+            {
+                if (queryParam != queryParams.Last())
+                {
+                    dynamicQuery.Append("x.Clusters.");
+                    dynamicQuery.Append(queryParam);
+                    dynamicQuery.Append(" && ");
+                } else
+                {
+                    dynamicQuery.Append("x.Clusters.");
+                    dynamicQuery.Append(queryParam);
+                }
+                
+            }
+
+
+
+            var data = await _dbContext.ExperimentResults
+            .Join(
+                _dbContext.ClusterParameters,
+                resultsList => resultsList.ExperimentID,
+                clusterList => clusterList.ExperimentID,
+                (resultsList, clusterList) => new { Results = resultsList, Clusters = clusterList }
+            )
+            .Where(dynamicQuery.ToString())
+            .ToListAsync();
 
 
             foreach (var item in data)
@@ -195,6 +218,7 @@ namespace API_Backend.Services.FileProcessing
 
             return;
         }
+
 
 
 
