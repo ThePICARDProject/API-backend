@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.Google;
 using Microsoft.AspNetCore.Mvc;
+using static System.Net.WebRequestMethods;
 
 namespace API_Backend.Controllers
 {
@@ -22,16 +23,16 @@ namespace API_Backend.Controllers
         /// </summary>
         /// <param name="returnUrl">The URL to redirect to after successful authentication.</param>
         [HttpGet("login")]
-        public IActionResult Login(string returnUrl = "http://localhost:5173/home") //FRONT END TEAM: CHANGE THIS TO YOUR RETURN
+        public IActionResult Login(string returnUrl = "https://localhost:5080/swagger") //FRONT END TEAM: CHANGE THIS TO YOUR RETURN
         {
             _logger.LogInformation("Login initiated with returnUrl: {ReturnUrl}", returnUrl);
 
             // Validate the returnUrl to prevent open redirects
-            // if (!Url.IsLocalUrl(returnUrl) && !IsAllowedRedirectUrl(returnUrl))
-            // {
-            //     _logger.LogWarning("Invalid return URL: {ReturnUrl}", returnUrl);
-            //     return BadRequest("Invalid return URL.");
-            // }
+            if (!Url.IsLocalUrl(returnUrl) && !IsAllowedRedirectUrl(returnUrl))
+            {
+                _logger.LogWarning("Invalid return URL: {ReturnUrl}", returnUrl);
+                return BadRequest("Invalid return URL.");
+            }
 
             return Challenge(new AuthenticationProperties { RedirectUri = returnUrl }, GoogleDefaults.AuthenticationScheme);
         }
@@ -56,6 +57,9 @@ namespace API_Backend.Controllers
             {
                 "https://localhost:5173/dashboard",
                 "https://localhost:5173/home",
+                "https://localhost:5080/swagger",
+                "https://localhost:7115/home",
+                "https://localhost:7115/dashboard"
             };
 
             return allowedUrls.Contains(returnUrl);

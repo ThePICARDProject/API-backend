@@ -23,7 +23,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowSpecificOriginWithCredentials",
         corsBuilder =>
         {
-            corsBuilder.WithOrigins("http://localhost:5173") 
+            corsBuilder.WithOrigins("http://localhost:5080/")
                 .AllowAnyHeader()
                 .AllowAnyMethod()
                 .AllowCredentials();
@@ -70,7 +70,7 @@ Log.Logger = new LoggerConfiguration()
     .WriteTo.MariaDB(
         connectionString: builder.Configuration.GetConnectionString("DefaultConnection"),
         tableName: "Logs",
-        autoCreateTable: true 
+        autoCreateTable: true
     )
     .CreateLogger();
 
@@ -93,7 +93,7 @@ builder.Services.AddAuthentication(options =>
     {
         OnRedirectToLogin = context =>
         {
-            if (context.Request.Path.StartsWithSegments("/api") && 
+            if (context.Request.Path.StartsWithSegments("/api") &&
                 !context.Request.Method.Equals("OPTIONS", StringComparison.OrdinalIgnoreCase))
             {
                 context.Response.StatusCode = StatusCodes.Status401Unauthorized;
@@ -104,7 +104,7 @@ builder.Services.AddAuthentication(options =>
         },
         OnRedirectToAccessDenied = context =>
         {
-            if (context.Request.Path.StartsWithSegments("/api") && 
+            if (context.Request.Path.StartsWithSegments("/api") &&
                 !context.Request.Method.Equals("OPTIONS", StringComparison.OrdinalIgnoreCase))
             {
                 context.Response.StatusCode = StatusCodes.Status403Forbidden;

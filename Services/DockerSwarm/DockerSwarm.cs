@@ -29,15 +29,21 @@ namespace API_backend.Services.Docker_Swarm
     public class DockerSwarm
     {
         // File Paths in the applications local directory
-        private readonly string _dataBasePath = "./data";
+        private readonly string _rootDirectory;
         private readonly string _experimentOutputBasePath = "./results";
-        private readonly string _dockerImagesBasePath = "../docker-images";
+        private readonly string _dockerImagesBasePath = "./docker-images";
         private readonly string _hadoopOutputBasePath = "hdfs://master:8020";
 
-        public DockerSwarm() : this("-1", "-1") { } // Default Constructor
-
-        public DockerSwarm(string advertiseIP, string advertisePort)
+        public DockerSwarm(string rootDirectory) : this(rootDirectory, "-1", "-1") 
         {
+            _rootDirectory = rootDirectory;
+        }
+        // Default Constructor
+
+        public DockerSwarm(string rootDirectory, string advertiseIP, string advertisePort)
+        {
+            _rootDirectory = rootDirectory;
+
             // Run DockerSwarm_Init scripts
             string error = "";
             int errorCode;
@@ -47,13 +53,12 @@ namespace API_backend.Services.Docker_Swarm
                 dockerSwarmInit.StartInfo.UseShellExecute = false;
 
                 // Add Arguments
-                dockerSwarmInit.StartInfo.FileName = "./scripts/dockerswarm_init.sh";
+                dockerSwarmInit.StartInfo.FileName = $"{rootDirectory}/scripts/dockerswarm_init.sh";
                 dockerSwarmInit.StartInfo.ArgumentList.Add(Environment.UserName);
                 dockerSwarmInit.StartInfo.ArgumentList.Add(advertiseIP);
                 dockerSwarmInit.StartInfo.ArgumentList.Add(advertisePort);
                 dockerSwarmInit.StartInfo.ArgumentList.Add(_dockerImagesBasePath);
                 dockerSwarmInit.StartInfo.ArgumentList.Add(_experimentOutputBasePath);
-                dockerSwarmInit.StartInfo.ArgumentList.Add(_dataBasePath);
 
                 // Start process and read stderror
                 dockerSwarmInit.ErrorDataReceived += (sender, args) => error += args.Data ?? "";
@@ -73,7 +78,7 @@ namespace API_backend.Services.Docker_Swarm
         /// </summary>
         /// <param name="requestData"></param>
         /// <returns></returns>
-        public async Task<ExperimentResponse> SubmitExperiment(ExperimentRequest requestData)
+        public async Task<ExperimentResponse> SubmitExperiment(ExperimentRequest requestData, StoredDataSet dataset)
         {
             // Get the date and time of the submit request
             DateTime dateTime = DateTime.Now;
@@ -81,8 +86,8 @@ namespace API_backend.Services.Docker_Swarm
                 $"_{dateTime.Hour.ToString()}-{dateTime.Minute.ToString()}-{dateTime.Second.ToString()}";
 
             // Generate user/experiment specific directories
+            string datasetPath = dataset.FilePath;
             string outputPath = Path.Combine(_experimentOutputBasePath, requestData.UserID, requestData.ExperimentID);
-            string dataBasePath = Path.Combine(_dataBasePath, requestData.UserID);
             string outputName = $"{requestData.ExperimentID}_{submissionDateTime}.txt";
 
             // Update Docker images
@@ -94,16 +99,15 @@ namespace API_backend.Services.Docker_Swarm
             using (Process submit = new Process())
             {
                 // Setup Process
-                submit.StartInfo.FileName = "./scripts/submit-experiment.sh";
+                submit.StartInfo.FileName = $"{_rootDirectory}/scripts/submit-experiment.sh";
                 submit.StartInfo.CreateNoWindow = false;
 
                 submit.StartInfo.RedirectStandardError = true;
                 submit.StartInfo.UseShellExecute = false;
 
                 submit.StartInfo.ArgumentList.Add(Environment.UserName);
-                submit.StartInfo.ArgumentList.Add(Path.Combine(outputPath, "log.txt"));
-                submit.StartInfo.ArgumentList.Add($"{_dataBasePath}/{requestData.UserID}");
-                submit.StartInfo.ArgumentList.Add(requestData.AlgorithmParameters.DatasetName);
+                submit.StartInfo.ArgumentList.Add(Path.Combine(outputPath, $"{requestData.ExperimentID}_log.txt"));
+                submit.StartInfo.ArgumentList.Add($"./{datasetPath}");
 
                 // Add Node Counts
                 submit.StartInfo.ArgumentList.Add(requestData.ClusterParameters.NodeCount.ToString());

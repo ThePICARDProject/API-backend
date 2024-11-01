@@ -24,10 +24,10 @@ namespace API_backend.Services.FileProcessing
         /// <param name="dbContext">The application database context.</param>
         /// <param name="logger">The logger instance.</param>
         /// <param name="experimentQueue">The experiment task queue.</param>
-        public ExperimentService(ApplicationDbContext dbContext, ILogger<ExperimentService> logger, IExperimentQueue experimentQueue)
+        public ExperimentService(ApplicationDbContext dbContext, ILogger<ExperimentService> logger, IExperimentQueue experimentQueue, IWebHostEnvironment environment)
         {
             _dbContext = dbContext;
-            _dockerSwarm = new DockerSwarm();
+            _dockerSwarm = new DockerSwarm(environment.ContentRootPath);
             _logger = logger;
             _experimentQueue = experimentQueue;
         }
@@ -200,8 +200,8 @@ namespace API_backend.Services.FileProcessing
 
                     _logger.LogInformation("Starting experiment process for ExperimentID {ExperimentID}", experiment.ExperimentID);
 
-                    // Read output and error streams asynchronously
-                    ExperimentResponse error = await _dockerSwarm.SubmitExperiment(experiment);
+                    StoredDataSet dataset = await _dbContext.StoredDataSets.FirstOrDefaultAsync(x => x.User.UserID == experiment.UserID && x.Name == experiment.AlgorithmParameters.DatasetName);
+                    ExperimentResponse error = await _dockerSwarm.SubmitExperiment(experiment, dataset);
 
                     _logger.LogInformation("Experiment process exited with code {ExitCode} for ExperimentID {ExperimentID}", error.ErrorCode, experiment.ExperimentID);
 
