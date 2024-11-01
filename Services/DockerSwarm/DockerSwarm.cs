@@ -34,15 +34,19 @@ namespace API_backend.Services.Docker_Swarm
         private readonly string _dockerImagesBasePath = "./docker-images";
         private readonly string _hadoopOutputBasePath = "hdfs://master:8020";
 
-        public DockerSwarm(string rootDirectory) : this(rootDirectory, "-1", "-1") 
-        {
-            _rootDirectory = rootDirectory;
-        }
-        // Default Constructor
+        public DockerSwarm(string rootDirectory) : this(rootDirectory, "-1", "-1") {}
 
         public DockerSwarm(string rootDirectory, string advertiseIP, string advertisePort)
         {
             _rootDirectory = rootDirectory;
+
+            // Verify program files
+            if (!Directory.Exists(Path.Combine(rootDirectory, "docker-compose.yml")))
+                throw new Exception("Docker Compose file not found in the project root directory.");
+            if (!Directory.Exists(Path.Combine(rootDirectory, "docker-images")))
+                throw new Exception("Docker images directory not found in the project root directory.");
+            if (!Directory.Exists(Path.Combine(rootDirectory, "scripts")))
+                throw new Exception("Scripts directory not found in the project root directory.");
 
             // Run DockerSwarm_Init scripts
             string error = "";
