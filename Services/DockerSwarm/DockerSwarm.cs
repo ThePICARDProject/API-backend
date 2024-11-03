@@ -39,8 +39,6 @@ namespace API_backend.Services.Docker_Swarm
         public DockerSwarm(string rootDirectory, string advertiseIP, string advertisePort)
         {
             _rootDirectory = rootDirectory;
-            Console.WriteLine(_rootDirectory);
-            Console.WriteLine(Path.Combine(rootDirectory, "docker-compose.yml"));
 
             // Verify program files
             if (!File.Exists(Path.Combine(rootDirectory, "docker-compose.yml")))

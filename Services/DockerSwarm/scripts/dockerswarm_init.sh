@@ -7,15 +7,14 @@ advertise_port=$3
 
 docker_images_dir=$4
 results_dir=$5
-data_directory=$6
 
 # Add user to docker group if not already
 echo "-----Checking if user is in the docker group-----"
 if ! groups $current_user | grep -qc 'docker'
-then 
+then
     echo " ${current_user} is not in the docker group." >&2
     exit 1
-fi 
+fi
 
 
 # Check Docker-Swarm is active
@@ -35,9 +34,9 @@ then
     fi
     if [[ $response != 0 ]]
     then
-	echo " Failed to initialize swarm." >&2
+        echo " Failed to initialize swarm." >&2
         exit 1
-    fi 
+    fi
 fi
 
 
@@ -48,37 +47,24 @@ then
     echo "-----Adding node as a manager-----"
     join_manager=$(docker swarm join-token manager | grep -Eo 'docker swarm join --token [A-Za-z0-9.:-]+ [0-9.:]+')
     eval $join_manager
-    
+
     if [[ $? != 0 ]]
     then
-	echo " Failed to add node as manager." >&2
-		exit 1
+        echo " Failed to add node as manager." >&2
+                exit 1
     fi
 fi
 
 
 # Enable access to docker-images directory
 echo "-----Setting docker-images permissions-----"
-if [[ ! -d $docker_images_dir ]] 
+if [[ ! -d $docker_images_dir ]]
 then
     echo "Error: docker-images directory does not exist." >&2
     exit 1
 else
     setfacl -Rm u:$current_user:rwx $docker_images_dir
 fi
-
-
-# Enable access to data directory
-echo "-----Setting data permissions-----"
-if [[ ! -d $data_directory ]]
-then
-    echo "Error: Data directory does not exist." >&2
-    exit 1
-else
-    setfacl -Rm u:$current_user:rwx $data_dir
-    setfacl -Rm u:"hadoop":rwx $data_dir
-fi
-
 
 # Make sure a results directory exists and/or enable access
 echo "-----Setting results permissions-----"
