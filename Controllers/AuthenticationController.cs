@@ -24,16 +24,36 @@ namespace API_Backend.Controllers
         [HttpGet("login")]
         public IActionResult Login(string returnUrl = "http://localhost:5173/home") //FRONT END TEAM: CHANGE THIS TO YOUR RETURN
         {
-            _logger.LogInformation("Login initiated with returnUrl: {ReturnUrl}", returnUrl);
+            var redirectUri = "http://localhost:5173/authenticationPage";
+            string userID = null;
+            string userEmail = null;
+            string firstName = null;
+            string lastName = null;
 
-            // Validate the returnUrl to prevent open redirects
-            // if (!Url.IsLocalUrl(returnUrl) && !IsAllowedRedirectUrl(returnUrl))
-            // {
-            //     _logger.LogWarning("Invalid return URL: {ReturnUrl}", returnUrl);
-            //     return BadRequest("Invalid return URL.");
-            // }
+            var identity = HttpContext.User.Identity as ClaimsIdentity;
 
-            return Challenge(new AuthenticationProperties { RedirectUri = returnUrl }, GoogleDefaults.AuthenticationScheme);
+            if (identity != null)
+            {
+                var user = new
+                {
+                    FirstName = identity.FindFirst(ClaimTypes.GivenName)?.Value,
+                    LastName = identity.FindFirst(ClaimTypes.Surname)?.Value,
+                    Email = identity.FindFirst(ClaimTypes.Email)?.Value,
+                    UserID = identity.FindFirst(ClaimTypes.NameIdentifier)?.Value
+                };
+
+                userID = user.UserID;
+                userEmail = user.Email;
+                firstName = user.FirstName;
+                lastName = user.LastName;
+            }
+
+            if (userID != null)
+            {
+                redirectUri = $"{redirectUri}?userID={userID}?userEmail={userEmail}?firstName={firstName}?lastName={lastName}";
+            }
+
+            return Challenge(new AuthenticationProperties { RedirectUri = redirectUri }, GoogleDefaults.AuthenticationScheme);
         }
 
         /// <summary>
