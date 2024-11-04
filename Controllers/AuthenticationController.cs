@@ -1,4 +1,3 @@
-
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -23,12 +22,12 @@ namespace API_Backend.Controllers
         /// </summary>
         /// <param name="returnUrl">The URL to redirect to after successful authentication.</param>
         [HttpGet("login")]
-        public IActionResult Login(string returnUrl = "/swagger/index.html")
+        public IActionResult Login(string returnUrl = "http://localhost:5173/dashboard") //FRONT END TEAM: CHANGE THIS TO YOUR RETURN
         {
             _logger.LogInformation("Login initiated with returnUrl: {ReturnUrl}", returnUrl);
 
-            // Ensure the returnUrl is local to prevent open redirects
-            if (!Url.IsLocalUrl(returnUrl))
+            // Validate the returnUrl to prevent open redirects
+            if (!Url.IsLocalUrl(returnUrl) && !IsAllowedRedirectUrl(returnUrl))
             {
                 _logger.LogWarning("Invalid return URL: {ReturnUrl}", returnUrl);
                 return BadRequest("Invalid return URL.");
@@ -41,11 +40,26 @@ namespace API_Backend.Controllers
         /// Logs the user out and clears the authentication cookie.
         /// </summary>
         [HttpGet("logout")]
-        public IActionResult Logout()
+        public IActionResult Logout(string returnUrl = "http://localhost:5173/")
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             _logger.LogInformation("User {userID} logged out.", userId);
-            return SignOut(new AuthenticationProperties { RedirectUri = "/swagger/index.html" }, CookieAuthenticationDefaults.AuthenticationScheme);
+            return SignOut(new AuthenticationProperties { RedirectUri = returnUrl }, CookieAuthenticationDefaults.AuthenticationScheme);
+        }
+
+        /// <summary>
+        /// Validates if the provided returnUrl is allowed.
+        /// </summary>
+        private bool IsAllowedRedirectUrl(string returnUrl)
+        {
+            var allowedUrls = new List<string>
+            {
+                "http://localhost:5173/dashboard",
+                "http://localhost:5173/home",
+                //FRONT END TEAM: Add other allowed URLs here
+            };
+
+            return allowedUrls.Contains(returnUrl);
         }
     }
 }

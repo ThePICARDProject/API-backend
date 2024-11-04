@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using API_backend.Services.FileProcessing;
+using Org.BouncyCastle.Asn1.X509;
 
 namespace API_Backend.Controllers
 {
@@ -66,14 +67,17 @@ namespace API_Backend.Controllers
     /// </summary>
     public class ExperimentSubmissionRequest
     {
-        public ExperimentSubmissionRequest(int algorithmId, string parameters, string driverMemory, string executorMemory, int? cores, int? nodes, string memoryOverhead, List<ParameterValueDto> parameterValues)
+        public ExperimentSubmissionRequest(int algorithmId, string parameters, string className, string jarName, string datasetName, int nodeCount, int driverCores, int executorNumber, int executorCores, string driverMemory, string executorMemory, int memoryOverhead, List<ParameterValueDto> parameterValues)
         {
             AlgorithmId = algorithmId;
             Parameters = parameters;
+            DatasetName = datasetName;
+            NodeCount = nodeCount;
             DriverMemory = driverMemory;
+            DriverCores = driverCores;
+            ExecutorNumber = executorNumber;
+            ExecutorCores = executorCores;
             ExecutorMemory = executorMemory;
-            Cores = cores;
-            Nodes = nodes;
             MemoryOverhead = memoryOverhead;
             ParameterValues = parameterValues;
         }
@@ -82,11 +86,14 @@ namespace API_Backend.Controllers
         public string Parameters { get; set; } // JSON serialized parameters
 
         // Docker Swarm Parameters
+        public string DatasetName { get; set; }
+        public int NodeCount { get; set; }
         public string DriverMemory { get; set; }
+        public int DriverCores { get; set; }
+        public int ExecutorNumber { get; set; }
+        public int ExecutorCores { get; set; }
         public string ExecutorMemory { get; set; }
-        public int? Cores { get; set; }
-        public int? Nodes { get; set; }
-        public string MemoryOverhead { get; set; }
+        public int MemoryOverhead { get; set; }
 
         // Algorithm Parameter Values
         public List<ParameterValueDto> ParameterValues { get; set; }

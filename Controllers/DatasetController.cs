@@ -1,5 +1,3 @@
-
-
 using System.Diagnostics;
 using API_Backend.Data;
 using API_Backend.Models;
@@ -7,61 +5,163 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using API_backend.Services.FileProcessing;
+using Microsoft.EntityFrameworkCore;
 
 namespace API_Backend.Controllers
 {
     [Authorize]
     [ApiController]
     [Route("api/dataset")]
-    public class DataSetController(
-        ApplicationDbContext dbContext,
-        IWebHostEnvironment environment,
-        IDatasetService datasetService,
-        ILogger<DataSetController> logger)
-        : ControllerBase
+    public class DataSetController : ControllerBase
     {
-        private readonly IDatasetService _datasetService = datasetService;
+        private readonly IDatasetService _datasetService;
+        private readonly ILogger<DataSetController> _logger;
+        private readonly ApplicationDbContext _dbContext;
+        private readonly IWebHostEnvironment _environment;
 
         // Define allowed file extensions
-        private readonly string[] _permittedExtensions = [".csv"];
+        private readonly string[] _permittedExtensions = { ".csv" };
+
+        public DataSetController(
+            ApplicationDbContext dbContext,
+            IWebHostEnvironment environment,
+            IDatasetService datasetService,
+            ILogger<DataSetController> logger)
+        {
+            _dbContext = dbContext;
+            _environment = environment;
+            _datasetService = datasetService;
+            _logger = logger;
+        }
 
         /// <summary>
-        /// Retrieves a dataset by its ID.
+        /// Retrieves all datasets associated with the authenticated user.
+        /// </summary>
+        /// <returns>Returns a list of datasets with name, description, and download links.</returns>
+        [HttpGet]
+        public async Task<IActionResult> GetAllDatasets()
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            _logger.LogInformation("User {UserID} is retrieving all datasets.", userId);
+
+            try
+            {
+                var datasets = await _dbContext.StoredDataSets
+                    .Where(ds => ds.UserID == userId)
+                    .Select(ds => new
+                    {
+                        ds.DataSetID,
+                        ds.Name,
+                        ds.Description,
+                        ds.FilePath,
+                        ds.UploadedAt,
+                        DownloadUrl = Url.Action("DownloadDataset", "DataSet", new { id = ds.DataSetID }, Request.Scheme)
+                    })
+                    .ToListAsync();
+
+                _logger.LogInformation("User {UserID} retrieved {Count} datasets.", userId, datasets.Count);
+
+                return Ok(datasets);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error retrieving datasets for user {UserID}.", userId);
+                return StatusCode(StatusCodes.Status500InternalServerError, new { message = "An error occurred while retrieving datasets." });
+            }
+        }
+
+        /// <summary>
+        /// Retrieves a specific dataset by its ID.
         /// </summary>
         /// <param name="id">The ID of the dataset.</param>
         /// <returns>Returns the dataset details.</returns>
         [HttpGet("{id}")]
         public async Task<IActionResult> GetDataSetById(int id)
         {
-            // Check if the current user is authorized to access this dataset
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            logger.LogInformation("User {userID} Retrieving dataset with ID {DataSetID}",userId, id);
+            _logger.LogInformation("User {UserID} is retrieving dataset with ID {DataSetID}.", userId, id);
 
-            var dataSet = await dbContext.StoredDataSets.FindAsync(id);
-
-            if (dataSet == null)
+            try
             {
-                logger.LogWarning("Dataset with ID {DataSetID} not found from {userID}'s request.", id, userId);
-                return NotFound(new { message = "Dataset not found." });
+                var dataSet = await _dbContext.StoredDataSets.FindAsync(id);
+
+                if (dataSet == null)
+                {
+                    _logger.LogWarning("Dataset with ID {DataSetID} not found for user {UserID}.", id, userId);
+                    return NotFound(new { message = "Dataset not found." });
+                }
+
+                if (dataSet.UserID != userId)
+                {
+                    _logger.LogWarning("User {UserID} is not authorized to access dataset {DataSetID}.", userId, id);
+                    return Forbid();
+                }
+
+                _logger.LogInformation("User {UserID} successfully retrieved dataset {DataSetID}.", userId, id);
+
+                return Ok(new
+                {
+                    dataSet.DataSetID,
+                    dataSet.Name,
+                    dataSet.Description,
+                    dataSet.FilePath,
+                    dataSet.UploadedAt,
+                    DownloadUrl = Url.Action("DownloadDataset", "DataSet", new { id = dataSet.DataSetID }, Request.Scheme)
+                });
             }
-            
-            if (dataSet.UserID != userId)
+            catch (Exception ex)
             {
-                logger.LogWarning("User {userID} is not authorized to access dataset {DataSetID}", userId, id);
-                return Forbid();
+                _logger.LogError(ex, "Error retrieving dataset {DataSetID} for user {UserID}.", id, userId);
+                return StatusCode(StatusCodes.Status500InternalServerError, new { message = "An error occurred while retrieving the dataset." });
             }
+        }
 
-            logger.LogInformation("{userID} Dataset {DataSetID} retrieved successfully.",userId, id);
+        /// <summary>
+        /// Downloads the specified dataset.
+        /// </summary>
+        /// <param name="id">The ID of the dataset to download.</param>
+        /// <returns>Returns the dataset file for download.</returns>
+        [HttpGet("download/{id}")]
+        public async Task<IActionResult> DownloadDataset(int id)
+        {
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            _logger.LogInformation("User {UserID} is attempting to download dataset {DataSetID}.", userId, id);
 
-            return Ok(new
+            try
             {
-                dataSet.DataSetID,
-                dataSet.UserID,
-                dataSet.Name,
-                dataSet.Description,
-                dataSet.FilePath,
-                dataSet.UploadedAt,
-            });
+                var dataSet = await _dbContext.StoredDataSets.FindAsync(id);
+
+                if (dataSet == null)
+                {
+                    _logger.LogWarning("Dataset with ID {DataSetID} not found for download by user {UserID}.", id, userId);
+                    return NotFound(new { message = "Dataset not found." });
+                }
+
+                if (dataSet.UserID != userId)
+                {
+                    _logger.LogWarning("User {UserID} is not authorized to download dataset {DataSetID}.", userId, id);
+                    return Forbid();
+                }
+
+                var filePath = Path.Combine(_environment.ContentRootPath, dataSet.FilePath.Replace("/", Path.DirectorySeparatorChar.ToString()));
+                if (!System.IO.File.Exists(filePath))
+                {
+                    _logger.LogWarning("File {FilePath} does not exist for dataset {DataSetID}.", filePath, id);
+                    return NotFound(new { message = "File not found." });
+                }
+
+                var fileName = Path.GetFileName(filePath);
+                var fileBytes = await System.IO.File.ReadAllBytesAsync(filePath);
+
+                _logger.LogInformation("User {UserID} successfully downloaded dataset {DataSetID}.", userId, id);
+
+                return File(fileBytes, "application/octet-stream", fileName);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error downloading dataset {DataSetID} for user {UserID}.", id, userId);
+                return StatusCode(StatusCodes.Status500InternalServerError, new { message = "An error occurred while downloading the dataset." });
+            }
         }
 
         /// <summary>
@@ -106,18 +206,18 @@ namespace API_Backend.Controllers
         private async Task<IActionResult> HandleRegularUpload(DataSetUploadDto dto)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            logger.LogInformation("Handling regular dataset upload for {FileName} from user {userID} ", dto.File.FileName, userId);
+            _logger.LogInformation("Handling regular dataset upload for {FileName} from user {UserID}.", dto.File.FileName, userId);
 
             // Validate input parameters
             if (dto.File.Length == 0)
             {
-                logger.LogWarning("No file uploaded.");
+                _logger.LogWarning("No file uploaded.");
                 return BadRequest(new { message = "No file uploaded." });
             }
 
             if (string.IsNullOrWhiteSpace(dto.Name))
             {
-                logger.LogWarning("Dataset name is required.");
+                _logger.LogWarning("Dataset name is required.");
                 return BadRequest(new { message = "Dataset name is required." });
             }
 
@@ -125,22 +225,14 @@ namespace API_Backend.Controllers
             var extension = Path.GetExtension(dto.File.FileName).ToLowerInvariant();
             if (string.IsNullOrEmpty(extension) || !_permittedExtensions.Contains(extension))
             {
-                logger.LogWarning("Unsupported file type: {Extension}", extension);
+                _logger.LogWarning("Unsupported file type: {Extension}.", extension);
                 return BadRequest(new { message = "Unsupported file type. Only CSV files are allowed." });
             }
 
             try
             {
-                // Get user ID
-                var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
-                if (string.IsNullOrEmpty(userIdClaim))
-                {
-                    logger.LogWarning("Invalid user.");
-                    return Unauthorized(new { message = "Invalid user." });
-                }
-
                 // Define uploads folder
-                string uploadsFolder = Path.Combine(environment.ContentRootPath, "Datasets");
+                string uploadsFolder = Path.Combine(_environment.ContentRootPath, "Datasets");
                 Directory.CreateDirectory(uploadsFolder); // Ensure the directory exists
 
                 // Generate unique file name
@@ -159,17 +251,17 @@ namespace API_Backend.Controllers
                 // Save dataset info to DB
                 var dataSet = new StoredDataSet
                 {
-                    UserID = userIdClaim,
+                    UserID = userId,
                     Name = dto.Name.Trim(),
                     Description = string.IsNullOrWhiteSpace(dto.Description) ? null : dto.Description.Trim(),
                     FilePath = relativeFilePath,
                     UploadedAt = DateTime.UtcNow,
                 };
 
-                dbContext.StoredDataSets.Add(dataSet);
-                await dbContext.SaveChangesAsync();
+                _dbContext.StoredDataSets.Add(dataSet);
+                await _dbContext.SaveChangesAsync();
 
-                logger.LogInformation("Dataset {DatasetName} uploaded successfully by user {UserID}", dataSet.Name, userIdClaim);
+                _logger.LogInformation("Dataset {DatasetName} uploaded successfully by user {UserID}.", dataSet.Name, userId);
 
                 return Ok(new
                 {
@@ -179,7 +271,7 @@ namespace API_Backend.Controllers
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, "Error occurred while uploading dataset {DatasetName}", dto.Name);
+                _logger.LogError(ex, "Error occurred while uploading dataset {DatasetName}.", dto.Name);
                 return StatusCode(StatusCodes.Status500InternalServerError, new { message = "An error occurred while uploading the dataset." });
             }
         }
@@ -189,26 +281,26 @@ namespace API_Backend.Controllers
         /// </summary>
         private async Task<IActionResult> HandleChunkedUpload(DataSetUploadDto dto, string uploadId, string chunkNumberStr, string totalChunksStr)
         {
-            logger.LogInformation("Handling chunked upload: UploadId={UploadId}, ChunkNumber={ChunkNumber}, TotalChunks={TotalChunks}", uploadId, chunkNumberStr, totalChunksStr);
+            _logger.LogInformation("Handling chunked upload: UploadId={UploadId}, ChunkNumber={ChunkNumber}, TotalChunks={TotalChunks}.", uploadId, chunkNumberStr, totalChunksStr);
 
             // Parse chunk numbers
             if (!int.TryParse(chunkNumberStr, out int chunkNumber) ||
                 !int.TryParse(totalChunksStr, out int totalChunks))
             {
-                logger.LogWarning("Invalid chunk number or total chunks.");
+                _logger.LogWarning("Invalid chunk number or total chunks.");
                 return BadRequest(new { message = "Invalid chunk number or total chunks." });
             }
 
             // Validate input parameters
             if (dto.File.Length == 0)
             {
-                logger.LogWarning("No file uploaded.");
+                _logger.LogWarning("No file uploaded in chunk {ChunkNumber}.", chunkNumber);
                 return BadRequest(new { message = "No file uploaded." });
             }
 
             if (string.IsNullOrWhiteSpace(dto.Name))
             {
-                logger.LogWarning("Dataset name is required.");
+                _logger.LogWarning("Dataset name is required for chunk {ChunkNumber}.", chunkNumber);
                 return BadRequest(new { message = "Dataset name is required." });
             }
 
@@ -216,22 +308,14 @@ namespace API_Backend.Controllers
             var extension = Path.GetExtension(dto.File.FileName).ToLowerInvariant();
             if (string.IsNullOrEmpty(extension) || !_permittedExtensions.Contains(extension))
             {
-                logger.LogWarning("Unsupported file type: {Extension}", extension);
+                _logger.LogWarning("Unsupported file type in chunk {ChunkNumber}: {Extension}.", chunkNumber, extension);
                 return BadRequest(new { message = "Unsupported file type. Only CSV files are allowed." });
             }
 
             try
             {
-                // Get user ID
-                var userIdClaim = User.FindFirstValue(ClaimTypes.NameIdentifier);
-                if (string.IsNullOrEmpty(userIdClaim))
-                {
-                    logger.LogWarning("Invalid user.");
-                    return Unauthorized(new { message = "Invalid user." });
-                }
-
                 // Define temporary uploads folder for the uploadId
-                string uploadsFolder = Path.Combine(environment.ContentRootPath, "TempUploads", uploadId);
+                string uploadsFolder = Path.Combine(_environment.ContentRootPath, "TempUploads", uploadId);
                 Directory.CreateDirectory(uploadsFolder);
 
                 // Save the chunk to a temporary file
@@ -241,16 +325,16 @@ namespace API_Backend.Controllers
                     await dto.File.CopyToAsync(fileStream);
                 }
 
-                logger.LogInformation("Chunk {ChunkNumber} saved for UploadId {UploadId}", chunkNumber, uploadId);
+                _logger.LogInformation("Chunk {ChunkNumber} saved for UploadId {UploadId}.", chunkNumber, uploadId);
 
                 // Check if all chunks have been uploaded
                 var uploadedChunks = Directory.GetFiles(uploadsFolder, "chunk_*").Length;
                 if (uploadedChunks == totalChunks)
                 {
-                    logger.LogInformation("All chunks uploaded for UploadId={UploadId}. Assembling file.", uploadId);
+                    _logger.LogInformation("All chunks uploaded for UploadId={UploadId}. Assembling file.", uploadId);
 
                     // All chunks have been uploaded, assemble the file
-                    string datasetsFolder = Path.Combine(environment.ContentRootPath, "Datasets");
+                    string datasetsFolder = Path.Combine(_environment.ContentRootPath, "Datasets");
                     Directory.CreateDirectory(datasetsFolder); // Ensure the directory exists
 
                     string uniqueFileName = $"{Guid.NewGuid()}_{Path.GetFileName(dto.File.FileName)}";
@@ -265,13 +349,15 @@ namespace API_Backend.Controllers
                             {
                                 await chunkStream.CopyToAsync(finalFileStream);
                             }
+                            _logger.LogInformation("Appended chunk {ChunkNumber} to final file.", i);
                         }
                     }
 
-                    logger.LogInformation("File assembled for UploadId {UploadId}", uploadId);
+                    _logger.LogInformation("File assembled for UploadId {UploadId}.", uploadId);
 
                     // Clean up the chunks
                     Directory.Delete(uploadsFolder, true);
+                    _logger.LogInformation("Temporary chunks deleted for UploadId={UploadId}.", uploadId);
 
                     // Store relative path
                     string relativeFilePath = Path.Combine("Datasets", uniqueFileName).Replace("\\", "/");
@@ -279,17 +365,17 @@ namespace API_Backend.Controllers
                     // Save dataset info to DB
                     var dataSet = new StoredDataSet
                     {
-                        UserID = userIdClaim,
+                        UserID = User.FindFirstValue(ClaimTypes.NameIdentifier),
                         Name = dto.Name.Trim(),
                         Description = string.IsNullOrWhiteSpace(dto.Description) ? null : dto.Description.Trim(),
                         FilePath = relativeFilePath,
                         UploadedAt = DateTime.UtcNow,
                     };
 
-                    dbContext.StoredDataSets.Add(dataSet);
-                    await dbContext.SaveChangesAsync();
+                    _dbContext.StoredDataSets.Add(dataSet);
+                    await _dbContext.SaveChangesAsync();
 
-                    logger.LogInformation("Dataset {DatasetName} uploaded successfully by user {UserID}", dataSet.Name, userIdClaim);
+                    _logger.LogInformation("Dataset {DatasetName} uploaded successfully by user {UserID} via chunked upload.", dataSet.Name, dataSet.UserID);
 
                     return Ok(new
                     {
@@ -300,13 +386,13 @@ namespace API_Backend.Controllers
                 else
                 {
                     // Chunk uploaded successfully, wait for more chunks
-                    logger.LogInformation("Chunk {ChunkNumber}/{TotalChunks} uploaded for UploadId={UploadId}", chunkNumber, totalChunks, uploadId);
+                    _logger.LogInformation("Chunk {ChunkNumber}/{TotalChunks} uploaded for UploadId={UploadId}.", chunkNumber, totalChunks, uploadId);
                     return Ok(new { message = $"Chunk {chunkNumber} uploaded successfully." });
                 }
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, "Error occurred while uploading chunk {ChunkNumber} for UploadId={UploadId}", chunkNumberStr, uploadId);
+                _logger.LogError(ex, "Error occurred while uploading chunk {ChunkNumber} for UploadId={UploadId}.", chunkNumberStr, uploadId);
                 return StatusCode(StatusCodes.Status500InternalServerError, new { message = "An error occurred while uploading the dataset." });
             }
         }

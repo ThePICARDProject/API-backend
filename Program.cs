@@ -1,3 +1,5 @@
+using API_backend.Services.Docker_Swarm;
+using API_backend.Services.DataVisualization;
 using API_Backend.Data;
 using API_Backend.Models;
 using API_backend.Logging;
@@ -16,27 +18,15 @@ using API_backend.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// builder.Services.AddCors(options =>
-// {
-//     options.AddPolicy("",
-//         builder =>
-//         {
-//             builder.WithOrigins("http://localhost:5173", "https://localhost:5173") 
-//                 .AllowAnyHeader()
-//                 .AllowAnyMethod()
-//                 .AllowCredentials(); 
-//         });
-// });
-
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAll",
-        builder =>
+    options.AddPolicy("AllowSpecificOriginWithCredentials",
+        corsBuilder =>
         {
-            builder
-                .AllowAnyOrigin()
+            corsBuilder.WithOrigins("http://localhost:5173") 
                 .AllowAnyHeader()
-                .AllowAnyMethod();
+                .AllowAnyMethod()
+                .AllowCredentials();
         });
 });
 
@@ -170,8 +160,7 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
-//app.UseCors("AllowSpecificOrigins");
-app.UseCors("AllowAll");
+app.UseCors("AllowSpecificOriginWithCredentials");
 
 app.UseAuthentication();
 

@@ -19,7 +19,7 @@ namespace API_Backend.Models
 
         // Navigation properties
         [ForeignKey("VisualizationRequestID")]
-        public DataVisualization DataVisualization { get; set; }
+        public DataVisualizationModel DataVisualization { get; set; }
 
         [ForeignKey("ExperimentID")]
         public ExperimentRequest ExperimentRequest { get; set; }

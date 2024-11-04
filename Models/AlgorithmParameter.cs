@@ -18,6 +18,9 @@ namespace API_Backend.Models
         public string ParameterName { get; set; }
 
         [Required]
+        public int DriverIndex { get; set; }
+
+        [Required]
         public string DataType { get; set; } // e.g., "int", "string", "bool"
 
         // Navigation property

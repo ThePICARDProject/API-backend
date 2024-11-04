@@ -4,6 +4,7 @@ using API_Backend.Models;
 using Microsoft.EntityFrameworkCore;
 using API_Backend.Controllers;
 using API_backend.Models;
+using API_backend.Services.Docker_Swarm;
 
 namespace API_backend.Services.FileProcessing
 {
@@ -13,8 +14,8 @@ namespace API_backend.Services.FileProcessing
     public class ExperimentService
     {
         private readonly ApplicationDbContext _dbContext;
+        private readonly DockerSwarm _dockerSwarm;
         private readonly ILogger<ExperimentService> _logger;
-        private readonly string _experimentsRootDir;
         private readonly IExperimentQueue _experimentQueue;
 
         /// <summary>
@@ -26,9 +27,9 @@ namespace API_backend.Services.FileProcessing
         public ExperimentService(ApplicationDbContext dbContext, ILogger<ExperimentService> logger, IExperimentQueue experimentQueue)
         {
             _dbContext = dbContext;
+            _dockerSwarm = new DockerSwarm();
             _logger = logger;
             _experimentQueue = experimentQueue;
-            _experimentsRootDir = "/path/to/experiments"; // Replace with your actual path
         }
 
         #region Public Methods
@@ -59,13 +60,14 @@ namespace API_backend.Services.FileProcessing
                 };
 
                 // Create DockerSwarmParameters entity
-                var dockerParams = new DockerSwarmParameters
+                var dockerParams = new ClusterParameters
                 {
                     ExperimentID = experimentId,
+                    NodeCount = request.NodeCount,
                     DriverMemory = request.DriverMemory,
+                    DriverCores = request.DriverCores,
+                    ExecutorNumber = request.ExecutorNumber,
                     ExecutorMemory = request.ExecutorMemory,
-                    Cores = request.Cores,
-                    Nodes = request.Nodes,
                     MemoryOverhead = request.MemoryOverhead
                 };
 
@@ -76,6 +78,12 @@ namespace API_backend.Services.FileProcessing
                     ParameterID = pv.ParameterId,
                     Value = pv.Value
                 }).ToList();
+
+                // Update the Hadoop Output parameter value
+                var hadoopOutputParam = parameterValues.FirstOrDefault(x => x.AlgorithmParameter.ParameterName == "Hadoop Output Path");
+                if (hadoopOutputParam is null)
+                    throw new Exception("A parameter titled \"Hadoop Output Path\", must be provided");
+                hadoopOutputParam.Value = $"{_dockerSwarm.HadoopOutputBasePath}/data/{userId}/{experimentId}";
 
                 // Add entities to the context
                 _dbContext.ExperimentRequests.Add(experimentRequest);
@@ -196,51 +204,22 @@ namespace API_backend.Services.FileProcessing
                     // Update status to BeingExecuted
                     await UpdateExperimentStatusAsync(experiment.ExperimentID, ExperimentStatus.BeingExecuted);
 
-                    // Create unique working directory for the experiment
-                    string experimentDir = Path.Combine(_experimentsRootDir, experiment.ExperimentID);
-                    Directory.CreateDirectory(experimentDir);
-
-                    _logger.LogInformation("Created experiment directory at {ExperimentDir}", experimentDir);
-
-                    // Prepare to start the experiment process
-                    var startInfo = new ProcessStartInfo
-                    {
-                        FileName = "/bin/bash",
-                        Arguments = "submit.sh", // Adjust this to point to your script
-                        WorkingDirectory = experimentDir,
-                        RedirectStandardOutput = true,
-                        RedirectStandardError = true,
-                        UseShellExecute = false,
-                        CreateNoWindow = true,
-                    };
-
                     _logger.LogInformation("Starting experiment process for ExperimentID {ExperimentID}", experiment.ExperimentID);
 
-                    using (var process = new Process())
+                    // Read output and error streams asynchronously
+                    var error = await _dockerSwarm.SubmitExperiment(experiment);
+
+                    _logger.LogInformation("Experiment process exited with code {ExitCode} for ExperimentID {ExperimentID}", error.ErrorCode, experiment.ExperimentID);
+
+                    if (error.ErrorCode != 0)
                     {
-                        process.StartInfo = startInfo;
-                        process.Start();
-
-                        // Read output and error streams asynchronously
-                        var error = await process.StandardError.ReadToEndAsync();
-
-                        await process.WaitForExitAsync();
-
-                        _logger.LogInformation("Experiment process exited with code {ExitCode} for ExperimentID {ExperimentID}", process.ExitCode, experiment.ExperimentID);
-
-                        if (process.ExitCode != 0)
-                        {
-                            _logger.LogError("ExperimentID {ExperimentID} failed with error: {Error}", experiment.ExperimentID, error);
-                            throw new Exception($"Experiment failed: {error}");
-                        }
-                        else
-                        {
-                            _logger.LogInformation("ExperimentID {ExperimentID} completed successfully.", experiment.ExperimentID);
-                        }
+                        _logger.LogError("ExperimentID {ExperimentID} failed with error: {Error}", experiment.ExperimentID, error.ErrorMessage);
+                        throw new Exception($"Experiment failed: {error.ErrorMessage}");
                     }
-
-                    // Process the experiment results
-                    await ProcessExperimentResultsAsync(experiment);
+                    else
+                    {
+                        _logger.LogInformation("ExperimentID {ExperimentID} completed successfully.", experiment.ExperimentID);
+                    }
                 }
                 catch (Exception ex)
                 {
@@ -350,6 +329,9 @@ namespace API_backend.Services.FileProcessing
         /// <param name="experiment">The experiment request whose results are to be processed.</param>
         private async Task ProcessExperimentResultsAsync(ExperimentRequest experiment)
         {
+            // THIS NEEDS TO BE A SEPERATE REQUEST, WHERE WE WILL PROCESS BASED ON 
+            // SELECTED PARAMETERS/CONDITIONS
+
             _logger.LogInformation("Processing results for ExperimentID {ExperimentID}", experiment.ExperimentID);
 
             // Update status to BeingProcessed

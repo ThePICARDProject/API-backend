@@ -21,6 +21,9 @@ namespace API_Backend.Models
         public string AlgorithmName { get; set; }
 
         [Required]
+        public string MainClassName { get; set; }
+
+        [Required]
         public AlgorithmType AlgorithmType { get; set; }
 
         [Required]

@@ -12,13 +12,13 @@ namespace API_Backend.Data
         // DbSets for your entities
         public DbSet<User> Users { get; init; }
         public DbSet<ExperimentRequest> ExperimentRequests { get; init; }
-        public DbSet<DockerSwarmParameters> DockerSwarmParameters { get; init; }
+        public DbSet<ClusterParameters> DockerSwarmParameters { get; init; }
         public DbSet<Algorithm> Algorithms { get; init; }
         public DbSet<AlgorithmParameter> AlgorithmParameters { get; init; }
         public DbSet<UploadSession> UploadSessions { get; init; }
         public DbSet<ExperimentAlgorithmParameterValue> ExperimentAlgorithmParameterValues { get; init; }
         public DbSet<ExperimentResult> ExperimentResults { get; init; }
-        public DbSet<DataVisualization> DataVisualizations { get; init; }
+        public DbSet<DataVisualizationModel> DataVisualizations { get; init; }
         public DbSet<VisualizationExperiment> VisualizationExperiments { get; init; }
         public DbSet<StoredDataSet> StoredDataSets { get; init; }
 
