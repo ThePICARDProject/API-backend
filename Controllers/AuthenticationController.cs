@@ -23,7 +23,7 @@ namespace API_Backend.Controllers
         /// </summary>
         /// <param name="returnUrl">The URL to redirect to after successful authentication.</param>
         [HttpGet("login")]
-        public IActionResult Login(string returnUrl = "https://localhost:5080/swagger") //FRONT END TEAM: CHANGE THIS TO YOUR RETURN
+        public IActionResult Login(string returnUrl = "https://localhost:5000/swagger") //FRONT END TEAM: CHANGE THIS TO YOUR RETURN
         {
             _logger.LogInformation("Login initiated with returnUrl: {ReturnUrl}", returnUrl);
 
@@ -57,7 +57,8 @@ namespace API_Backend.Controllers
             {
                 "https://localhost:5173/dashboard",
                 "https://localhost:5173/home",
-                "https://localhost:5080/swagger"
+                "https://localhost:5080/swagger",
+                "https://localhost:5000/swagger"
             };
 
             return allowedUrls.Contains(returnUrl);
