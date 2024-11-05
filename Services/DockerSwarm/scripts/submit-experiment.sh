@@ -20,37 +20,40 @@ results_output_directory=${14}
 hdfs_relative_output=${15}
 
 # Control Variables
-timeout=15
+timeout=30 # Sets maximum attempts waiting for a response. Should be at least 15.
 
 # Function for checking a scripts error code and cleaning up
 check_error() {
-    if [[ $? != 0 ]]
-    then
-        ./scripts/cleanup.sh "${dataset_path}" "/${hdfs_relative_output}" &>> $log_path
-        exit 1
-    fi
+	if [[ $? != 0 ]]
+	then
+		./scripts/cleanup.sh "${dataset_path}" "/${hdfs_relative_output}" $timeout &>> $log_path
+		exit 1
+	fi
 }
 
 echo "-----Submitting new Experiment-----"
 echo "-----Creating user specific directories-----"
 if [ ! -d $results_output_directory ] ; then
-        mkdir -p $results_output_directory
+	mkdir -p $results_output_directory
 fi
 
 if [ ! -s $dataset_path ] ; then
-        echo "Dataset path does not exist"
-        exit 1
+	echo "Dataset path does not exist"
+	exit 1
 fi
+
 
 touch $log_path
 
+
 echo "-----Setting permissions-----"
-#setfacl -m u:hadoop:rwx $results_output_directory || echo "Failed to set permissions for hadoop on the results output" ; exit 1
-setfacl -Rm u:${current_user}:rwx $results_output_directory || { echo "Failed to set permissions for user on the results output" ; exit 1; }
+setfacl -Rm u:hadoop:rwx ${results_output_directory} || { echo "Failed to set permissions for hadoop on the results output" 1>&2 ; exit 1; }
+setfacl -Rm u:${current_user}:rwx ${results_output_directory} || { echo "Failed to set permissions for user on the results output" 1>&2 ; exit 1; }
+				    
+setfacl -Rm u:hadoop:rwx ${dataset_path} || { echo "Failed to set permissions for hadoop on the results output" 1>&2 ; exit 1; }
+setfacl -Rm u:${current_user}:rwx ${dataset_path} || { echo "Failed to set permissions for use dataset" 1>&2 ; exit 1; }
 
-#setfacl -Rm u:hadoop:rwx $dataset_path echo "Failed to set permissions for hadoop on the results output" ; exit 1
-setfacl -Rm u:$current_user:rwx $dataset_path || { echo "Failed to set permissions for use dataset" ; exit 1; }
-
+					    
 echo "-----Attempting to run experiment with args:" | tee -a $log_path
 echo "current_user: ${current_user}" | tee -a $log_path
 echo "log_path: ${log_path}" | tee -a $log_path
@@ -85,36 +88,53 @@ check_error
 docker service update --mount-add 'type=volume,source=datanode-vol-SERV{{.Service.Name}}-NODE{{.Node.ID}}-TASK{{.Task.Slot}},target=/opt/hadoop/data' "$(basename $(pwd) | sed 's/\./_/g')_worker" &>> $log_path
 check_error
 
-docker exec "$(docker inspect --format '{{.Status.ContainerStatus.ContainerID}}' "$(docker service ps -q "$(basename $(pwd) | sed 's/\./_/g')_master" --filter desired-state=running)")" sh -c 'hdfs dfs -mkdir -p /user/hadoop && hdfs dfs -chown hadoop:hadoop /user/hadoop'
-check_error
+echo "-----Setting up HDFS-----" | tee -a $log_path
+for i in $(seq 1 $timeout)
+do
+	echo "-----Trying to connect to Hadoop... Attempt $i of $timeout-----"
+	if [[ $(docker exec "$(docker inspect --format '{{.Status.ContainerStatus.ContainerID}}' "$(docker service ps -q "$(basename $(pwd) | sed 's/\./_/g')_master" --filter desired-state=running)")" sh -c 'hdfs dfs -mkdir -p /user/hadoop && hdfs dfs -chown hadoop:hadoop /user/hadoop' 2>&1 | grep -c "Connection refused;") == 0 ]]
+	then
+		echo "Connection successful"
+		break
+	elif [[ $i == $timeout ]]
+	then
+		echo "Failed to connect to hadoop. Timed Out." 1>&2
+		./scripts/cleanup.sh "${dataset_path}" "/${hdfs_relative_output}" $timeout &>> $log_path
+		exit 1
+	fi
+	sleep 1
+done
 
+
+echo "-----Verifying HDFS status----" | tee -a $log_path
 if [[ $(docker run --rm --name poll_safe_mode --network "$(basename $(pwd) | sed 's/\./_/g')_cluster-network" spark-hadoop:latest hdfs fsck / | grep -c 'HEALTHY') == 0 ]]
 then
-        echo "HDFS is corrupt"
-        ./scripts/cleanup.sh $dataset_path "/${hdfs_relative_output}" &>> $log_path
-        exit 1
+	echo " HDFS is corrupt." 1>&2
+	./scripts/cleanup.sh $dataset_path "/${hdfs_relative_output}" $timeout &>> $log_path
+	exit 1
 fi
+
 
 echo "-----Attempting to scale node count to ${node_count}-----" | tee -a $log_path
 docker service scale "$(basename $(pwd) | sed 's/\./_/g')_worker"="${node_count}" &>> $log_path
 check_error
 
-# POLL FOR NUMBER OF NODES RUNNING HERE
+
 for i in  $(seq 1 $timeout)
 do
-        echo "-----Waiting for datanodes... Attempt $i of $timeout-----"
-        if [[ $(docker run --rm --name check_status --network "$(basename $(pwd) | sed 's/\./_/g')_cluster-network" spark-hadoop:latest hdfs dfsadmin -report | grep -c "Live datanodes (${node_count})") != 0 ]]
-        then
-                break
-        fi
-        if [[ $i == $timeout ]]
-        then
-                echo "Failed to connect to hadoop. Timed Out" 1>&2
-                ./scripts/cleanup.sh "${dataset_path}" "/${hdfs_relative_output}" &>> $log_path
-                exit 1
-        fi
-        sleep 1
+	echo "-----Waiting for datanodes... Attempt $i of $timeout-----"
+	if [[ $(docker run --rm --name check_status --network "$(basename $(pwd) | sed 's/\./_/g')_cluster-network" spark-hadoop:latest hdfs dfsadmin -report | grep -c "Live datanodes (${node_count})") != 0 ]]
+	then
+		break
+	elif [[ $i == $timeout ]]
+	then
+		echo "Failed to connect to hadoop. Timed Out." 1>&2
+		./scripts/cleanup.sh "${dataset_path}" "/${hdfs_relative_output}" $timeout &>> $log_path
+		exit 1
+	fi
+	sleep 1
 done
+
 
 echo "-----Attempting to add data set-----" | tee -a $log_path
 docker run --rm --name dataset-injector --network "$(basename $(pwd) | sed 's/\./_/g')_cluster-network" -v "${dataset_path}:/mnt/data/$(basename ${dataset_path})" spark-hadoop:latest hdfs dfs -put "/mnt/data/$(basename ${dataset_path})" "/user/hadoop" &>> $log_path
@@ -123,21 +143,20 @@ check_error
 
 echo "-----Beginning experiment-----" | tee -a $log_path
 docker exec "$(docker inspect --format '{{.Status.ContainerStatus.ContainerID}}' "$(docker service ps -q "$(basename $(pwd) | sed 's/\./_/g')_master" --filter desired-state=running)")" /opt/spark/bin/spark-submit \
-    --master yarn \
-    --driver-memory "$driver_memory" \
-    --driver-cores $driver_cores \
-    --num-executors $executor_number \
-    --executor-cores $executor_cores \
-   --executor-memory "$executor_memory" \
-    --conf spark.executor.memoryOverhead=$memory_overhead \
-    --class "${class_name}" "/opt/jars/${jar_path}" "$(basename ${dataset_path})" $hdfs_url $hdfs_relative_output ${@:16} &>> $log_path
-    check_error
+	--master yarn \
+	--driver-memory "$driver_memory" \
+	--driver-cores $driver_cores \
+	--num-executors $executor_number \
+	--executor-cores $executor_cores \
+	--executor-memory "$executor_memory" \
+	--conf spark.executor.memoryOverhead=$memory_overhead \
+	--class "${class_name}" "/opt/jars/${jar_path}" "$(basename ${dataset_path})" $hdfs_url $hdfs_relative_output ${@:16} &>> $log_path
+check_error
 
 
 echo "-----Attempting to output results for experiment-----" | tee -a $log_path
 docker run --rm --name results-extractor --network "$(basename $(pwd) | sed 's/\./_/g')_cluster-network" -v "${results_output_directory}:/mnt/results" \
-        spark-hadoop:latest hdfs dfs -getmerge ${hdfs_url}/${hdfs_relative_output} "/mnt/results/$(basename ${hdfs_relative_output})" &>> $log_path
+	spark-hadoop:latest hdfs dfs -getmerge "${hdfs_url}/${hdfs_relative_output}" "/mnt/results/$(basename ${hdfs_relative_output})" &>> $log_path				
 check_error
 
-
-./scripts/cleanup.sh "${dataset_path}" "/${hdfs_relative_output}" &>> $log_path
+./scripts/cleanup.sh "${dataset_path}" "/${hdfs_relative_output}" $timeout &>> $log_path
