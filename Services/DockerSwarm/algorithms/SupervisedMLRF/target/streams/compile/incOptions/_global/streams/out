@@ -1,0 +1,28 @@
+[0m[[0m[0mdebug[0m] [0m[0mCreated transactional ClassFileManager with tempDir = C:\Users\Justin\source\repos\FileProcessorTest\FileProcessorTest\bin\Debug\net8.0\algorithms\SupervisedMLRF\target\scala-2.12\classes.bak[0m
+[0m[[0m[0mdebug[0m] [0m[0mAbout to delete class files:[0m
+[0m[[0m[0mdebug[0m] [0m[0mWe backup class files:[0m
+[0m[[0m[0mdebug[0m] [0m[0mCreated transactional ClassFileManager with tempDir = C:\Users\Justin\source\repos\FileProcessorTest\FileProcessorTest\bin\Debug\net8.0\algorithms\SupervisedMLRF\target\scala-2.12\classes.bak[0m
+[0m[[0m[0mdebug[0m] [0m[0mAbout to delete class files:[0m
+[0m[[0m[0mdebug[0m] [0m[0mWe backup class files:[0m
+[0m[[0m[0mdebug[0m] [0m[0mRegistering generated classes:[0m
+[0m[[0m[0mdebug[0m] [0m[0m	GradientBoostedTreesModel$SaveLoadV1_0$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	SupervisedMLRF.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	RandomForest$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	RandomForestModel$SaveLoadV1_0$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	TreeEnsembleModel$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	GradientBoostedTreesModel$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	RandomForestModel$$anonfun$$lessinit$greater$1.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	TreeEnsembleModel.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	RandomForest.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	TreeEnsembleModel$SaveLoadV1_0$$typecreator5$1.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	TreeEnsembleModel$SaveLoadV1_0$$typecreator1$1.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	RandomForestModel$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	GradientBoostedTreesModel.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	TreeEnsembleModel$SaveLoadV1_0$EnsembleNodeData$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	TreeEnsembleModel$SaveLoadV1_0$Metadata$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	SupervisedMLRF$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	TreeEnsembleModel$SaveLoadV1_0$.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	RandomForestModel.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	TreeEnsembleModel$SaveLoadV1_0$Metadata.class[0m
+[0m[[0m[0mdebug[0m] [0m[0m	TreeEnsembleModel$SaveLoadV1_0$EnsembleNodeData.class[0m
+[0m[[0m[0mdebug[0m] [0m[0mRemoving the temporary directory used for backing up class files: C:\Users\Justin\source\repos\FileProcessorTest\FileProcessorTest\bin\Debug\net8.0\algorithms\SupervisedMLRF\target\scala-2.12\classes.bak[0m
