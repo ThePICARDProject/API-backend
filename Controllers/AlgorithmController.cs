@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using System.Runtime.CompilerServices;
 using System.Security.Claims;
 using System.Text.Json;
+using System.IO;
 
 namespace API_backend.Controllers
 {
@@ -32,6 +33,12 @@ namespace API_backend.Controllers
             return await HandleUpload(dto, parameters);
         }
 
+        /// <summary>
+        /// Handles the upload of a JAR file in the database and filesystem.
+        /// </summary>
+        /// <param name="dto"></param>
+        /// <param name="parameters"></param>
+        /// <returns></returns>
         private async Task<IActionResult> HandleUpload(AlgorithmUploadDto dto, List<AlgorithmParameterUploadDto> parameters)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
@@ -44,7 +51,7 @@ namespace API_backend.Controllers
             }
             
             /* Further validation here */
-
+            
             try
             {
                 // Check that the docker-images path exists
@@ -59,6 +66,8 @@ namespace API_backend.Controllers
 
                 // Get the full filepath
                 string filePath = Path.Combine(algorithmFolder, Path.GetFileName(dto.JarFile.FileName));
+                if (System.IO.File.Exists(filePath))
+                    throw new Exception($"Jar file with the name {dto.JarFile.FileName} already exists");
 
                 // Save the file
                 await using(var filestream = new FileStream(filePath, FileMode.Create))
@@ -80,8 +89,10 @@ namespace API_backend.Controllers
                     ExperimentRequests = new List<ExperimentRequest>()
                 };
 
+                // Save Algorithm parameters
                 foreach(AlgorithmParameterUploadDto paramDto in parameters)
                 {
+                    ValidateAlgorithmParameterData(paramDto);
                     var algorithmParameter = new AlgorithmParameter
                     {
                         AlgorithmID = Algorithm.AlgorithmID,
@@ -94,9 +105,11 @@ namespace API_backend.Controllers
                     _dbContext.Add(algorithmParameter);
                 }
 
+                // Add algorithm and save changes
                 _dbContext.Algorithms.Add(Algorithm);
                 await _dbContext.SaveChangesAsync();
 
+                // Return OK
                 return Ok(new
                 {
                     message = "Dataset uploaded successfully.",
@@ -109,6 +122,20 @@ namespace API_backend.Controllers
                 _logger.LogError(ex, $"Error occured while uploading algorithm {dto.AlgorithmName}");
                 return StatusCode(StatusCodes.Status500InternalServerError, new { message = "An error occurred while uploading the algorithm." });
             }
+        }
+    
+        private void ValidateAlgorithmParameterData(AlgorithmParameterUploadDto param)
+        {
+            switch(param.DataType)
+            {
+                case "int": break;
+                case "string": break;
+                case "boolean": break;
+                default:
+                    throw new FormatException("DataType must have the pattern \"int\", \"string\", \"boolean\"");
+            }
+            if (param.DriverIndex < 0)
+                throw new ArgumentOutOfRangeException("Driver index must be greater than or equal to 0.");
         }
     }
 }
