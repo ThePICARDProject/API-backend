@@ -67,7 +67,7 @@ namespace API_Backend.Controllers
     /// </summary>
     public class ExperimentSubmissionRequest
     {
-        public ExperimentSubmissionRequest(int algorithmId, string parameters, string className, string jarName, string datasetName, int nodeCount, int driverCores, int executorNumber, int executorCores, string driverMemory, string executorMemory, int memoryOverhead, List<ParameterValueDto> parameterValues)
+        public ExperimentSubmissionRequest(int algorithmId, string parameters, string datasetName, int nodeCount, string driverMemory, int driverCores, int executorNumber, int executorCores, string executorMemory, int memoryOverhead /*, List<ParameterValueDto> parameterValues*/)
         {
             AlgorithmId = algorithmId;
             Parameters = parameters;
@@ -79,7 +79,7 @@ namespace API_Backend.Controllers
             ExecutorCores = executorCores;
             ExecutorMemory = executorMemory;
             MemoryOverhead = memoryOverhead;
-            ParameterValues = parameterValues;
+            //ParameterValues = parameterValues;
         }
 
         public int AlgorithmId { get; set; }
@@ -102,7 +102,7 @@ namespace API_Backend.Controllers
     /// <summary>
     /// DTO for parameter values.
     /// </summary>
-    public abstract class ParameterValueDto(string value)
+    public class ParameterValueDto(string value)
     {
         public int ParameterId { get; set; }
         public string Value { get; set; } = value;

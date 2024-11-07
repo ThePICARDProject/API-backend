@@ -12,7 +12,7 @@ namespace API_Backend.Data
         // DbSets for your entities
         public DbSet<User> Users { get; init; }
         public DbSet<ExperimentRequest> ExperimentRequests { get; init; }
-        public DbSet<ClusterParameters> DockerSwarmParameters { get; init; }
+        public DbSet<ClusterParameters> ClusterParameters { get; init; }
         public DbSet<Algorithm> Algorithms { get; init; }
         public DbSet<AlgorithmParameter> AlgorithmParameters { get; init; }
         public DbSet<UploadSession> UploadSessions { get; init; }
@@ -55,6 +55,30 @@ namespace API_Backend.Data
             });
 
             // Configure other entities as needed...
+            modelBuilder.Entity<ExperimentRequest>()
+                .Property(x => x.Status)
+                .HasConversion(
+                    y => y.ToString(),
+                    y => (ExperimentStatus)Enum.Parse(typeof(ExperimentStatus), y)
+                );
+
+            modelBuilder.Entity<ExperimentAlgorithmParameterValue>(entity =>
+            {
+                entity.HasKey(x => new { x.ExperimentID, x.ParameterID });
+            });
+
+            modelBuilder.Entity<ExperimentAlgorithmParameterValue>()
+                .HasKey(e => new { e.ExperimentID, e.ParameterID });
+            modelBuilder.Entity<ExperimentAlgorithmParameterValue>()
+                .HasOne(e => e.ExperimentRequest)
+                .WithMany()
+                .HasForeignKey(e => e.ExperimentID);
+
+            modelBuilder.Entity<ExperimentAlgorithmParameterValue>()
+                .HasOne(e => e.AlgorithmParameter)
+                .WithMany()
+                .HasForeignKey(e => e.ParameterID);
+
 
             base.OnModelCreating(modelBuilder);
         }

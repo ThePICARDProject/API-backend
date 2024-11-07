@@ -32,7 +32,7 @@ namespace API_backend.Services.FileProcessing
 
             try
             {
-                _dockerSwarm = new DockerSwarm("157.182.194.132", "2377", environment.ContentRootPath);
+                _dockerSwarm = new DockerSwarm(environment.ContentRootPath, "157.182.194.132", "2377");
             } catch (Exception ex)
             {
                 _logger.LogCritical($"An error occured while initializing DockerSwarm with message: \"{ex.Message}\"");
@@ -75,6 +75,7 @@ namespace API_backend.Services.FileProcessing
                     DriverMemory = request.DriverMemory,
                     DriverCores = request.DriverCores,
                     ExecutorNumber = request.ExecutorNumber,
+                    ExecutorCores = request.ExecutorCores,
                     ExecutorMemory = request.ExecutorMemory,
                     MemoryOverhead = request.MemoryOverhead
                 };
@@ -89,7 +90,7 @@ namespace API_backend.Services.FileProcessing
 
                 // Add entities to the context
                 _dbContext.ExperimentRequests.Add(experimentRequest);
-                _dbContext.DockerSwarmParameters.Add(dockerParams);
+                _dbContext.ClusterParameters.Add(dockerParams);
                 if (parameterValues.Any())
                 {
                     _dbContext.ExperimentAlgorithmParameterValues.AddRange(parameterValues);
