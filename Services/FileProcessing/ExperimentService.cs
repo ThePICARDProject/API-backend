@@ -48,9 +48,9 @@ namespace API_backend.Services.FileProcessing
         /// <param name="request">The experiment submission request.</param>
         /// <param name="userId">The ID of the user submitting the experiment.</param>
         /// <returns>The ID of the newly created experiment.</returns>
-        public async Task<string> SubmitExperimentAsync(ExperimentSubmissionRequest request, string userId)
+        public async Task<Guid> SubmitExperimentAsync(ExperimentSubmissionRequest request, string userId)
         {
-            string experimentId = Guid.NewGuid().ToString();
+            Guid experimentId = Guid.NewGuid();
 
             _logger.LogInformation("User {UserID} is submitting a new experiment with ExperimentID {ExperimentID}", userId, experimentId);
 
@@ -66,6 +66,7 @@ namespace API_backend.Services.FileProcessing
                     Status = ExperimentStatus.WaitingInQueue,
                     Parameters = request.Parameters
                 };
+                _dbContext.ExperimentRequests.Add(experimentRequest);
 
                 // Create DockerSwarmParameters entity
                 var dockerParams = new ClusterParameters
@@ -79,6 +80,7 @@ namespace API_backend.Services.FileProcessing
                     ExecutorMemory = request.ExecutorMemory,
                     MemoryOverhead = request.MemoryOverhead
                 };
+                _dbContext.ClusterParameters.Add(dockerParams);
 
                 // Create ExperimentAlgorithmParameterValue entities
                 var parameterValues = request.ParameterValues.Select(pv => new ExperimentAlgorithmParameterValue
@@ -89,7 +91,7 @@ namespace API_backend.Services.FileProcessing
                 }).ToList();
 
                 // Add entities to the context
-                _dbContext.ExperimentRequests.Add(experimentRequest);
+                
                 _dbContext.ClusterParameters.Add(dockerParams);
                 if (parameterValues.Any())
                 {
@@ -152,7 +154,7 @@ namespace API_backend.Services.FileProcessing
         /// <param name="experimentId">The ID of the experiment to update.</param>
         /// <param name="status">The new status of the experiment.</param>
         /// <param name="errorMessage">Optional error message if the experiment failed.</param>
-        private async Task UpdateExperimentStatusAsync(string experimentId, ExperimentStatus status, string? errorMessage = null)
+        private async Task UpdateExperimentStatusAsync(Guid experimentId, ExperimentStatus status, string? errorMessage = null)
         {
             _logger.LogInformation("Updating status of ExperimentID {ExperimentID} to {Status}", experimentId, status);
 
@@ -237,7 +239,7 @@ namespace API_backend.Services.FileProcessing
         /// </summary>
         /// <param name="experimentId">The ID of the experiment.</param>
         /// <returns>The status of the experiment, or null if not found.</returns>
-        public async Task<ExperimentStatus?> GetExperimentStatusAsync(string experimentId)
+        public async Task<ExperimentStatus?> GetExperimentStatusAsync(Guid experimentId)
         {
             _logger.LogInformation("Retrieving status for ExperimentID {ExperimentID}", experimentId);
 
@@ -267,7 +269,7 @@ namespace API_backend.Services.FileProcessing
         /// </summary>
         /// <param name="experimentId">The ID of the experiment.</param>
         /// <returns>The experiment request, or null if not found.</returns>
-        public async Task<ExperimentRequest?> GetExperimentByIdAsync(string experimentId)
+        public async Task<ExperimentRequest?> GetExperimentByIdAsync(Guid experimentId)
         {
             _logger.LogInformation("Retrieving ExperimentID {ExperimentID}", experimentId);
 
@@ -297,7 +299,7 @@ namespace API_backend.Services.FileProcessing
         /// </summary>
         /// <param name="experimentId">The ID of the experiment.</param>
         /// <returns>The experiment result, or null if not found.</returns>
-        public async Task<ExperimentResult?> GetExperimentResultAsync(string experimentId)
+        public async Task<ExperimentResult?> GetExperimentResultAsync(Guid experimentId)
         {
             _logger.LogInformation("Retrieving results for ExperimentID {ExperimentID}", experimentId);
 

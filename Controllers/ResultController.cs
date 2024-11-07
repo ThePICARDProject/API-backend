@@ -16,7 +16,7 @@ namespace API_Backend.Controllers
         /// Gets the processed results of an experiment.
         /// </summary>
         [HttpGet("data/{experimentId}")]
-        public async Task<IActionResult> GetProcessedResults(string experimentId)
+        public async Task<IActionResult> GetProcessedResults(Guid experimentId)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             logger.LogInformation("User {UserID} is requesting results for ExperimentID {ExperimentID}", userId, experimentId);

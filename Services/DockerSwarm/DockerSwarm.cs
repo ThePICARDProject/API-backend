@@ -38,44 +38,44 @@ namespace API_backend.Services.Docker_Swarm
 
         public DockerSwarm(string rootDirectory, string advertiseIP, string advertisePort)
         {
-            _rootDirectory = rootDirectory;
+            //_rootDirectory = rootDirectory;
 
-            // Verify program files
-            if (!File.Exists(Path.Combine(rootDirectory, "docker-compose.yml")))
-                throw new Exception("Docker Compose file not found in the project root directory.");
-            if (!Directory.Exists(Path.Combine(rootDirectory, "docker-images")))
-                throw new Exception("Docker images directory not found in the project root directory.");
-            if (!Directory.Exists(Path.Combine(rootDirectory, "scripts")))
-                throw new Exception("Scripts directory not found in the project root directory.");
+            //// Verify program files
+            //if (!File.Exists(Path.Combine(rootDirectory, "docker-compose.yml")))
+            //    throw new Exception("Docker Compose file not found in the project root directory.");
+            //if (!Directory.Exists(Path.Combine(rootDirectory, "docker-images")))
+            //    throw new Exception("Docker images directory not found in the project root directory.");
+            //if (!Directory.Exists(Path.Combine(rootDirectory, "scripts")))
+            //    throw new Exception("Scripts directory not found in the project root directory.");
 
-            // Run DockerSwarm_Init scripts
-            string error = "";
-            int errorCode;
-            using (Process dockerSwarmInit = new Process())
-            {
-                dockerSwarmInit.StartInfo.RedirectStandardError = true;
-                dockerSwarmInit.StartInfo.UseShellExecute = false;
+            //// Run DockerSwarm_Init scripts
+            //string error = "";
+            //int errorCode;
+            //using (Process dockerSwarmInit = new Process())
+            //{
+            //    dockerSwarmInit.StartInfo.RedirectStandardError = true;
+            //    dockerSwarmInit.StartInfo.UseShellExecute = false;
 
-                // Add Arguments
-                //dockerSwarmInit.StartInfo.WorkingDirectory = _rootDirectory;
-                dockerSwarmInit.StartInfo.FileName = Path.Combine(_rootDirectory, "scripts", "dockerswarm-init.sh");
-                dockerSwarmInit.StartInfo.ArgumentList.Add(Environment.UserName);
-                dockerSwarmInit.StartInfo.ArgumentList.Add(advertiseIP);
-                dockerSwarmInit.StartInfo.ArgumentList.Add(advertisePort);
-                dockerSwarmInit.StartInfo.ArgumentList.Add(_dockerImagesBasePath);
-                dockerSwarmInit.StartInfo.ArgumentList.Add(_experimentOutputBasePath);
+            //    // Add Arguments
+            //    //dockerSwarmInit.StartInfo.WorkingDirectory = _rootDirectory;
+            //    dockerSwarmInit.StartInfo.FileName = Path.Combine(_rootDirectory, "scripts", "dockerswarm-init.sh");
+            //    dockerSwarmInit.StartInfo.ArgumentList.Add(Environment.UserName);
+            //    dockerSwarmInit.StartInfo.ArgumentList.Add(advertiseIP);
+            //    dockerSwarmInit.StartInfo.ArgumentList.Add(advertisePort);
+            //    dockerSwarmInit.StartInfo.ArgumentList.Add(_dockerImagesBasePath);
+            //    dockerSwarmInit.StartInfo.ArgumentList.Add(_experimentOutputBasePath);
 
-                // Start process and read stderror
-                dockerSwarmInit.ErrorDataReceived += (sender, args) => error += args.Data ?? "";
-                dockerSwarmInit.Start();
-                dockerSwarmInit.BeginErrorReadLine();
-                dockerSwarmInit.WaitForExit();
-                errorCode = dockerSwarmInit.ExitCode;
-            }
+            //    // Start process and read stderror
+            //    dockerSwarmInit.ErrorDataReceived += (sender, args) => error += args.Data ?? "";
+            //    dockerSwarmInit.Start();
+            //    dockerSwarmInit.BeginErrorReadLine();
+            //    dockerSwarmInit.WaitForExit();
+            //    errorCode = dockerSwarmInit.ExitCode;
+            //}
 
-            // If an error occurs, throw an exception
-            if (errorCode != 0)
-                throw new Exception(error);
+            //// If an error occurs, throw an exception
+            //if (errorCode != 0)
+            //    throw new Exception(error);
         }
 
         /// <summary>
@@ -92,7 +92,7 @@ namespace API_backend.Services.Docker_Swarm
 
             // Generate user/experiment specific directories
             string datasetPath = dataset.FilePath;
-            string outputPath = Path.Combine(_experimentOutputBasePath, requestData.UserID, requestData.ExperimentID);
+            string outputPath = Path.Combine(_experimentOutputBasePath, requestData.UserID, requestData.ExperimentID.ToString());
             string outputName = $"{requestData.ExperimentID}_{submissionDateTime}.txt";
 
             // Update Docker images

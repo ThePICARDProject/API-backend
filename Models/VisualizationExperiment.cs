@@ -15,7 +15,7 @@ namespace API_Backend.Models
         public int VisualizationRequestID { get; set; } // FK to DataVisualization
 
         [Required]
-        public string ExperimentID { get; set; } // FK to ExperimentRequest
+        public Guid ExperimentID { get; set; } // FK to ExperimentRequest
 
         // Navigation properties
         [ForeignKey("VisualizationRequestID")]

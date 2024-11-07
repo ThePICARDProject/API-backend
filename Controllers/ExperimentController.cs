@@ -28,7 +28,7 @@ namespace API_Backend.Controllers
             try
             {
                 Debug.Assert(userId != null, nameof(userId) + " != null");
-                string experimentId = await experimentService.SubmitExperimentAsync(request, userId);
+                Guid experimentId = await experimentService.SubmitExperimentAsync(request, userId);
 
                 logger.LogInformation("Experiment {ExperimentID} submitted successfully by user {UserID}", experimentId, userId);
 
@@ -45,7 +45,7 @@ namespace API_Backend.Controllers
         /// Gets the status of an experiment.
         /// </summary>
         [HttpGet("status/{experimentId}")]
-        public async Task<IActionResult> GetExperimentStatus(string experimentId)
+        public async Task<IActionResult> GetExperimentStatus(Guid experimentId)
         {
             logger.LogInformation("Fetching status for ExperimentID {ExperimentID}", experimentId);
 

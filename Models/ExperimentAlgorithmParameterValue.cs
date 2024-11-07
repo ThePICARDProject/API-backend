@@ -12,7 +12,7 @@ namespace API_Backend.Models
         [Key]
         public int ID { get; set; }
 
-        public string ExperimentID { get; set; } // FK to ExperimentRequest
+        public Guid ExperimentID { get; set; } // FK to ExperimentRequest
 
         public int ParameterID { get; set; } // FK to AlgorithmParameter
 

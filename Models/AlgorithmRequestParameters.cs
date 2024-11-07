@@ -7,7 +7,7 @@ namespace API_backend.Models
     public class AlgorithmRequestParameters
     {
         [Key, ForeignKey("ExperimentRequest")]
-        public string ExperimentID { get; set; } // FK and PK to ExperimentRequest
+        public Guid ExperimentID { get; set; } // FK and PK to ExperimentRequest
 
         public string DatasetName { get; set; }
 

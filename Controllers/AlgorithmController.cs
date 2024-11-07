@@ -25,6 +25,7 @@ namespace API_backend.Controllers
         }
 
         [HttpPost]
+        [Route("upload")]
         public async Task<IActionResult> UploadAlgorithm([FromForm] AlgorithmUploadDto dto)
         {
             // Get paramater data

@@ -13,7 +13,7 @@ namespace API_Backend.Models
         public int ResultID { get; set; }
 
         [Required]
-        public string ExperimentID { get; set; } // FK to ExperimentRequest
+        public Guid ExperimentID { get; set; } // FK to ExperimentRequest
 
         public string CSVFilePath { get; set; }
         public string CSVFileName { get; set; }
