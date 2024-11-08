@@ -8,8 +8,6 @@ namespace API_Backend.Data
 {
     public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : DbContext(options)
     {
-        // Constructor accepting DbContextOptions
-
         // DbSets for your entities
         public DbSet<User> Users { get; init; }
         public DbSet<ExperimentRequest> ExperimentRequests { get; init; }
@@ -55,7 +53,7 @@ namespace API_Backend.Data
                       .OnDelete(DeleteBehavior.Cascade);
             });
 
-            // Configure other entities as needed...
+            // Configure Algorithm
             modelBuilder.Entity<Algorithm>()
                 .Property(x => x.AlgorithmType)
                 .HasConversion(
@@ -63,6 +61,7 @@ namespace API_Backend.Data
                     y => (AlgorithmType) Enum.Parse(typeof(AlgorithmType), y)
                 );
 
+            // Configure Experiment Request
             modelBuilder.Entity<Algorithm>()
                 .HasOne(x => x.User)
                 .WithMany(x => x.Algorithms)
@@ -85,6 +84,7 @@ namespace API_Backend.Data
                 .WithMany(x => x.ExperimentRequests)
                 .HasForeignKey(x => x.UserID);
                
+            // Configure ExperimentAlgorithmParameterValue
             modelBuilder.Entity<ExperimentAlgorithmParameterValue>()
                 .HasKey(e => new { e.ExperimentID, e.ParameterID });
 
@@ -93,6 +93,7 @@ namespace API_Backend.Data
                 .WithMany(e => e.AlgorithmParameterValues)
                 .HasForeignKey(e => e.ParameterID);
 
+            // Cofnigure Algorithm Parameter
             modelBuilder.Entity<AlgorithmParameter>()
                 .HasOne(e => e.Algorithm)
                 .WithMany(e => e.Parameters)

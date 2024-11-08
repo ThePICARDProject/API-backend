@@ -9,7 +9,6 @@ namespace API_backend.Controllers
     [ApiController]
     public class VisualizationController : ControllerBase
     {
-
         private readonly DataVisualization _dataVisualization;
 
         public VisualizationController(DataVisualization dataVisualization)
@@ -20,7 +19,6 @@ namespace API_backend.Controllers
         [HttpPost]
         public IActionResult GetValues([FromForm] VisualizationRequest visRequest)
         {
-
             bool result = _dataVisualization.GraphInput(visRequest);
             if (result)
             {

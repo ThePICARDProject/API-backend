@@ -176,10 +176,10 @@ namespace API_backend.Services.FileProcessing
                         experiment.EndTime = DateTime.UtcNow;
                     }
 
-                    if (!string.IsNullOrEmpty(errorMessage))
-                    {
+                    if (!string.IsNullOrEmpty(errorMessage) && errorMessage.Length <= 255)
                         experiment.ErrorMessage = errorMessage;
-                    }
+                    else if (!string.IsNullOrEmpty(errorMessage) && errorMessage.Length > 255)
+                        experiment.ErrorMessage = "Error is too long to store in the database.";
 
                     await _dbContext.SaveChangesAsync();
 
