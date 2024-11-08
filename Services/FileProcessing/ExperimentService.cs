@@ -25,20 +25,21 @@ namespace API_backend.Services.FileProcessing
         /// <param name="dbContext">The application database context.</param>
         /// <param name="logger">The logger instance.</param>
         /// <param name="experimentQueue">The experiment task queue.</param>
-        public ExperimentService(ApplicationDbContext dbContext, ILogger<ExperimentService> logger, IExperimentQueue experimentQueue, IWebHostEnvironment environment)
+        public ExperimentService(ApplicationDbContext dbContext, DockerSwarm dockerSwarm, ILogger<ExperimentService> logger, IExperimentQueue experimentQueue, IWebHostEnvironment environment)
         {
             _dbContext = dbContext;
             _logger = logger;
             _experimentQueue = experimentQueue;
 
-            try
-            {
-                _dockerSwarm = new DockerSwarm(environment.ContentRootPath, "157.182.194.132", "2377");
-            } catch (Exception ex)
-            {
-                _logger.LogCritical($"An error occured while initializing DockerSwarm with message: \"{ex.Message}\"");
-                throw;
-            }
+            _dockerSwarm = dockerSwarm;
+            //try
+            //{
+            //    _dockerSwarm = new DockerSwarm(environment.ContentRootPath, "157.182.194.132", "2377");
+            //} catch (Exception ex)
+            //{
+            //    _logger.LogCritical($"An error occured while initializing DockerSwarm with message: \"{ex.Message}\"");
+            //    throw;
+            //}
         }
 
         #region Public Methods

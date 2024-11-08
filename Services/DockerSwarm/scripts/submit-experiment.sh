@@ -145,9 +145,9 @@ echo "-----Beginning experiment-----" | tee -a $log_path
 docker exec "$(docker inspect --format '{{.Status.ContainerStatus.ContainerID}}' "$(docker service ps -q "$(basename $(pwd) | sed 's/\./_/g')_master" --filter desired-state=running)")" /opt/spark/bin/spark-submit \
 	--master yarn \
 	--driver-memory "$driver_memory" \
-	--driver-cores $driver_cores \
-	--num-executors $executor_number \
-	--executor-cores $executor_cores \
+	--driver-cores "$driver_cores" \
+	--num-executors "$executor_number" \
+	--executor-cores "$executor_cores" \
 	--executor-memory "$executor_memory" \
 	--conf spark.executor.memoryOverhead=$memory_overhead \
 	--class "${class_name}" "/opt/jars/${jar_path}" "$(basename ${dataset_path})" $hdfs_url $hdfs_relative_output ${@:16} &>> $log_path

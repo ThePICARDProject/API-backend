@@ -15,6 +15,7 @@ using Serilog.Sinks.MariaDB.Extensions;
 using System.Reflection;
 using System.Security.Claims;
 using API_backend.Models;
+using System;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -55,8 +56,16 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseMySql(
         builder.Configuration.GetConnectionString("DefaultConnection"),
         new MySqlServerVersion(new Version(8, 0, 26)) // Replace with your MySQL server version
-    )
+)
 );
+
+// Initialize and add DockerSwarm to Services
+builder.Services.AddSingleton<DockerSwarm>(
+    new DockerSwarm(
+        Environment.CurrentDirectory,
+        builder.Configuration["DockerSwarm:AdvertiseAddr"], 
+        builder.Configuration["DockerSwarm:AdvertisePort"])
+    );
 
 // Register IHttpContextAccessor
 builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();
