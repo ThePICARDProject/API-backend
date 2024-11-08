@@ -8,8 +8,6 @@ namespace API_Backend.Data
 {
     public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : DbContext(options)
     {
-
-
         // Constructor accepting DbContextOptions
 
         // DbSets for your entities

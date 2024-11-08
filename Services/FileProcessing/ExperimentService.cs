@@ -63,6 +63,7 @@ namespace API_backend.Services.FileProcessing
                     ExperimentID = experimentId,
                     UserID = userId,
                     AlgorithmID = request.AlgorithmId,
+                    Algorithm = _dbContext.Algorithms.FirstOrDefault(x => x.AlgorithmID == request.AlgorithmId),
                     CreatedAt = DateTime.UtcNow,
                     Status = ExperimentStatus.WaitingInQueue,
                     DatasetName = request.DatasetName
@@ -82,8 +83,6 @@ namespace API_backend.Services.FileProcessing
                     MemoryOverhead = request.MemoryOverhead
                 };
                 _dbContext.ClusterParameters.Add(dockerParams);
-
-                API_Backend.Models.Algorithm algorithm = _dbContext.Algorithms.FirstOrDefault();
 
                 // Create ExperimentAlgorithmParameterValue entities
                 var parameterValues = request.ParameterValues.Select(pv => new ExperimentAlgorithmParameterValue
