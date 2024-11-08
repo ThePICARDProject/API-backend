@@ -1,5 +1,5 @@
 
-
+using API_backend.Models;
 using API_Backend.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -61,24 +61,25 @@ namespace API_Backend.Data
                     y => y.ToString(),
                     y => (ExperimentStatus)Enum.Parse(typeof(ExperimentStatus), y)
                 );
-
-            modelBuilder.Entity<ExperimentAlgorithmParameterValue>(entity =>
-            {
-                entity.HasKey(x => new { x.ExperimentID, x.ParameterID });
-            });
+            
+            modelBuilder.Entity<ExperimentRequest>()
+                .HasOne(x => x.Algorithm)
+                .WithMany()
+                .HasForeignKey(x => x.AlgorithmID);
+                
 
             modelBuilder.Entity<ExperimentAlgorithmParameterValue>()
                 .HasKey(e => new { e.ExperimentID, e.ParameterID });
-            modelBuilder.Entity<ExperimentAlgorithmParameterValue>()
-                .HasOne(e => e.ExperimentRequest)
-                .WithMany()
-                .HasForeignKey(e => e.ExperimentID);
 
             modelBuilder.Entity<ExperimentAlgorithmParameterValue>()
                 .HasOne(e => e.AlgorithmParameter)
                 .WithMany()
                 .HasForeignKey(e => e.ParameterID);
 
+            modelBuilder.Entity<AlgorithmParameter>()
+                .HasOne(e => e.Algorithm)
+                .WithMany()
+                .HasForeignKey(e => e.AlgorithmID);
 
             base.OnModelCreating(modelBuilder);
         }

@@ -92,7 +92,6 @@ namespace API_backend.Services.FileProcessing
 
                 // Add entities to the context
                 
-                _dbContext.ClusterParameters.Add(dockerParams);
                 if (parameterValues.Any())
                 {
                     _dbContext.ExperimentAlgorithmParameterValues.AddRange(parameterValues);
@@ -211,7 +210,7 @@ namespace API_backend.Services.FileProcessing
 
                     _logger.LogInformation("Starting experiment process for ExperimentID {ExperimentID}", experiment.ExperimentID);
 
-                    StoredDataSet dataset = await _dbContext.StoredDataSets.FirstOrDefaultAsync(x => x.User.UserID == experiment.UserID && x.Name == experiment.AlgorithmParameters.DatasetName);
+                    StoredDataSet dataset = await _dbContext.StoredDataSets.FirstOrDefaultAsync(x => x.User.UserID == experiment.UserID && x.Name == experiment.DatasetName);
                     ExperimentResponse error = await _dockerSwarm.SubmitExperiment(experiment, dataset);
 
                     _logger.LogInformation("Experiment process exited with code {ExitCode} for ExperimentID {ExperimentID}", error.ErrorCode, experiment.ExperimentID);

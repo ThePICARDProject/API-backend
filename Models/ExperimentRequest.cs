@@ -28,6 +28,8 @@ namespace API_Backend.Models
         [Required]
         public ExperimentStatus Status { get; set; }
 
+        public string DatasetName { get; set; }
+
         public string Parameters { get; set; } // JSON serialized parameters
 
         public DateTime StartTime { get; set; }
@@ -38,15 +40,10 @@ namespace API_Backend.Models
         [ForeignKey("UserID")]
         public User User { get; set; }
 
-        [ForeignKey("AlgorithmID")]
         public Algorithm Algorithm { get; set; }
-
-        [ForeignKey("ExperimentID")]
         public ClusterParameters ClusterParameters { get; set; }
-
-        [ForeignKey("ExperimentID")]
-        public AlgorithmRequestParameters AlgorithmParameters { get; set; }
-        public ExperimentResult ExperimentResult { get; set; }
+        public ICollection<ExperimentAlgorithmParameterValue> ParameterValues { get; set; }
+        //public ExperimentResult ExperimentResult { get; set; }
     }
 
     public enum ExperimentStatus

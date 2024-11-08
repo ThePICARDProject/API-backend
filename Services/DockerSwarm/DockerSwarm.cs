@@ -136,7 +136,7 @@ namespace API_backend.Services.Docker_Swarm
 
                 // Get algorithm parameters
                 List<(int, string)> parameters = new List<(int, string)>();
-                foreach (ExperimentAlgorithmParameterValue item in requestData.AlgorithmParameters.ParameterValues)
+                foreach (ExperimentAlgorithmParameterValue item in requestData.ParameterValues)
                     parameters.Add((item.AlgorithmParameter.DriverIndex, item.Value.ToString()));
                 
                 // Sort according to each arguments DriverIndex
