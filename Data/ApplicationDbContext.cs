@@ -2,11 +2,14 @@
 using API_backend.Models;
 using API_Backend.Models;
 using Microsoft.EntityFrameworkCore;
+using System.Configuration;
 
 namespace API_Backend.Data
 {
     public class ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : DbContext(options)
     {
+
+
         // Constructor accepting DbContextOptions
 
         // DbSets for your entities
@@ -55,6 +58,18 @@ namespace API_Backend.Data
             });
 
             // Configure other entities as needed...
+            modelBuilder.Entity<Algorithm>()
+                .Property(x => x.AlgorithmType)
+                .HasConversion(
+                    y => y.ToString(),
+                    y => (AlgorithmType) Enum.Parse(typeof(AlgorithmType), y)
+                );
+
+            modelBuilder.Entity<Algorithm>()
+                .HasOne(x => x.User)
+                .WithMany(x => x.Algorithms)
+                .HasForeignKey(x => x.UserID);
+
             modelBuilder.Entity<ExperimentRequest>()
                 .Property(x => x.Status)
                 .HasConversion(
@@ -64,21 +79,25 @@ namespace API_Backend.Data
             
             modelBuilder.Entity<ExperimentRequest>()
                 .HasOne(x => x.Algorithm)
-                .WithMany()
+                .WithMany(e => e.ExperimentRequests)
                 .HasForeignKey(x => x.AlgorithmID);
-                
 
+            modelBuilder.Entity<ExperimentRequest>()
+                .HasOne(x => x.User)
+                .WithMany(x => x.ExperimentRequests)
+                .HasForeignKey(x => x.UserID);
+               
             modelBuilder.Entity<ExperimentAlgorithmParameterValue>()
                 .HasKey(e => new { e.ExperimentID, e.ParameterID });
 
             modelBuilder.Entity<ExperimentAlgorithmParameterValue>()
                 .HasOne(e => e.AlgorithmParameter)
-                .WithMany()
+                .WithMany(e => e.AlgorithmParameterValues)
                 .HasForeignKey(e => e.ParameterID);
 
             modelBuilder.Entity<AlgorithmParameter>()
                 .HasOne(e => e.Algorithm)
-                .WithMany()
+                .WithMany(e => e.Parameters)
                 .HasForeignKey(e => e.AlgorithmID);
 
             base.OnModelCreating(modelBuilder);

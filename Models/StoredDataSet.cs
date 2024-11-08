@@ -13,7 +13,6 @@ namespace API_Backend.Models
         [Required]
         public string UserID { get; set; } // Changed from int to string
 
-        [ForeignKey("UserID")]
         public User User { get; set; }
 
         [Required]

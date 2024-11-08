@@ -67,10 +67,9 @@ namespace API_Backend.Controllers
     /// </summary>
     public class ExperimentSubmissionRequest
     {
-        public ExperimentSubmissionRequest(int algorithmId, string parameters, string datasetName, int nodeCount, string driverMemory, int driverCores, int executorNumber, int executorCores, string executorMemory, int memoryOverhead /*, List<ParameterValueDto> parameterValues*/)
+        public ExperimentSubmissionRequest(int algorithmId, string datasetName, int nodeCount, string driverMemory, int driverCores, int executorNumber, int executorCores, string executorMemory, int memoryOverhead /*, List<ParameterValueDto> parameterValues*/)
         {
             AlgorithmId = algorithmId;
-            Parameters = parameters;
             DatasetName = datasetName;
             NodeCount = nodeCount;
             DriverMemory = driverMemory;
@@ -79,11 +78,9 @@ namespace API_Backend.Controllers
             ExecutorCores = executorCores;
             ExecutorMemory = executorMemory;
             MemoryOverhead = memoryOverhead;
-            //ParameterValues = parameterValues;
         }
 
         public int AlgorithmId { get; set; }
-        public string Parameters { get; set; } // JSON serialized parameters
 
         // Docker Swarm Parameters
         public string DatasetName { get; set; }
@@ -96,7 +93,7 @@ namespace API_Backend.Controllers
         public int MemoryOverhead { get; set; }
 
         // Algorithm Parameter Values
-        public List<ParameterValueDto> ParameterValues { get; set; }
+        public ICollection<ParameterValueDto> ParameterValues { get; set; }
     }
 
     /// <summary>

@@ -14,7 +14,6 @@ namespace API_Backend.Models
         [Key]
         public int AlgorithmID { get; set; }
 
-        [ForeignKey("UserID")]
         public string? UserID { get; set; } // Null if provided by admin
 
         [Required]
@@ -33,7 +32,6 @@ namespace API_Backend.Models
         public DateTime UploadedAt { get; set; }
 
         // Navigation properties
-        [ForeignKey("UserID")]
         public User User { get; set; }
         public ICollection<AlgorithmParameter> Parameters { get; set; }
         public ICollection<ExperimentRequest> ExperimentRequests { get; set; }

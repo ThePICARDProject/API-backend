@@ -28,7 +28,7 @@ namespace API_backend.Services.FileProcessing
                 try
                 {
                     var experimentRequest = await _experimentQueue.DequeueAsync(stoppingToken);
-
+                   
                     using var scope = _serviceProvider.CreateScope();
                     var experimentService = scope.ServiceProvider.GetRequiredService<ExperimentService>();
 

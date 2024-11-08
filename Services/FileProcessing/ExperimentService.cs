@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using API_Backend.Controllers;
 using API_backend.Models;
 using API_backend.Services.Docker_Swarm;
+using K4os.Compression.LZ4.Engine;
 
 namespace API_backend.Services.FileProcessing
 {
@@ -64,7 +65,7 @@ namespace API_backend.Services.FileProcessing
                     AlgorithmID = request.AlgorithmId,
                     CreatedAt = DateTime.UtcNow,
                     Status = ExperimentStatus.WaitingInQueue,
-                    Parameters = request.Parameters
+                    DatasetName = request.DatasetName
                 };
                 _dbContext.ExperimentRequests.Add(experimentRequest);
 
@@ -82,11 +83,14 @@ namespace API_backend.Services.FileProcessing
                 };
                 _dbContext.ClusterParameters.Add(dockerParams);
 
+                API_Backend.Models.Algorithm algorithm = _dbContext.Algorithms.FirstOrDefault();
+
                 // Create ExperimentAlgorithmParameterValue entities
                 var parameterValues = request.ParameterValues.Select(pv => new ExperimentAlgorithmParameterValue
                 {
                     ExperimentID = experimentId,
                     ParameterID = pv.ParameterId,
+                    AlgorithmParameter = _dbContext.AlgorithmParameters.FirstOrDefault(x => x.ParameterID == pv.ParameterId),
                     Value = pv.Value
                 }).ToList();
 

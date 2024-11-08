@@ -24,7 +24,8 @@ namespace API_Backend.Models
         public string DataType { get; set; } // e.g., "int", "string", "bool"
 
         // Navigation property
-        [ForeignKey("AlgorithmID")]
         public Algorithm Algorithm { get; set; }
+
+        public ICollection<ExperimentAlgorithmParameterValue> AlgorithmParameterValues { get; set; }
     }
 }

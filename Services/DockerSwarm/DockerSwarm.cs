@@ -38,7 +38,7 @@ namespace API_backend.Services.Docker_Swarm
 
         public DockerSwarm(string rootDirectory, string advertiseIP, string advertisePort)
         {
-            //_rootDirectory = rootDirectory;
+            _rootDirectory = rootDirectory;
 
             //// Verify program files
             //if (!File.Exists(Path.Combine(rootDirectory, "docker-compose.yml")))
@@ -92,11 +92,11 @@ namespace API_backend.Services.Docker_Swarm
 
             // Generate user/experiment specific directories
             string datasetPath = dataset.FilePath;
-            string outputPath = Path.Combine(_experimentOutputBasePath, requestData.UserID, requestData.ExperimentID.ToString());
+            string outputPath = Path.Combine(_experimentOutputBasePath, requestData.UserID.ToString(), requestData.ExperimentID.ToString());
             string outputName = $"{requestData.ExperimentID}_{submissionDateTime}.txt";
 
             // Update Docker images
-            this.UpdateDockerfile(requestData.UserID);
+            this.UpdateDockerfile(requestData.UserID.ToString());
 
             // Create submit process
             int? exitCode = null;

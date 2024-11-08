@@ -89,9 +89,10 @@ namespace API_backend.Controllers
                     Parameters = new List<AlgorithmParameter>(),
                     ExperimentRequests = new List<ExperimentRequest>()
                 };
+                _dbContext.Algorithms.Add(Algorithm);
 
                 // Save Algorithm parameters
-                foreach(AlgorithmParameterUploadDto paramDto in parameters)
+                foreach (AlgorithmParameterUploadDto paramDto in parameters)
                 {
                     ValidateAlgorithmParameterData(paramDto);
                     var algorithmParameter = new AlgorithmParameter
@@ -107,7 +108,6 @@ namespace API_backend.Controllers
                 }
 
                 // Add algorithm and save changes
-                _dbContext.Algorithms.Add(Algorithm);
                 await _dbContext.SaveChangesAsync();
 
                 // Return OK

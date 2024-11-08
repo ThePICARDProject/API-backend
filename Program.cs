@@ -170,7 +170,7 @@ builder.Services.AddAuthentication(options =>
             }
 
             // Add UserID as the NameIdentifier claim
-            claimsIdentity.AddClaim(new Claim(ClaimTypes.NameIdentifier, user.UserID));
+            claimsIdentity.AddClaim(new Claim(ClaimTypes.NameIdentifier, user.UserID.ToString()));
         }
     };
 });

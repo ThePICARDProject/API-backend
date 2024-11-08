@@ -30,7 +30,7 @@ namespace API_Backend.Models
 
         public string DatasetName { get; set; }
 
-        public string Parameters { get; set; } // JSON serialized parameters
+
 
         public DateTime StartTime { get; set; }
         public DateTime? EndTime { get; set; }
@@ -40,7 +40,7 @@ namespace API_Backend.Models
         [ForeignKey("UserID")]
         public User User { get; set; }
 
-        public Algorithm Algorithm { get; set; }
+        public virtual Algorithm Algorithm { get; set; }
         public ClusterParameters ClusterParameters { get; set; }
         public ICollection<ExperimentAlgorithmParameterValue> ParameterValues { get; set; }
         //public ExperimentResult ExperimentResult { get; set; }
