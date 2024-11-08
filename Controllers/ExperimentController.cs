@@ -60,6 +60,12 @@ namespace API_Backend.Controllers
 
             return Ok(new { experimentId, status });
         }
+
+        [HttpGet("getlogs")]
+        public async Task<IActionResult> GetExperimentLog(Guid experimentId)
+        {
+            throw new NotImplementedException();
+        }
     }
 
     /// <summary>
