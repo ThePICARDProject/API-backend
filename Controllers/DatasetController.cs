@@ -46,7 +46,7 @@ namespace API_Backend.Controllers
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
             _logger.LogInformation("User {UserID} is retrieving all datasets.", userId);
-
+            
             try
             {
                 var datasets = await _dbContext.StoredDataSets

@@ -14,14 +14,74 @@ namespace API_backend.Controllers
     [Authorize]
     [ApiController]
     [Route("api/algorithms")]
-    public class AlgorithmController(ApplicationDbContext dbContext, ILogger<AlgorithmController> logger) : ControllerBase
+    public class AlgorithmController(ApplicationDbContext dbContext, ILogger<AlgorithmController> logger, IWebHostEnvironment environment) : ControllerBase
     {
-
-        private readonly IWebHostEnvironment _environment;
-
-        public AlgorithmController(ApplicationDbContext dbContext, ILogger<AlgorithmController> logger, IWebHostEnvironment environment) : this(dbContext, logger)
+        /// <summary>
+        /// Retrieves a Algorithm set by its Users ID.
+        /// </summary>
+        /// <param name="id">The ID of the Algorithm.</param>
+        /// <returns>Returns the Algorithm IDs and Names for given User.</returns>
+        [HttpGet("algorithms")]
+        public async Task<IActionResult> GetAlgorithms()
         {
-            _environment = environment;
+            // Check current user 
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            logger.LogInformation("User {userID} Retrieving algorithms", userId);
+
+            // Fetch the AlgorithmSet from the database
+            var algorithmSet = await dbContext.Algorithms
+                                              .Where(a => a.UserID == userId)  // Filter by user ID
+                                              .ToListAsync();  // Fetch all matching records as a list
+
+            // Check if the AlgorithmSet is empty, return 404
+            if (algorithmSet == null)
+            {
+                logger.LogWarning("Algorithms for user with ID {id} not found.");
+                return NotFound(new { message = "Algorithms not found." });
+            }
+
+            var listOfAlgorithmIDsAndNames = algorithmSet
+                .Select(a => new { a.AlgorithmID, a.AlgorithmName })  // Pair AlgorithmID with Name
+                .ToList();
+
+            // Convert the list of algorithm IDs and names to a formatted string
+            var algorithmIDNameString = string.Join(", ", listOfAlgorithmIDsAndNames.Select(a => $"{a.AlgorithmID} ({a.AlgorithmName})"));
+
+            // Log authorization of user to access all algorithms in returned set, with created a string 
+            logger.LogInformation("User {UserID} is authorized to access all algorithms in returned set: {algorithmIDNameString}", userId, algorithmIDNameString);
+
+            return Ok(listOfAlgorithmIDsAndNames);
+        }
+
+        /// <summary>
+        /// Gets the parameters for a specific Algorithm by its Id.
+        /// </summary>
+        /// <param name="algorithmId">The Id for the algorithm</param>
+        /// <returns></returns>
+        [HttpGet("algorithmParameters")]
+        public async Task<IActionResult> GetAlgorithmParameters(int algorithmId)
+        {
+            // Get the UserId information
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            logger.LogInformation($"Getting parameters for experiment with Id {algorithmId} for the user with id \"{userId}\".");
+
+            // Check that the algorithm belongs to the user
+            if (!await dbContext.Algorithms.AnyAsync(x => x.AlgorithmID == algorithmId && x.UserID == userId))
+            {
+                logger.LogInformation($"User does not have access to algorithm with ID {algorithmId}");
+                return Forbid();
+            }
+
+            // Get parameters for a users algorithms
+            var parameters = await dbContext.AlgorithmParameters.Where(x => x.AlgorithmID == algorithmId).ToListAsync();
+            if (parameters == null || parameters.Count == 0)
+            {
+                logger.LogInformation($"No parameters found for algorithm ID {algorithmId}.");
+                return NotFound($"No parameters found for algorithm ID {algorithmId}.");
+            }
+
+            // Return OK
+            return Ok(parameters.Select(x => new { x.ParameterID, x.ParameterName, x.DriverIndex, x.DataType }).ToList());
         }
 
         [HttpPost]
@@ -30,7 +90,6 @@ namespace API_backend.Controllers
         {
             // Get paramater data
             List<AlgorithmParameterUploadDto> parameters = JsonSerializer.Deserialize<List<AlgorithmParameterUploadDto>>(dto.Parameters);
-            
             return await HandleUpload(dto, parameters);
         }
 
@@ -56,7 +115,7 @@ namespace API_backend.Controllers
             try
             {
                 // Check that the docker-images path exists
-                string algorithmFolder = Path.Combine(_environment.ContentRootPath, "docker-images", "spark-hadoop");
+                string algorithmFolder = Path.Combine(environment.ContentRootPath, "docker-images", "spark-hadoop");
                 if (!Directory.Exists(algorithmFolder))
                     throw new Exception("docker-images folder does not exist in the applications root directory");
 
@@ -127,7 +186,7 @@ namespace API_backend.Controllers
     
         private void ValidateAlgorithmParameterData(AlgorithmParameterUploadDto param)
         {
-            switch(param.DataType)
+            switch (param.DataType)
             {
                 case "int": break;
                 case "string": break;
@@ -137,58 +196,6 @@ namespace API_backend.Controllers
             }
             if (param.DriverIndex < 0)
                 throw new ArgumentOutOfRangeException("Driver index must be greater than or equal to 0.");
-        }
-    
-
-        /// <summary>
-        /// Retrieves a Algorithm set by its Users ID.
-        /// </summary>
-        /// <param name="id">The ID of the Algorithm.</param>
-        /// <returns>Returns the Algorithm IDs and Names for given User.</returns>
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetAlgorithmById(int id)
-        {
-            // Check current user 
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            logger.LogInformation("User {userID} Retrieving algorithm with ID {AlgorithmID}", userId, id);
-
-
-            // Fetch the AlgorithmSet from the database
-            var AlgorithmSet = await dbContext.Algorithms
-                                              .Where(a => a.UserID == userId)  // Filter by user ID
-                                              .ToListAsync();  // Fetch all matching records as a list
-
-
-            // Check if the AlgorithmSet is empty, return 404
-            if (AlgorithmSet == null)
-            {
-                logger.LogWarning("Algorithms for user with ID: {ID} not found for user's request.", id);
-                return NotFound(new { message = "Algorithms not found." });
-            }
-
-            //iterate through each received algo in list and verify its assigned userID
-            foreach (var algorithm in AlgorithmSet)
-            {
-                if (algorithm.UserID != userId)
-                {
-                    // Log a warning and return 403 Forbidden for unauthorized access
-                    logger.LogWarning("User {userID} is not authorized to access this algorithm {AlgorithmID}", userId, algorithm.AlgorithmID);
-                    return Forbid();
-                }
-            }
-
-            var listOfAlgorithmIDsAndNames = AlgorithmSet
-                .Select(a => new { a.AlgorithmID, a.AlgorithmName })  // Pair AlgorithmID with Name
-                .ToList();
-
-            // Convert the list of algorithm IDs and names to a formatted string
-            var algorithmIDNameString = string.Join(", ", listOfAlgorithmIDsAndNames.Select(a => $"{a.AlgorithmID} ({a.AlgorithmName})"));
-
-            //now log authorization of user to access all algorithms in returned set, with created a string 
-            logger.LogInformation("User {UserID} is authorized to access all algorithms in returned set: {algorithmIDNameString}", userId, algorithmIDNameString);
-
-
-            return Ok(listOfAlgorithmIDsAndNames);
         }
     }
 }

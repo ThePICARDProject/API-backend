@@ -22,8 +22,8 @@ namespace API_backend.Services.Docker_Swarm
     /// Service for working with experiments and Docker-Swarm.
     /// </summary>
     /// <remarks>
-    /// Implemented based off of scripts provided in the docker-swarm repository.
-    /// Modified for enhanced modularity and use within the API.
+    /// Wrapper class based off of scripts provided in the docker-swarm repository.
+    /// Modified for automation and ease of use within the API.
     /// </remarks>
     /// <seealso href="https://github.com/ThePICARDProject/docker-swarm/"/>
     public class DockerSwarm

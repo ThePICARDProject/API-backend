@@ -63,7 +63,7 @@ builder.Services.AddDbContext<ApplicationDbContext>(options =>
 builder.Services.AddSingleton<DockerSwarm>(
     new DockerSwarm(
         Environment.CurrentDirectory,
-        builder.Configuration["DockerSwarm:AdvertiseAddr"], 
+        builder.Configuration["DockerSwarm:AdvertiseAddr"],
         builder.Configuration["DockerSwarm:AdvertisePort"])
     );
 
