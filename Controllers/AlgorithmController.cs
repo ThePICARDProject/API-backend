@@ -1,4 +1,4 @@
-﻿using API_backend.Models;
+using API_backend.Models;
 using API_Backend.Data;
 using API_Backend.Models;
 using Microsoft.AspNetCore.Mvc;
@@ -6,22 +6,22 @@ using System.Runtime.CompilerServices;
 using System.Security.Claims;
 using System.Text.Json;
 using System.IO;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.EntityFrameworkCore;
 
 namespace API_backend.Controllers
 {
+    [Authorize]
     [ApiController]
-    [Route("[controller]")]
-    public class AlgorithmController : ControllerBase
+    [Route("api/algorithms")]
+    public class AlgorithmController(ApplicationDbContext dbContext, ILogger<AlgorithmController> logger) : ControllerBase
     {
-        private readonly ApplicationDbContext _dbContext;
-        private readonly ILogger<AlgorithmController> _logger;
+
         private readonly IWebHostEnvironment _environment;
 
-        public AlgorithmController(ApplicationDbContext dbContext, ILogger<AlgorithmController> logger, IWebHostEnvironment environment)
+        public AlgorithmController(ApplicationDbContext dbContext, ILogger<AlgorithmController> logger, IWebHostEnvironment environment) : this(dbContext, logger)
         {
-            _dbContext = dbContext;
             _environment = environment;
-            _logger = logger;
         }
 
         [HttpPost]
@@ -43,11 +43,11 @@ namespace API_backend.Controllers
         private async Task<IActionResult> HandleUpload(AlgorithmUploadDto dto, List<AlgorithmParameterUploadDto> parameters)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            _logger.LogInformation($"Handling algorithm upload for {dto} from user {userId}");
+            logger.LogInformation($"Handling algorithm upload for {dto} from user {userId}");
 
             if(dto.JarFile.Length == 0)
             {
-                _logger.LogWarning("No file uploaded.");
+                logger.LogWarning("No file uploaded.");
                 return BadRequest(new { message = "No file uploaded."});
             }
             
@@ -89,7 +89,7 @@ namespace API_backend.Controllers
                     Parameters = new List<AlgorithmParameter>(),
                     ExperimentRequests = new List<ExperimentRequest>()
                 };
-                _dbContext.Algorithms.Add(Algorithm);
+                dbContext.Algorithms.Add(Algorithm);
 
                 // Save Algorithm parameters
                 foreach (AlgorithmParameterUploadDto paramDto in parameters)
@@ -104,11 +104,11 @@ namespace API_backend.Controllers
                         Algorithm = Algorithm,
                     };
                     Algorithm.Parameters.Add(algorithmParameter);
-                    _dbContext.Add(algorithmParameter);
+                    dbContext.Add(algorithmParameter);
                 }
 
                 // Add algorithm and save changes
-                await _dbContext.SaveChangesAsync();
+                await dbContext.SaveChangesAsync();
 
                 // Return OK
                 return Ok(new
@@ -120,7 +120,7 @@ namespace API_backend.Controllers
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, $"Error occured while uploading algorithm {dto.AlgorithmName}");
+                logger.LogError(ex, $"Error occured while uploading algorithm {dto.AlgorithmName}");
                 return StatusCode(StatusCodes.Status500InternalServerError, new { message = "An error occurred while uploading the algorithm." });
             }
         }
@@ -137,6 +137,58 @@ namespace API_backend.Controllers
             }
             if (param.DriverIndex < 0)
                 throw new ArgumentOutOfRangeException("Driver index must be greater than or equal to 0.");
+        }
+    
+
+        /// <summary>
+        /// Retrieves a Algorithm set by its Users ID.
+        /// </summary>
+        /// <param name="id">The ID of the Algorithm.</param>
+        /// <returns>Returns the Algorithm IDs and Names for given User.</returns>
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetAlgorithmById(int id)
+        {
+            // Check current user 
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            logger.LogInformation("User {userID} Retrieving algorithm with ID {AlgorithmID}", userId, id);
+
+
+            // Fetch the AlgorithmSet from the database
+            var AlgorithmSet = await dbContext.Algorithms
+                                              .Where(a => a.UserID == userId)  // Filter by user ID
+                                              .ToListAsync();  // Fetch all matching records as a list
+
+
+            // Check if the AlgorithmSet is empty, return 404
+            if (AlgorithmSet == null)
+            {
+                logger.LogWarning("Algorithms for user with ID: {ID} not found for user's request.", id);
+                return NotFound(new { message = "Algorithms not found." });
+            }
+
+            //iterate through each received algo in list and verify its assigned userID
+            foreach (var algorithm in AlgorithmSet)
+            {
+                if (algorithm.UserID != userId)
+                {
+                    // Log a warning and return 403 Forbidden for unauthorized access
+                    logger.LogWarning("User {userID} is not authorized to access this algorithm {AlgorithmID}", userId, algorithm.AlgorithmID);
+                    return Forbid();
+                }
+            }
+
+            var listOfAlgorithmIDsAndNames = AlgorithmSet
+                .Select(a => new { a.AlgorithmID, a.AlgorithmName })  // Pair AlgorithmID with Name
+                .ToList();
+
+            // Convert the list of algorithm IDs and names to a formatted string
+            var algorithmIDNameString = string.Join(", ", listOfAlgorithmIDsAndNames.Select(a => $"{a.AlgorithmID} ({a.AlgorithmName})"));
+
+            //now log authorization of user to access all algorithms in returned set, with created a string 
+            logger.LogInformation("User {UserID} is authorized to access all algorithms in returned set: {algorithmIDNameString}", userId, algorithmIDNameString);
+
+
+            return Ok(listOfAlgorithmIDsAndNames);
         }
     }
 }

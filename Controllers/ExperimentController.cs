@@ -1,10 +1,8 @@
-
 using System.Diagnostics;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using API_backend.Services.FileProcessing;
-using Org.BouncyCastle.Asn1.X509;
 
 namespace API_Backend.Controllers
 {
