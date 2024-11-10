@@ -63,7 +63,7 @@ then
 	echo "Error: docker-images directory does not exist." >&2
 	exit 1
 else
-	setfacl -Rm u:$current_user:rwx $docker_images_dir
+	chmod -R docker:rwx $docker_images_dir
 fi
 
 # Make sure a results directory exists and/or enable access
@@ -72,4 +72,5 @@ if [[ ! -d $results_dir ]]
 then
 	mkdir $results_dir
 fi
-setfacl -Rm u:$current_user:rwx $results_dir
+setfacl -m u:$current_user:rwx $results_dir
+setfacl -m u:$hadoop:rwx $results_dir
