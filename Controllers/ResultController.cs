@@ -1,75 +1,64 @@
-/*
- * Need GET request to receive all Results (ids & names) for current logged in user
- * Model after getDataSetByID getrequest
- */
-using System.Diagnostics;
-using API_Backend.Data;
-using API_Backend.Models;
-using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
-using API_backend.Services.FileProcessing;
-using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.Google;
+using Microsoft.AspNetCore.Mvc;
 
 namespace API_Backend.Controllers
 {
-    [Authorize]
     [ApiController]
-    [Route("api/results")]
-    public class ResultController(
-        ApplicationDbContext dbContext,
-        //IWebHostEnvironment environment,
-        //IDatasetService ResultService,
-        ILogger<ResultController> logger)
-        : ControllerBase
+    [Route("[controller]")]
+    public class AuthenticationController : ControllerBase
     {
-        /// <summary>
-        /// Retrieves a Results set by its Users ID.
-        /// </summary>
-        /// <param name="id">The ID of the Result.</param>
-        /// <returns>Returns the Result IDs and Names for given User.</returns>
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetResultById(int id)
+        private readonly ILogger<AuthenticationController> _logger;
+
+        public AuthenticationController(ILogger<AuthenticationController> logger)
         {
-            // Check current user 
+            _logger = logger;
+        }
+
+        /// <summary>
+        /// Initiates the Google OAuth 2.0 authentication process.
+        /// </summary>
+        /// <param name="returnUrl">The URL to redirect to after successful authentication.</param>
+        [HttpGet("login")]
+        public IActionResult Login(string returnUrl = "http://localhost:5173/dashboard") //FRONT END TEAM: CHANGE THIS TO YOUR RETURN
+        {
+            _logger.LogInformation("Login initiated with returnUrl: {ReturnUrl}", returnUrl);
+
+            // Validate the returnUrl to prevent open redirects
+            if (!Url.IsLocalUrl(returnUrl) && !IsAllowedRedirectUrl(returnUrl))
+            {
+                _logger.LogWarning("Invalid return URL: {ReturnUrl}", returnUrl);
+                return BadRequest("Invalid return URL.");
+            }
+
+            return Challenge(new AuthenticationProperties { RedirectUri = returnUrl }, GoogleDefaults.AuthenticationScheme);
+        }
+
+        /// <summary>
+        /// Logs the user out and clears the authentication cookie.
+        /// </summary>
+        [HttpGet("logout")]
+        public IActionResult Logout(string returnUrl = "http://localhost:5173/")
+        {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            logger.LogInformation("User {userID} Retrieving result with ID {ResultID}", userId, id);
+            _logger.LogInformation("User {userID} logged out.", userId);
+            return SignOut(new AuthenticationProperties { RedirectUri = returnUrl }, CookieAuthenticationDefaults.AuthenticationScheme);
+        }
 
-            // Fetch the ResultSet from the database
-            var ResultSet = await dbContext.Results
-                                              .Where(a => a.UserID == userId)  // Filter by user ID
-                                              .ToListAsync();  // Fetch all matching records as a list
-
-
-            // Check if the ResultSet is empty, return 404
-            if (ResultSet == null)
+        /// <summary>
+        /// Validates if the provided returnUrl is allowed.
+        /// </summary>
+        private bool IsAllowedRedirectUrl(string returnUrl)
+        {
+            var allowedUrls = new List<string>
             {
-                logger.LogWarning("Results for user with ID: {ID} not found for user's request.", id);
-                return NotFound(new { message = "Results not found." });
-            }
+                "https://localhost:5173/dashboard",
+                "https://localhost:5173/home",
+            };
 
-            //iterate through each received Result in list and verify its assigned userID
-            foreach (var result in ResultSet)
-            {
-                if (result.UserID != userId)
-                {
-                    // Log a warning and return 403 Forbidden for unauthorized access
-                    logger.LogWarning("User {userID} is not authorized to access this Result {ResultID}", userId, result.ResultID);
-                    return Forbid();
-                }
-            }
-
-            var listOfResultIDsAndNames = ResultSet
-                .Select(a => new { a.ResultID, a.ResultName })  // Pair ResultID with Name
-                .ToList();
-
-            // Convert the list of Result IDs and names to a formatted string
-            var ResultIDNameString = string.Join(", ", listOfResultIDsAndNames.Select(a => $"{a.ResultID} ({a.ResultName})"));
-
-            //now log authorization of user to access all Results in returned set, with created a string 
-            logger.LogInformation("User {UserID} is authorized to access all Results in returned set: {resultIDNameString}", userId, ResultIDNameString);
-
-            return Ok(listOfResultIDsAndNames);
+            return allowedUrls.Contains(returnUrl);
         }
     }
 }
