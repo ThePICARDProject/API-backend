@@ -160,7 +160,7 @@ check_error
 
 
 echo "-----Attempting to output results for experiment-----" | tee -a $log_path
-docker run --rm --user --name results-extractor --network "$(basename $(pwd) | sed 's/\./_/g')_cluster-network" -v "${results_output_directory}:/mnt/results" hdfs dfs -getmerge hdfs dfs -getmerge "${hdfs_url}/${hdfs_relative_output}" "/mnt/results/$(basename ${hdfs_relative_output})" &>> $log_path
+docker run --rm --name results-extractor --network "$(basename $(pwd) | sed 's/\./_/g')_cluster-network" -v "${results_output_directory}:/mnt/results" spark-hadoop:latest hdfs dfs -getmerge "${hdfs_url}/${hdfs_relative_output}" "/mnt/results/$(basename ${hdfs_relative_output})" &>> $log_path
 check_error
 
 ./scripts/cleanup.sh "${dataset_path}" "/${hdfs_relative_output}" $timeout &>> $log_path
