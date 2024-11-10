@@ -74,7 +74,7 @@ namespace API_backend.Controllers
 
             // Get parameters for a users algorithms
             var parameters = await dbContext.AlgorithmParameters.Where(x => x.AlgorithmID == algorithmId).ToListAsync();
-            if (parameters == null || parameters.Count == 0)
+            if (parameters == null)
             {
                 logger.LogInformation($"No parameters found for algorithm ID {algorithmId}.");
                 return NotFound($"No parameters found for algorithm ID {algorithmId}.");
