@@ -36,7 +36,7 @@ namespace API_Backend.Controller
         [HttpPost("createCsv")]
         public IActionResult csvCreate([FromBody] List<string> desiredMetrics, string inputFile, string outputFilePath)
         {
-            _fileProcessor.GetCsvTest(desiredMetrics, inputFile, outputFilePath);
+            _fileProcessor.GetCsv(desiredMetrics, inputFile, outputFilePath);
             
             return Ok();
         }

@@ -80,74 +80,9 @@ namespace API_Backend.Services.FileProcessing
             return exportPath;
         }
 
-        /// <summary>
-        /// Generates a CSV file containing formatted results.
-        /// 
-        /// </summary>
-        /// <returns></returns>
-        /// <exception cref="NotImplementedException"></exception>
-        public string GetCsv(string outputPath, string resultsPath, string survey, string classifier, int executors)
-        {
-            if (!Directory.Exists(outputPath))
-                throw new DirectoryNotFoundException("Output directory not found.");
 
-            try
-            {
-                using (StreamReader output = new StreamReader(Path.Combine(resultsPath)))
-                {
-                    // Print header
-                    string header = "Survey,Classifier,Multiclass,Executors,Trees,Labeled,Recall,Precision,FPR,F1,F4,Time.Split,Time.Train,Time.Test,Repitition,SupervisedTrees,Semi-SupervisedTrees,Ratio.S-SSL\n";
-
-                    string splittingTimeId = "SplittingTime";
-                    double splittingTime;
-
-                    string trainingTimeId = "TrainingTime";
-                    double trainingTime;
-
-                    string testingTimeId = "TestingTime";
-                    double testingTime;
-
-                    while (!output.EndOfStream)
-                    {
-                        string line = output.ReadLine();
-                        if (line.ToUpper().Substring(0, splittingTimeId.Length) == splittingTimeId.ToUpper())
-                        {
-                            splittingTime = Double.Parse(line.Split('=')[1].Trim());
-                        }
-                        else if (line.ToUpper().Substring(0, trainingTimeId.Length) == splittingTimeId.ToUpper())
-                        {
-                            trainingTime = Double.Parse(line.Split('=')[1].Trim());
-                        }
-                        else if (line.ToUpper().Substring(0, testingTimeId.Length) == testingTimeId.ToUpper())
-                        {
-                            testingTime = Double.Parse(line.Split('=')[1].Trim());
-                        }
-                    }
-
-                }
-            }
-            catch (Exception ex)
-            {
-                throw;
-            }
-            return outputPath;
-        }
-
-        // TODO: sqlQuery function will take a set of parameters and form an SQL query
-        // to search db, getting a list of file paths and storing them to pass to getCSV and aggregate data
         public async Task sqlQuery(List<string> desiredMetrics, List<string> queryParams)
         {
-
-            // TODO: data sanitization
-
-            /**
-             * User input breakdown:
-             * desiredMetrics - will be passed to getCSV
-             * queryParams: 
-             *      - each query param consists of [field] (> | < | >= | <= | = | != | BETWEEN | LIKE) [value]
-             *      
-             * 
-             */
 
             /**
              * Example sql query:
@@ -196,6 +131,20 @@ namespace API_Backend.Services.FileProcessing
                                   $"Driver Memory: {item.Clusters.DriverMemory}, Driver Cores: {item.Clusters.DriverCores}");
             }
 
+            var baseDirectory = _env.ContentRootPath;
+
+            string outputDirectoryPath = baseDirectory + "\\Services\\FileProcessing\\OutputCSV\\";
+
+            foreach (var item in data)
+            {
+
+                var tempFileOutput = Path.Combine(outputDirectoryPath, "testOutput.csv");
+                var filepath = Path.Combine(item.Results.CSVFilePath, item.Results.CSVFileName);
+
+                Console.WriteLine("input filePath: " + filepath + "   output filePath: " + tempFileOutput);
+                GetCsv(desiredMetrics, filepath, tempFileOutput);
+            }
+
             /** TODO: Clarify changes needed in the db
              *      - Should experimentResults have a resultFilePath rather than a csvFilePath? 
              *          - each experiment results in one raw data .txt file, multiple experiment results are then later aggregated into a csv file after a sql query
@@ -222,29 +171,18 @@ namespace API_Backend.Services.FileProcessing
 
 
 
-        public void GetCsvTest(List<string> desiredMetrics, string inputFile, string outputFilePath)
+        public void GetCsv(List<string> desiredMetrics, string inputFilePath, string outputFilePath)
         {
-
-            // TODO: add SQL query, store list of .txt files, create loop appending csv file with values of each file
-            // Simulate successful SQL query by storing all three example results in a list and looping
 
 
             // Get the base directory of the application
             var baseDirectory = _env.ContentRootPath;
-            string inputAppendPath = "\\Services\\FileProcessing\\Test Files\\";
-            string inputFilePath = baseDirectory + inputAppendPath + inputFile;
-
-            string outputFile = "output1.csv"; // TODO: replace with output file from function parameter
-
             string outputDirectoryPath = baseDirectory + "\\Services\\FileProcessing\\OutputCSV\\";
-            string tempOutputFilePath = outputDirectoryPath + outputFile;
-            Console.WriteLine("base directory: " + baseDirectory);
+
 
 
             using (StreamReader output = new StreamReader(Path.Combine(inputFilePath)))
             {
-                // string header = "Survey,Classifier,Multiclass,Executors,Trees,Labeled,Recall,Precision,FPR,F1,F4,Time.Split,Time.Train,Time.Test,Repitition,SupervisedTrees,Semi-SupervisedTrees,Ratio.S-SSL\n";
-
 
                 // Dictory of key value pairs representing metric to obtain from .txt file and corresponding value (initially set to null)
                 var metrics = desiredMetrics.ToDictionary(metric => metric, metric => (double?)null);
@@ -283,10 +221,10 @@ namespace API_Backend.Services.FileProcessing
 
 
                 // If file exists, append new values -- otherwise, create new file and add headers and values
-                if (File.Exists(tempOutputFilePath))
+                if (File.Exists(outputFilePath))
                 {
                     // TODO: add try catch block
-                    File.AppendAllText(tempOutputFilePath, csvValues);
+                    File.AppendAllText(outputFilePath, csvValues);
 
                 } else
                 {
@@ -296,7 +234,7 @@ namespace API_Backend.Services.FileProcessing
 
 
                     // TODO: add try catch block
-                    File.WriteAllText(tempOutputFilePath, csv);
+                    File.WriteAllText(outputFilePath, csv);
 
                 }
             }
