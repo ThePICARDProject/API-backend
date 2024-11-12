@@ -3,15 +3,33 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using API_Backend.Services.FileProcessing;
+using API_Backend.Data;
+using Microsoft.EntityFrameworkCore;
 
 namespace API_Backend.Controllers
 {
-    [Authorize]
+    //[Authorize]
     [ApiController]
     [Route("api/result")]
-    public class ResultController(ExperimentService experimentService, ILogger<ResultController> logger)
-        : ControllerBase
+    public class ResultController: ControllerBase
     {
+
+        private readonly FileProcessor _fileProcessor;
+        private readonly ILogger<ResultController> _logger;
+        private readonly ApplicationDbContext _dbContext;
+        private readonly ExperimentService _experimentService;
+
+
+
+        public ResultController(/*ExperimentService experimentService,*/ FileProcessor fileProcessor, ILogger<ResultController> logger, ApplicationDbContext dbContext)
+        {
+            _fileProcessor = fileProcessor;
+            _logger = logger;
+            _dbContext = dbContext;
+            //_experimentService = experimentService;
+        }
+
+
         /// <summary>
         /// Gets the processed results of an experiment.
         /// </summary>
@@ -19,36 +37,81 @@ namespace API_Backend.Controllers
         public async Task<IActionResult> GetProcessedResults(string experimentId)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            logger.LogInformation("User {UserID} is requesting results for ExperimentID {ExperimentID}", userId, experimentId);
+            _logger.LogInformation("User {UserID} is requesting results for ExperimentID {ExperimentID}", userId, experimentId);
 
-            var experiment = await experimentService.GetExperimentByIdAsync(experimentId);
+            var experiment = await _experimentService.GetExperimentByIdAsync(experimentId);
 
             if (experiment is not { Status: ExperimentStatus.Finished })
             {
-                logger.LogWarning("Results not available for ExperimentID {ExperimentID}", experimentId);
+                _logger.LogWarning("Results not available for ExperimentID {ExperimentID}", experimentId);
                 return NotFound(new { message = "Results not available or experiment not completed." });
             }
 
             // Ensure the requesting user is the owner of the experiment
             if (experiment.UserID != userId)
             {
-                logger.LogWarning("User {UserID} is not authorized to access results for ExperimentID {ExperimentID}", userId, experimentId);
+                _logger.LogWarning("User {UserID} is not authorized to access results for ExperimentID {ExperimentID}", userId, experimentId);
                 return Forbid();
             }
 
             // Retrieve result data
-            var result = await experimentService.GetExperimentResultAsync(experimentId);
+            var result = await _experimentService.GetExperimentResultAsync(experimentId);
 
             if (result == null)
             {
-                logger.LogWarning("Experiment results not found for ExperimentID {ExperimentID}", experimentId);
+                _logger.LogWarning("Experiment results not found for ExperimentID {ExperimentID}", experimentId);
                 return NotFound(new { message = "Experiment results not found." });
             }
 
-            logger.LogInformation("Returning results for ExperimentID {ExperimentID}", experimentId);
+            _logger.LogInformation("Returning results for ExperimentID {ExperimentID}", experimentId);
 
             // Return the result data
             return Ok(new { experimentId, result });
+        }
+
+        // TODO: update to handle other status codes
+        [HttpPost("createCsv")]
+        public IActionResult csvCreate([FromBody] List<string> desiredMetrics, string inputFile, string outputFilePath)
+        {
+            _fileProcessor.GetCsv(desiredMetrics, inputFile, outputFilePath);
+
+            return Ok();
+        }
+
+
+        /** TODO: update to handle other status codes
+        Make sqlQuery a service called by getCSV controller or aggregateData controller
+        Generate outputFilePath based on passed user and query for aggregateData
+        Generage outputFilePath based on passed user, query, and metrics for createCSV
+        Update db to store filePaths for aggregateData and CSVs, with FK to userID
+        **/
+        [HttpPost("sqlQuery")]
+        public async Task<IActionResult> sqlQuery([FromBody] QueryExperiment request)
+        {
+            Console.WriteLine("inside sqlQuery");
+
+            await _fileProcessor.sqlQuery(request.DesiredMetrics, request.QueryParams);
+
+
+            return Ok();
+        }
+
+        [HttpGet("DockerSwarmParams")]
+        public async Task<IActionResult> GetAllDockerSwarmParams()
+        {
+
+            try
+            {
+                var dockerSwarmParams = await _dbContext.ClusterParameters.ToListAsync();
+
+
+                return Ok(dockerSwarmParams);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "MySQL error: {Message} - Inner Exception: {InnerException}", ex.Message, ex.InnerException?.Message);
+                return StatusCode(StatusCodes.Status500InternalServerError, new { message = "An error occurred while retrieving docker swarm params." });
+            }
         }
     }
 }
