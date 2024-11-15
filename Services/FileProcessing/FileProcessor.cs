@@ -64,7 +64,7 @@ namespace API_Backend.Services.FileProcessing
                 throw new Exception($"Export with the Id {requestId} already exists.");
             else
             {
-                this.CreateDirectories(exportPath);
+                this.tempCreateDirectories(exportPath); // change back to not be temp
             }
 
             // For each results file, append the results to the aggregate file
@@ -72,7 +72,7 @@ namespace API_Backend.Services.FileProcessing
             foreach (var filePath in filePaths)
             {
                 List<string> lines = File.ReadLines(filePath).ToList();
-                lines.Insert(0, $"-----\nOutput Results for {Path.GetFileName(filePath)}\n-----\n");
+                lines.Insert(0, $"nr-----\nOutput Results for {Path.GetFileName(filePath)}\n-----\n");
                 File.AppendAllLines(exportPath, lines);
             }
 
@@ -142,7 +142,7 @@ namespace API_Backend.Services.FileProcessing
                 var filepath = Path.Combine(item.Results.CSVFilePath, item.Results.CSVFileName);
 
                 Console.WriteLine("input filePath: " + filepath + "   output filePath: " + tempFileOutput);
-                GetCsv(desiredMetrics, filepath, tempFileOutput);
+                GetCsv(desiredMetrics, filepath);
             }
 
             /** TODO: Clarify changes needed in the db
@@ -171,25 +171,34 @@ namespace API_Backend.Services.FileProcessing
 
 
 
-        public void GetCsv(List<string> desiredMetrics, string inputFilePath, string outputFilePath)
+        public string GetCsv(List<string> desiredMetrics, string aggregateFilePath)
         {
+            if (!Path.Exists(aggregateFilePath))
+            {
+                throw new FileNotFoundException($"The file at path '{aggregateFilePath}' was not found.");
+            }
+
+            string aggregateParent = Path.GetDirectoryName(aggregateFilePath);
+            var outputFilePath = Path.Combine(aggregateParent, $"{Path.GetFileName(aggregateParent)}.csv");
 
 
-            // Get the base directory of the application
-            var baseDirectory = _env.ContentRootPath;
-            string outputDirectoryPath = baseDirectory + "\\Services\\FileProcessing\\OutputCSV\\";
 
-
-
-            using (StreamReader output = new StreamReader(Path.Combine(inputFilePath)))
+            using (StreamReader output = new StreamReader(aggregateFilePath))
             {
 
                 // Dictory of key value pairs representing metric to obtain from .txt file and corresponding value (initially set to null)
                 var metrics = desiredMetrics.ToDictionary(metric => metric, metric => (double?)null);
 
+                var headerList = metrics.Keys.ToList();
+                string csvHeaders = System.String.Join(",", headerList.ToArray()) + "\n";
+
+                File.AppendAllText(outputFilePath, csvHeaders);
+
+
 
                 while (!output.EndOfStream)
                 {
+
                     string? line = output.ReadLine();
 
                     // parse .txt doc for metric and store corresponding value in dictionary
@@ -201,44 +210,32 @@ namespace API_Backend.Services.FileProcessing
                             metrics[metricKey] = value;
                         }
                     }
+
+
+                    if (line != null && line.StartsWith("nr-----") || output.EndOfStream)
+                    {
+                        var valueList = metrics.Values.ToList();
+                        if (valueList.Any(value => value.HasValue))
+                        {
+                            string csvValues = System.String.Join(",", valueList.ToArray()) + "\n";
+                            File.AppendAllText(outputFilePath, csvValues);
+
+                        }
+                        // Clear metric values
+                        foreach (var key in metrics.Keys.ToList())
+                        {
+                            metrics[key] = null;
+                        }
+
+                    }
+
+
                 }
 
-                // Check if the csv output directory exists
-                if (!Directory.Exists(outputDirectoryPath))
-                {
-                    Directory.CreateDirectory(outputDirectoryPath);
-                }
 
 
-                // get list of headers, store in comma separated string, append new line
-                var headerList = metrics.Keys.ToList();
-                string csvHeaders = System.String.Join(",", headerList.ToArray()) + "\n";
-
-                // get list of values, store in comma separated string, append new line
-                var valueList = metrics.Values.ToList();
-                string csvValues = System.String.Join(",", valueList.ToArray()) + "\n";
-
-
-
-                // If file exists, append new values -- otherwise, create new file and add headers and values
-                if (File.Exists(outputFilePath))
-                {
-                    // TODO: add try catch block
-                    File.AppendAllText(outputFilePath, csvValues);
-
-                } else
-                {
-
-                    // combine headers and values into csv formatted string
-                    string csv = csvHeaders + csvValues;
-
-
-                    // TODO: add try catch block
-                    File.WriteAllText(outputFilePath, csv);
-
-                }
             }
-            return;
+            return outputFilePath;
         }
 
         private void CreateDirectories(string filePath)
@@ -250,6 +247,14 @@ namespace API_Backend.Services.FileProcessing
 
                 permissions.Start();
                 permissions.WaitForExit();
+            }
+        }
+
+        private void tempCreateDirectories(string filePath)
+        {
+            if (!Directory.Exists(filePath))
+            {
+                Directory.CreateDirectory(filePath);
             }
         }
     }

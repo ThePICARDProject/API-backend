@@ -5,6 +5,7 @@ using System.Security.Claims;
 using API_Backend.Services.FileProcessing;
 using API_Backend.Data;
 using Microsoft.EntityFrameworkCore;
+using Org.BouncyCastle.Asn1.Ocsp;
 
 namespace API_Backend.Controllers
 {
@@ -69,13 +70,63 @@ namespace API_Backend.Controllers
             return Ok(new { experimentId, result });
         }
 
-        // TODO: update to handle other status codes
-        [HttpPost("createCsv")]
-        public IActionResult csvCreate([FromBody] List<string> desiredMetrics, string inputFile, string outputFilePath)
-        {
-            _fileProcessor.GetCsv(desiredMetrics, inputFile, outputFilePath);
 
-            return Ok();
+        // TODO: update to handle other status codes and return an appropriate file path
+        [HttpPost ("aggregateData")]
+        public IActionResult aggregateData(string userId, string requestId, List<string> filePaths)
+        {
+            try
+            {
+                string resultFilePath = _fileProcessor.AggregateData(userId, requestId, filePaths);
+
+                return this.Content(resultFilePath);
+            }
+            catch (FileNotFoundException ex)
+            {
+                Console.WriteLine(ex.Message);
+
+
+
+                return StatusCode(500, new { message = "An unexpected error occurred.", details = ex.Message });
+            }
+            catch (Exception ex)
+            {
+
+                Console.WriteLine(ex.Message);
+
+                return StatusCode(500, new { message = "An unexpected error occurred.", details = ex.Message });
+            }
+            
+
+        }
+
+
+        // TODO: update to handle other status codes and return an appropriate file path
+        [HttpPost("createCsv")]
+        public IActionResult csvCreate([FromBody] List<string> desiredMetrics, string inputFile)
+        {
+
+            try
+            {
+                string outputFilePath = _fileProcessor.GetCsv(desiredMetrics, inputFile);
+
+                return this.Content(outputFilePath);
+            }
+            catch (FileNotFoundException ex)
+            {
+                Console.WriteLine("Aggregated data file not found: " + ex.Message);
+
+
+
+                return NotFound("Aggregated data file not found");
+            }
+            catch (Exception ex)
+            {
+
+                Console.WriteLine(ex.Message);
+
+                return StatusCode(500, new { message = "An unexpected error occurred.", details = ex.Message });
+            }
         }
 
 

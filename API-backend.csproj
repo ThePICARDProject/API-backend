@@ -30,6 +30,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<Folder Include="exports\u123\" />
 		<Folder Include="Services\DockerSwarm\algorithms\SupervisedMLRF\target\global-logging\" />
 		<Folder Include="Services\DockerSwarm\algorithms\SupervisedMLRF\target\task-temp-directory\" />
 		<Folder Include="Services\DockerSwarm\results\" />
