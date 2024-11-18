@@ -20,6 +20,7 @@ namespace API_Backend.Data
         public DbSet<ClusterParameters> ClusterParameters { get; init; }
         public DbSet<Algorithm> Algorithms { get; init; }
         public DbSet<AlgorithmParameter> AlgorithmParameters { get; init; }
+        public DbSet<AlgorithmRequestParameters> AlgorithmRequestParameters { get; init; }
         public DbSet<UploadSession> UploadSessions { get; init; }
         public DbSet<ExperimentAlgorithmParameterValue> ExperimentAlgorithmParameterValues { get; init; }
         public DbSet<ExperimentResult> ExperimentResults { get; init; }
@@ -98,10 +99,28 @@ namespace API_Backend.Data
                     new Algorithm
                     {
                         UserID = context.Users.First().UserID, // Assigning to the first seeded user
-                        AlgorithmName = "Sample Algorithm",
+                        AlgorithmName = "First Algorithm",
                         MainClassName = "SampleMainClass",
                         AlgorithmType = AlgorithmType.Supervised,
                         JarFilePath = "/path/to/sampleAlgorithm.jar",
+                        UploadedAt = DateTime.UtcNow
+                    },
+                    new Algorithm
+                    {
+                        UserID = context.Users.First().UserID, // Assigning to the first seeded user
+                        AlgorithmName = "Second Algorithm",
+                        MainClassName = "SampleMainClass",
+                        AlgorithmType = AlgorithmType.Unsupervised,
+                        JarFilePath = "/path/to/secondAlgorithm.jar",
+                        UploadedAt = DateTime.UtcNow
+                    },
+                    new Algorithm
+                    {
+                        UserID = context.Users.First().UserID, // Assigning to the first seeded user
+                        AlgorithmName = "Third Algorithm",
+                        MainClassName = "SampleMainClass",
+                        AlgorithmType = AlgorithmType.SemiSupervised,
+                        JarFilePath = "/path/to/thirdAlgorithm.jar",
                         UploadedAt = DateTime.UtcNow
                     }
                 };
@@ -196,13 +215,22 @@ namespace API_Backend.Data
 
             // Seed Algorithm Parameters
             if (!context.AlgorithmParameters.Any()) {
-            
+
+                var algorithms = context.Algorithms.ToList();
+
+                var algorithm1 = algorithms.ElementAt(0);
+
+                var algorithm2 = algorithms.ElementAt(1);
+
+                var algorithm3 = algorithms.ElementAt(2);
+
+
                 var algorithmParameters = new List<AlgorithmParameter>
                 {
                     new AlgorithmParameter
                     {
                         ParameterID = 1,
-                        AlgorithmID = context.Algorithms.First().AlgorithmID,
+                        AlgorithmID = algorithm1.AlgorithmID,
                         ParameterName = "Trees",
                         DriverIndex = 1,
                         DataType = "int"
@@ -211,7 +239,7 @@ namespace API_Backend.Data
                     new AlgorithmParameter
                     {
                         ParameterID = 2,
-                        AlgorithmID = context.Algorithms.First().AlgorithmID,
+                        AlgorithmID = algorithm1.AlgorithmID,
                         ParameterName = "Supervised",
                         DriverIndex = 1,
                         DataType = "int"
@@ -220,7 +248,7 @@ namespace API_Backend.Data
                     new AlgorithmParameter
                     {
                         ParameterID = 3,
-                        AlgorithmID = context.Algorithms.First().AlgorithmID,
+                        AlgorithmID = algorithm1.AlgorithmID,
                         ParameterName = "Semi-Supervised",
                         DriverIndex = 1,
                         DataType = "int"
@@ -229,7 +257,7 @@ namespace API_Backend.Data
                     new AlgorithmParameter
                     {
                         ParameterID = 4,
-                        AlgorithmID = context.Algorithms.First().AlgorithmID,
+                        AlgorithmID = algorithm1.AlgorithmID,
                         ParameterName = "Survey",
                         DriverIndex = 1,
                         DataType = "string"
@@ -238,7 +266,7 @@ namespace API_Backend.Data
                     new AlgorithmParameter
                     {
                         ParameterID = 5,
-                        AlgorithmID = context.Algorithms.First().AlgorithmID,
+                        AlgorithmID = algorithm1.AlgorithmID,
                         ParameterName = "Classifier",
                         DriverIndex = 1,
                         DataType = "string"
@@ -247,8 +275,118 @@ namespace API_Backend.Data
                     new AlgorithmParameter
                     {
                         ParameterID = 6,
-                        AlgorithmID = context.Algorithms.First().AlgorithmID,
+                        AlgorithmID = algorithm1.AlgorithmID,
+                        ParameterName = "Labeled",
+                        DriverIndex = 1,
+                        DataType = "int"
+
+                    },
+
+                    new AlgorithmParameter
+                    {
+                        ParameterID = 7,
+                        AlgorithmID = algorithm2.AlgorithmID,
                         ParameterName = "Trees",
+                        DriverIndex = 1,
+                        DataType = "int"
+
+                    },
+                    new AlgorithmParameter
+                    {
+                        ParameterID = 8,
+                        AlgorithmID = algorithm2.AlgorithmID,
+                        ParameterName = "Supervised",
+                        DriverIndex = 1,
+                        DataType = "int"
+
+                    },
+                    new AlgorithmParameter
+                    {
+                        ParameterID = 9,
+                        AlgorithmID = algorithm2.AlgorithmID,
+                        ParameterName = "Semi-Supervised",
+                        DriverIndex = 1,
+                        DataType = "int"
+
+                    },
+                    new AlgorithmParameter
+                    {
+                        ParameterID = 10,
+                        AlgorithmID = algorithm2.AlgorithmID,
+                        ParameterName = "Survey",
+                        DriverIndex = 1,
+                        DataType = "string"
+
+                    },
+                    new AlgorithmParameter
+                    {
+                        ParameterID = 11,
+                        AlgorithmID = algorithm2.AlgorithmID,
+                        ParameterName = "Classifier",
+                        DriverIndex = 1,
+                        DataType = "string"
+
+                    },
+                    new AlgorithmParameter
+                    {
+                        ParameterID = 12,
+                        AlgorithmID = algorithm2.AlgorithmID,
+                        ParameterName = "Labeled",
+                        DriverIndex = 1,
+                        DataType = "int"
+
+                    },
+
+                    new AlgorithmParameter
+                    {
+                        ParameterID = 13,
+                        AlgorithmID = algorithm3.AlgorithmID,
+                        ParameterName = "Trees",
+                        DriverIndex = 1,
+                        DataType = "int"
+
+                    },
+                    new AlgorithmParameter
+                    {
+                        ParameterID = 14,
+                        AlgorithmID = algorithm3.AlgorithmID,
+                        ParameterName = "Supervised",
+                        DriverIndex = 1,
+                        DataType = "int"
+
+                    },
+                    new AlgorithmParameter
+                    {
+                        ParameterID = 15,
+                        AlgorithmID = algorithm3.AlgorithmID,
+                        ParameterName = "Semi-Supervised",
+                        DriverIndex = 1,
+                        DataType = "int"
+
+                    },
+                    new AlgorithmParameter
+                    {
+                        ParameterID = 16,
+                        AlgorithmID = algorithm3.AlgorithmID,
+                        ParameterName = "Survey",
+                        DriverIndex = 1,
+                        DataType = "string"
+
+                    },
+                    new AlgorithmParameter
+                    {
+                        ParameterID = 17,
+                        AlgorithmID = algorithm3.AlgorithmID,
+                        ParameterName = "Classifier",
+                        DriverIndex = 1,
+                        DataType = "string"
+
+                    },
+                    new AlgorithmParameter
+                    {
+                        ParameterID = 18,
+                        AlgorithmID = algorithm3.AlgorithmID,
+                        ParameterName = "Labeled",
                         DriverIndex = 1,
                         DataType = "int"
 
@@ -256,15 +394,180 @@ namespace API_Backend.Data
 
                 };
 
+                context.AlgorithmParameters.AddRange(algorithmParameters);
+                context.SaveChanges();
+
 
             }
 
-            // TODO: Seed AlgorithmParameterValues
+            // Seed AlgorithmParameterValues
+            if (!context.ExperimentAlgorithmParameterValues.Any())
+            {
+
+                var experimentLists = context.ExperimentRequests.ToList();
+
+                var experiment1 = context.ExperimentRequests.ElementAt(0);
+
+                var experiment2 = context.ExperimentRequests.ElementAt(1);
+
+                var experiment3 = context.ExperimentRequests.ElementAt(2);
+
+                var experimentvalues = new List<ExperimentAlgorithmParameterValue>
+                {
+                    new ExperimentAlgorithmParameterValue
+                    {
+                        ID = 1,
+                        ExperimentID = experiment1.ExperimentID,
+                        ParameterID = 1,
+                        Value = "10",
+                    },
+                    new ExperimentAlgorithmParameterValue
+                    {
+                        ID = 2,
+                        ExperimentID = experiment1.ExperimentID,
+                        ParameterID = 2,
+                        Value = "33",
+                    },
+                    new ExperimentAlgorithmParameterValue
+                    {
+                        ID = 3,
+                        ExperimentID = experiment1.ExperimentID,
+                        ParameterID = 3,
+                        Value = "44",
+                    },
+                    new ExperimentAlgorithmParameterValue
+                    {
+                        ID = 4,
+                        ExperimentID = experiment1.ExperimentID,
+                        ParameterID = 4,
+                        Value = "gbt350drift",
+                    },
+                    new ExperimentAlgorithmParameterValue
+                    {
+                        ID = 5,
+                        ExperimentID = experiment1.ExperimentID,
+                        ParameterID = 5,
+                        Value = "CoDRIFt",
+                    },
+                    new ExperimentAlgorithmParameterValue
+                    {
+                        ID = 6,
+                        ExperimentID = experiment1.ExperimentID,
+                        ParameterID = 6,
+                        Value = "1",
+                    },
+                    new ExperimentAlgorithmParameterValue
+                    {
+                        ID = 7,
+                        ExperimentID = experiment2.ExperimentID,
+                        ParameterID = 7,
+                        Value = "15",
+                    },
+                    new ExperimentAlgorithmParameterValue
+                    {
+                        ID = 8,
+                        ExperimentID = experiment2.ExperimentID,
+                        ParameterID = 8,
+                        Value = "39",
+                    },
+                    new ExperimentAlgorithmParameterValue
+                    {
+                        ID = 9,
+                        ExperimentID = experiment2.ExperimentID,
+                        ParameterID = 9,
+                        Value = "37",
+                    },
+                    new ExperimentAlgorithmParameterValue
+                    {
+                        ID = 10,
+                        ExperimentID = experiment2.ExperimentID,
+                        ParameterID = 10,
+                        Value = "palfa",
+                    },
+                    new ExperimentAlgorithmParameterValue
+                    {
+                        ID = 11,
+                        ExperimentID = experiment2.ExperimentID,
+                        ParameterID = 11,
+                        Value = "CoDRIFt",
+                    },
+                    new ExperimentAlgorithmParameterValue
+                    {
+                        ID = 12,
+                        ExperimentID = experiment2.ExperimentID,
+                        ParameterID = 12,
+                        Value = "10",
+                    },
+                    new ExperimentAlgorithmParameterValue
+                    {
+                        ID = 13,
+                        ExperimentID = experiment3.ExperimentID,
+                        ParameterID = 13,
+                        Value = "10",
+                    },
+                    new ExperimentAlgorithmParameterValue
+                    {
+                        ID = 14,
+                        ExperimentID = experiment3.ExperimentID,
+                        ParameterID = 14,
+                        Value = "36",
+                    },
+                    new ExperimentAlgorithmParameterValue
+                    {
+                        ID = 15,
+                        ExperimentID = experiment3.ExperimentID,
+                        ParameterID = 15,
+                        Value = "42",
+                    },
+                    new ExperimentAlgorithmParameterValue
+                    {
+                        ID = 16,
+                        ExperimentID = experiment3.ExperimentID,
+                        ParameterID = 16,
+                        Value = "gbt350drift",
+                    },
+                    new ExperimentAlgorithmParameterValue
+                    {
+                        ID = 17,
+                        ExperimentID = experiment3.ExperimentID,
+                        ParameterID = 17,
+                        Value = "CoDRIFt",
+                    },
+                    new ExperimentAlgorithmParameterValue
+                    {
+                        ID = 18,
+                        ExperimentID = experiment3.ExperimentID,
+                        ParameterID = 18,
+                        Value = "15",
+                    },
+
+                };
+
+                context.ExperimentAlgorithmParameterValues.AddRange(experimentvalues);
+                context.SaveChanges();
+
+            }
+
+            // Seed AlgorithmRequestParameters
+            if (!context.AlgorithmRequestParameters.Any()) {
+                var algorithmRequestParameters = new List<AlgorithmRequestParameters>();
 
 
-            // TODO: Seed AlgorithmRequestParameters
+                var experimentRequests = context.ExperimentRequests.ToList();
 
-            // TODO: Seed ExperimentAlgorithmParameterValues
+                foreach (var experimentRequest in experimentRequests)
+                {
+                    algorithmRequestParameters.Add(
+                        new AlgorithmRequestParameters
+                        {
+                            ExperimentID = experimentRequest.ExperimentID,
+                            DatasetName = "Sample Dataset"
+                        });
+                }
+
+                context.AlgorithmRequestParameters.AddRange(algorithmRequestParameters);
+                context.SaveChanges();
+            }
 
 
             // Seed Cluster Parameters
