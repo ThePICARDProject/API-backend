@@ -4,6 +4,7 @@ using API_Backend.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace API_Backend.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20241116215850_ModifiedNamesAndAddedModels")]
+    partial class ModifiedNamesAndAddedModels
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -21,34 +24,6 @@ namespace API_Backend.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 64);
 
             MySqlModelBuilderExtensions.AutoIncrementColumns(modelBuilder);
-
-            modelBuilder.Entity("API_Backend.Models.AggregatedResult", b =>
-                {
-                    b.Property<int>("AggregatedResultID")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("AggregatedResultID"));
-
-                    b.Property<string>("AggregatedResultDescription")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.Property<string>("AggregatedResultFilePath")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.Property<string>("AggregatedResultName")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime(6)");
-
-                    b.HasKey("AggregatedResultID");
-
-                    b.ToTable("AggregatedResults");
-                });
 
             modelBuilder.Entity("API_Backend.Models.Algorithm", b =>
                 {
@@ -170,39 +145,6 @@ namespace API_Backend.Migrations
                         .IsUnique();
 
                     b.ToTable("ClusterParameters");
-                });
-
-            modelBuilder.Entity("API_Backend.Models.CsvResult", b =>
-                {
-                    b.Property<int>("CsvResultID")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    MySqlPropertyBuilderExtensions.UseMySqlIdentityColumn(b.Property<int>("CsvResultID"));
-
-                    b.Property<int>("AggregatedResultID")
-                        .HasColumnType("int");
-
-                    b.Property<DateTime>("CreatedAt")
-                        .HasColumnType("datetime(6)");
-
-                    b.Property<string>("CsvResultDescription")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.Property<string>("CsvResultFilePath")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.Property<string>("CsvResultName")
-                        .IsRequired()
-                        .HasColumnType("longtext");
-
-                    b.HasKey("CsvResultID");
-
-                    b.HasIndex("AggregatedResultID");
-
-                    b.ToTable("CsvResults");
                 });
 
             modelBuilder.Entity("API_Backend.Models.DataVisualizationModel", b =>
@@ -497,17 +439,6 @@ namespace API_Backend.Migrations
                         .IsRequired();
 
                     b.Navigation("ExperimentRequest");
-                });
-
-            modelBuilder.Entity("API_Backend.Models.CsvResult", b =>
-                {
-                    b.HasOne("API_Backend.Models.AggregatedResult", "AggregatedResult")
-                        .WithMany()
-                        .HasForeignKey("AggregatedResultID")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.Navigation("AggregatedResult");
                 });
 
             modelBuilder.Entity("API_Backend.Models.ExperimentAlgorithmParameterValue", b =>

@@ -73,10 +73,12 @@ namespace API_Backend.Controllers
 
         // TODO: update to handle other status codes and return an appropriate file path
         [HttpPost ("aggregateData")]
-        public IActionResult aggregateData(string userId, string requestId, List<string> filePaths)
+        public async Task<IActionResult> aggregateData(string userId, string requestId, List<string> queryParams)
         {
             try
             {
+
+                List<string> filePaths = await _fileProcessor.sqlQuery(queryParams);
                 string resultFilePath = _fileProcessor.AggregateData(userId, requestId, filePaths);
 
                 return this.Content(resultFilePath);
@@ -136,16 +138,16 @@ namespace API_Backend.Controllers
         Generage outputFilePath based on passed user, query, and metrics for createCSV
         Update db to store filePaths for aggregateData and CSVs, with FK to userID
         **/
-        [HttpPost("sqlQuery")]
-        public async Task<IActionResult> sqlQuery([FromBody] QueryExperiment request)
-        {
-            Console.WriteLine("inside sqlQuery");
+        //[HttpPost("sqlQuery")]
+        //public async Task<IActionResult> sqlQuery([FromBody] QueryExperiment request)
+        //{
+        //    Console.WriteLine("inside sqlQuery");
 
-            await _fileProcessor.sqlQuery(request.DesiredMetrics, request.QueryParams);
+        //    await _fileProcessor.sqlQuery(request.ClusterParams, request.AlgorithmParams);
 
 
-            return Ok();
-        }
+        //    return Ok();
+        //}
 
         [HttpGet("DockerSwarmParams")]
         public async Task<IActionResult> GetAllDockerSwarmParams()

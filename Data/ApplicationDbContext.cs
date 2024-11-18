@@ -3,6 +3,10 @@
 using API_Backend.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
+using Org.BouncyCastle.Asn1.Cms;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.ComponentModel.DataAnnotations;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace API_Backend.Data
 {
@@ -22,6 +26,9 @@ namespace API_Backend.Data
         public DbSet<DataVisualizationModel> DataVisualizations { get; init; }
         public DbSet<VisualizationExperiment> VisualizationExperiments { get; init; }
         public DbSet<StoredDataSet> StoredDataSets { get; init; }
+        public DbSet<AggregatedResult> AggregatedResults { get; init; }
+        public DbSet<CsvResult> CsvResults { get; init; }
+
 
         // Override OnModelCreating to configure relationships
         protected override void OnModelCreating(ModelBuilder modelBuilder)
@@ -172,8 +179,8 @@ namespace API_Backend.Data
                         new ExperimentResult
                         {
                             ExperimentID = experimentRequest.ExperimentID,
-                            CSVFilePath = "C:\\Users\\jacom\\Documents\\Fall 2024\\CSEE 481\\API-backend\\Services\\FileProcessing\\Test Files\\",
-                            CSVFileName = $"PICARD Example {i} Results.txt",
+                            ResultFilePath = "C:\\Users\\jacom\\Documents\\Fall 2024\\CSEE 481\\API-backend\\Services\\FileProcessing\\Test Files\\",
+                            ResultFileName = $"PICARD Example {i} Results.txt",
                             MetaDataFilePath = "C:\\Users\\jacom\\Documents\\Fall 2024\\CSEE 481\\API-backend\\Services\\FileProcessing\\Test Files\\Meta",
                             CreatedAt = DateTime.UtcNow
                         }
@@ -186,6 +193,79 @@ namespace API_Backend.Data
                 context.ExperimentResults.AddRange(experimentResults);
                 context.SaveChanges();
             }
+
+            // Seed Algorithm Parameters
+            if (!context.AlgorithmParameters.Any()) {
+            
+                var algorithmParameters = new List<AlgorithmParameter>
+                {
+                    new AlgorithmParameter
+                    {
+                        ParameterID = 1,
+                        AlgorithmID = context.Algorithms.First().AlgorithmID,
+                        ParameterName = "Trees",
+                        DriverIndex = 1,
+                        DataType = "int"
+
+                    },
+                    new AlgorithmParameter
+                    {
+                        ParameterID = 2,
+                        AlgorithmID = context.Algorithms.First().AlgorithmID,
+                        ParameterName = "Supervised",
+                        DriverIndex = 1,
+                        DataType = "int"
+
+                    },                    
+                    new AlgorithmParameter
+                    {
+                        ParameterID = 3,
+                        AlgorithmID = context.Algorithms.First().AlgorithmID,
+                        ParameterName = "Semi-Supervised",
+                        DriverIndex = 1,
+                        DataType = "int"
+
+                    },
+                    new AlgorithmParameter
+                    {
+                        ParameterID = 4,
+                        AlgorithmID = context.Algorithms.First().AlgorithmID,
+                        ParameterName = "Survey",
+                        DriverIndex = 1,
+                        DataType = "string"
+
+                    },
+                    new AlgorithmParameter
+                    {
+                        ParameterID = 5,
+                        AlgorithmID = context.Algorithms.First().AlgorithmID,
+                        ParameterName = "Classifier",
+                        DriverIndex = 1,
+                        DataType = "string"
+
+                    },
+                    new AlgorithmParameter
+                    {
+                        ParameterID = 6,
+                        AlgorithmID = context.Algorithms.First().AlgorithmID,
+                        ParameterName = "Trees",
+                        DriverIndex = 1,
+                        DataType = "int"
+
+                    },
+
+                };
+
+
+            }
+
+            // TODO: Seed AlgorithmParameterValues
+
+
+            // TODO: Seed AlgorithmRequestParameters
+
+            // TODO: Seed ExperimentAlgorithmParameterValues
+
 
             // Seed Cluster Parameters
             if (!context.ClusterParameters.Any())

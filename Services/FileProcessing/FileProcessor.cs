@@ -81,7 +81,7 @@ namespace API_Backend.Services.FileProcessing
         }
 
 
-        public async Task sqlQuery(List<string> desiredMetrics, List<string> queryParams)
+        public async Task<List<string>> sqlQuery(List<string> queryParams)
         {
 
             /**
@@ -124,26 +124,19 @@ namespace API_Backend.Services.FileProcessing
             .Where(dynamicQuery.ToString())
             .ToListAsync();
 
+            List<string> filePaths = new List<string>();
+
 
             foreach (var item in data)
             {
-                Console.WriteLine($"Result File Path: {item.Results.CSVFilePath}, Result File Name: {item.Results.CSVFileName}, " +
+                Console.WriteLine($"Result File Path: {item.Results.ResultFilePath}, Result File Name: {item.Results.ResultFileName}, " +
                                   $"Driver Memory: {item.Clusters.DriverMemory}, Driver Cores: {item.Clusters.DriverCores}");
+
+                filePaths.Add(item.Results.ResultFilePath);
             }
 
-            var baseDirectory = _env.ContentRootPath;
 
-            string outputDirectoryPath = baseDirectory + "\\Services\\FileProcessing\\OutputCSV\\";
 
-            foreach (var item in data)
-            {
-
-                var tempFileOutput = Path.Combine(outputDirectoryPath, "testOutput.csv");
-                var filepath = Path.Combine(item.Results.CSVFilePath, item.Results.CSVFileName);
-
-                Console.WriteLine("input filePath: " + filepath + "   output filePath: " + tempFileOutput);
-                GetCsv(desiredMetrics, filepath);
-            }
 
             /** TODO: Clarify changes needed in the db
              *      - Should experimentResults have a resultFilePath rather than a csvFilePath? 
@@ -165,7 +158,7 @@ namespace API_Backend.Services.FileProcessing
              *      - Insert test db values to query from
              */
 
-            return;
+            return filePaths;
         }
 
 

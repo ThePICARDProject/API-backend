@@ -2,7 +2,8 @@
 {
     public class QueryExperiment
     {
-        public List<string> DesiredMetrics { get; set; }
-        public List<string> QueryParams { get; set; }
+        public List<string> ClusterParams { get; set; }
+
+        public List<string> AlgorithmParams { get; set; }
     }
 }

@@ -349,8 +349,8 @@ namespace API_Backend.Services.FileProcessing
                 var experimentResult = new ExperimentResult
                 {
                     ExperimentID = experiment.ExperimentID,
-                    CSVFilePath = "/path/to/csv", // Replace with actual path
-                    CSVFileName = "result.csv",
+                    ResultFilePath = "/path/to/result", // Replace with actual path
+                    ResultFileName = "result.txt",
                     MetaDataFilePath = "/path/to/metadata", // Replace with actual path
                     CreatedAt = DateTime.UtcNow
                 };

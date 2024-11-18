@@ -15,8 +15,8 @@ namespace API_Backend.Models
         [Required]
         public string ExperimentID { get; set; } // FK to ExperimentRequest
 
-        public string CSVFilePath { get; set; } // TODO: Change to ResultFilePath
-        public string CSVFileName { get; set; } // TODO: Change to ResultFileName
+        public string ResultFilePath { get; set; } // TODO: Change to ResultFilePath
+        public string ResultFileName { get; set; } // TODO: Change to ResultFileName
         public string MetaDataFilePath { get; set; }
 
         [Required]
