@@ -81,7 +81,7 @@ namespace API_Backend.Services.FileProcessing
         }
 
 
-        public async Task<List<string>> sqlQuery(List<string> queryParams)
+        public async Task<List<string>> sqlQuery(QueryExperiment queryParams)
         {
 
             /**
@@ -94,22 +94,43 @@ namespace API_Backend.Services.FileProcessing
              * 
              */
 
+            var clusterParams = queryParams.ClusterParams;
+
+            var algorithmParams = queryParams.AlgorithmParams;
 
             StringBuilder dynamicQuery = new StringBuilder("x => ");
 
-            foreach (var queryParam in queryParams)
+            foreach (var clusterParam in clusterParams)
             {
-                if (queryParam != queryParams.Last())
+                if (clusterParam != clusterParams.Last())
                 {
                     dynamicQuery.Append("x.Clusters.");
-                    dynamicQuery.Append(queryParam);
+                    dynamicQuery.Append(clusterParam);
                     dynamicQuery.Append(" && ");
                 } else
                 {
                     dynamicQuery.Append("x.Clusters.");
-                    dynamicQuery.Append(queryParam);
+                    dynamicQuery.Append(clusterParam);
                 }
                 
+            }
+
+
+            // TODO: not correct, need to join all algorithm related tables / values before hand
+            foreach (var algorithmParam in algorithmParams)
+            {
+                if (algorithmParam != algorithmParams.Last())
+                {
+                    dynamicQuery.Append("x.Algorithms.");
+                    dynamicQuery.Append(algorithmParam);
+                    dynamicQuery.Append(" && ");
+                }
+                else
+                {
+                    dynamicQuery.Append("x.Algoritms.");
+                    dynamicQuery.Append(algorithmParam);
+                }
+
             }
 
 
@@ -161,6 +182,16 @@ namespace API_Backend.Services.FileProcessing
             return filePaths;
         }
 
+        public List<string> generateCSV(QueryExperiment request)
+        {
+            var clusterParams = request.ClusterParams;
+
+            var algorithmParams = request.AlgorithmParams;
+
+
+
+            return null;
+        }
 
 
 
