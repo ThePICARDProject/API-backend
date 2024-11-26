@@ -44,6 +44,10 @@ namespace API_Backend.Models
         public ClusterParameters ClusterParameters { get; set; }
         public AlgorithmRequestParameters AlgorithmParameters { get; set; }
         public ExperimentResult ExperimentResult { get; set; }
+        
+        public int AggregatedResultId { get; set; }
+
+        public AggregatedResult AggregatedResult { get; set; }
     }
 
     public enum ExperimentStatus

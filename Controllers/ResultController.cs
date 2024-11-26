@@ -6,10 +6,11 @@ using API_Backend.Services.FileProcessing;
 using API_Backend.Data;
 using Microsoft.EntityFrameworkCore;
 using Org.BouncyCastle.Asn1.Ocsp;
+using System.Security;
 
 namespace API_Backend.Controllers
 {
-    //[Authorize]
+    [Authorize]
     [ApiController]
     [Route("api/result")]
     public class ResultController: ControllerBase
@@ -73,13 +74,24 @@ namespace API_Backend.Controllers
 
         // TODO: update to handle other status codes and return an appropriate file path
         [HttpPost ("aggregateData")]
-        public async Task<IActionResult> aggregateData(string userId, string requestId, List<string> queryParams)
+        public async Task<IActionResult> aggregateData(QueryExperiment queryParams)
         {
             try
             {
 
-                List<string> filePaths = await _fileProcessor.sqlQuery(queryParams);
-                string resultFilePath = _fileProcessor.AggregateData(userId, requestId, filePaths);
+                // Get userId from logged in user
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+                if (userId == null)
+                {
+                    throw new SecurityException("User not logged in");
+                }
+
+                _logger.LogInformation("User {UserID} is aggregating experiment results", userId);
+
+                List<string> requestIds = await _fileProcessor.QueryExperiments(userId, queryParams);
+
+                string resultFilePath = _fileProcessor.AggregateData(userId, requestIds);
 
                 return this.Content(resultFilePath);
             }
@@ -105,15 +117,15 @@ namespace API_Backend.Controllers
 
         // TODO: update to handle other status codes and return an appropriate file path
         [HttpPost("createCsv")]
-        public IActionResult csvCreate([FromBody] QueryExperiment request, string inputFile)
+        public IActionResult csvCreate([FromBody] QueryExperiment requestParams, string aggregateFilePath, string userId, string requestId)
         {
 
             try
             {
 
-                List<string> desiredMetrics = _fileProcessor.generateCSV(request);
+                List<string> desiredMetrics = _fileProcessor.generateCSV(requestParams);
 
-                string outputFilePath = _fileProcessor.GetCsv(desiredMetrics, inputFile);
+                string outputFilePath = _fileProcessor.GetCsv(desiredMetrics, aggregateFilePath);
 
                 return this.Content(outputFilePath);
             }

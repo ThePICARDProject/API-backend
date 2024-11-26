@@ -49,8 +49,14 @@ namespace API_Backend.Services.FileProcessing
         {
         }
 
-        public string AggregateData(string userId, string requestId, List<string> filePaths)
+        public string AggregateData(string userId, List<string> requestIds)
         {
+
+            // retrieve file paths
+            List<string> filePaths = new List<string>();
+
+            // Store in db and use ID for file path
+            string tempID = "agg1";
 
             // Verify arguments
             if (string.IsNullOrEmpty(userId))
@@ -59,20 +65,24 @@ namespace API_Backend.Services.FileProcessing
             }
 
             // Construct output path
-            string exportPath = Path.Combine(_outputBaseDirectory, userId, requestId);
-            if (Directory.Exists(exportPath))
-                throw new Exception($"Export with the Id {requestId} already exists.");
-            else
+            string exportPath = Path.Combine(_outputBaseDirectory, userId, "AggregateData");
+            if (!Directory.Exists(exportPath))
             {
                 this.tempCreateDirectories(exportPath); // change back to not be temp
             }
 
             // For each results file, append the results to the aggregate file
-            exportPath = Path.Combine(exportPath, $"{requestId}.txt");
-            foreach (var filePath in filePaths)
+            exportPath = Path.Combine(exportPath, $"{tempID}.txt");
+            foreach (var requestId in requestIds)
             {
+
+                // TODO: retrieve file path based on requestId via db query
+                string filePath = "d";
+
+
+
                 List<string> lines = File.ReadLines(filePath).ToList();
-                lines.Insert(0, $"nr-----\nOutput Results for {Path.GetFileName(filePath)}\n-----\n");
+                lines.Insert(0, $"nr-----\nRequestID: {requestId}\nOutput Results for {Path.GetFileName(filePath)}\n-----\n");
                 File.AppendAllLines(exportPath, lines);
             }
 
@@ -81,22 +91,15 @@ namespace API_Backend.Services.FileProcessing
         }
 
 
-        public async Task<List<string>> sqlQuery(QueryExperiment queryParams)
+        public async Task<List<string>> QueryExperiments(string userId, QueryExperiment queryParams)
         {
 
-            /**
-             * Example sql query:
-             *      - SELECT resultFilePath, resultFileName
-             *        FROM experimentResults eres
-             *        JOIN experimentRequests ereq on ereq.ExperimentID = eres.ExperimentID
-             *        JOIN dockerSwarmParameters dsp on ereq.ExperimentID = dsp.ExperimentID
-             *        WHERE queryParams[0];
-             * 
-             */
 
             var clusterParams = queryParams.ClusterParams;
 
             var algorithmParams = queryParams.AlgorithmParams;
+
+
 
             StringBuilder dynamicQuery = new StringBuilder("x => ");
 
@@ -104,82 +107,114 @@ namespace API_Backend.Services.FileProcessing
             {
                 if (clusterParam != clusterParams.Last())
                 {
-                    dynamicQuery.Append("x.Clusters.");
+                    dynamicQuery.Append("x.");
                     dynamicQuery.Append(clusterParam);
                     dynamicQuery.Append(" && ");
                 } else
                 {
-                    dynamicQuery.Append("x.Clusters.");
+                    dynamicQuery.Append("x.");
                     dynamicQuery.Append(clusterParam);
                 }
                 
             }
 
 
-            // TODO: not correct, need to join all algorithm related tables / values before hand
+            List<AlgorithmQueryModel> algorithmQueryModels = new List<AlgorithmQueryModel>();
+
             foreach (var algorithmParam in algorithmParams)
             {
-                if (algorithmParam != algorithmParams.Last())
-                {
-                    dynamicQuery.Append("x.Algorithms.");
-                    dynamicQuery.Append(algorithmParam);
-                    dynamicQuery.Append(" && ");
-                }
-                else
-                {
-                    dynamicQuery.Append("x.Algoritms.");
-                    dynamicQuery.Append(algorithmParam);
-                }
+                var queryComponents = algorithmParam.Split(' ');
 
+                var algorithmQueryModel = new AlgorithmQueryModel();
+
+                algorithmQueryModel.ParamName = queryComponents[0];
+                algorithmQueryModel.ParamOperator = queryComponents[1];
+                algorithmQueryModel.ParamValue = queryComponents[2];
+
+                algorithmQueryModels.Add(algorithmQueryModel);
             }
 
 
+            var queryResult = (from ereq in _dbContext.ExperimentRequests
+                               join users in _dbContext.Users on ereq.UserID equals users.UserID
+                               join alg in _dbContext.Algorithms on ereq.AlgorithmID equals alg.AlgorithmID
+                               join param in _dbContext.AlgorithmParameters on alg.AlgorithmID equals param.AlgorithmID
+                               join values in _dbContext.ExperimentAlgorithmParameterValues on param.ParameterID equals values.ParameterID
+                               join cluster in _dbContext.ClusterParameters on ereq.ExperimentID equals cluster.ExperimentID
+                               where users.UserID == userId
+                               select new
+                               {
+                                   ereq.ExperimentID,
+                                   alg.AlgorithmID,
+                                   param.ParameterName,
+                                   values.Value,
+                                   cluster.NodeCount,
+                                   cluster.DriverMemory,
+                                   cluster.DriverCores,
+                                   cluster.ExecutorNumber,
+                                   cluster.ExecutorCores,
+                                   cluster.ExecutorMemory,
+                                   cluster.MemoryOverhead
+                               }).ToList();
 
-            var data = await _dbContext.ExperimentResults
-            .Join(
-                _dbContext.ClusterParameters,
-                resultsList => resultsList.ExperimentID,
-                clusterList => clusterList.ExperimentID,
-                (resultsList, clusterList) => new { Results = resultsList, Clusters = clusterList }
-            )
-            .Where(dynamicQuery.ToString())
-            .ToListAsync();
-
-            List<string> filePaths = new List<string>();
-
-
-            foreach (var item in data)
+            foreach (var item in queryResult)
             {
-                Console.WriteLine($"Result File Path: {item.Results.ResultFilePath}, Result File Name: {item.Results.ResultFileName}, " +
-                                  $"Driver Memory: {item.Clusters.DriverMemory}, Driver Cores: {item.Clusters.DriverCores}");
-
-                filePaths.Add(item.Results.ResultFilePath);
+                Console.WriteLine($"ExperimentID: {item.ExperimentID}");
+                Console.WriteLine($"AlgorithmID: {item.AlgorithmID}");
+                Console.WriteLine($"ParameterName: {item.ParameterName}");
+                Console.WriteLine($"Value: {item.Value}");
+                Console.WriteLine($"NodeCount: {item.NodeCount}");
+                Console.WriteLine($"DriverMemory: {item.DriverMemory}");
+                Console.WriteLine($"DriverCores: {item.DriverCores}");
+                Console.WriteLine($"ExecutorNumber: {item.ExecutorNumber}");
+                Console.WriteLine($"ExecutorCores: {item.ExecutorCores}");
+                Console.WriteLine($"ExecutorMemory: {item.ExecutorMemory}");
+                Console.WriteLine($"MemoryOverhead: {item.MemoryOverhead}");
+                Console.WriteLine("---------------");
             }
 
 
+            var filteredAlgorithms = queryResult;
+
+            foreach (var algorithmQueryModel in algorithmQueryModels)
+            {
+                filteredAlgorithms = filteredAlgorithms
+                    .Where(r => r.ParameterName == algorithmQueryModel.ParamName && r.Value.Equals(algorithmQueryModel.ParamValue))
+                    .ToList();
+            }
 
 
-            /** TODO: Clarify changes needed in the db
-             *      - Should experimentResults have a resultFilePath rather than a csvFilePath? 
-             *          - each experiment results in one raw data .txt file, multiple experiment results are then later aggregated into a csv file after a sql query
-             *      - What tables need to be joined in order to query for all relevant metrics?
-             *          - experimentResults will have .txt file path
-             *          - dockerSwarmParameters has:
-             *              - driver memory
-             *              - driver cores
-             *              - executor cores
-             *              - executor memory
-             *              - memory overhead
-             *          - Not clear if algorithm parameters will need to be queried
-             *              - these are dynamically stored (variable parameters)
-             *              - likely difficult to safely query (front end would require text input and sanitization)
-             *                  - possibly prone to errors
-             *          - experimentRequests
-             *              - has a field "parameters" with text data type
-             *      - Insert test db values to query from
-             */
+            Console.WriteLine("Before final filter reached");
 
-            return filePaths;
+            var finalResult = queryResult
+                .Where(r => filteredAlgorithms
+                    .Any(f => f.AlgorithmID == r.AlgorithmID && f.ParameterName == r.ParameterName && f.Value.Equals(r.Value)))
+                .AsQueryable()
+                .Where(dynamicQuery.ToString())
+                .ToList();
+
+            // Returning the ExperimentIDs from the final result
+            List<string> requestIds = finalResult
+                .Select(r => r.ExperimentID)
+                .ToList();
+
+            foreach (var requestId in requestIds)
+            {
+                Console.WriteLine(requestId);
+            }
+
+
+            Console.WriteLine("End of queryExperiment reached!");
+
+            return requestIds;
+        }
+
+
+
+        public Dictionary<string, object> insertAlgorithmData(string requestId)
+        {
+
+            return null;
         }
 
         public List<string> generateCSV(QueryExperiment request)
