@@ -187,8 +187,6 @@ namespace API_Backend.Services.FileProcessing
 
             }
 
-                // TODO: Add aggregate to DB
-
                 // Return the path of the saved file
                 return exportPath;
         }
