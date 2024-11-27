@@ -53,10 +53,25 @@ namespace API_Backend.Services.FileProcessing
         {
 
             // retrieve file paths
-            List<string> filePaths = new List<string>();
+            //List<string> filePaths = new List<string>();
+
+
+            //foreach (var requestId in requestIds)
+            //{
+            //    var filePath = _dbContext.ExperimentResults
+            //        .Where(e => e.ExperimentID == requestId)
+            //        .Select(e => e.ResultFilePath)
+            //        .FirstOrDefault();
+
+            //    if (filePath != null)
+            //    {
+            //        filePaths.Add(filePath);
+            //    }
+            //}
 
             // Store in db and use ID for file path
             string tempID = "agg1";
+
 
             // Verify arguments
             if (string.IsNullOrEmpty(userId))
@@ -66,25 +81,93 @@ namespace API_Backend.Services.FileProcessing
 
             // Construct output path
             string exportPath = Path.Combine(_outputBaseDirectory, userId, "AggregateData");
+
+
+            Console.WriteLine("Export Path: " + exportPath);
+
             if (!Directory.Exists(exportPath))
             {
                 this.tempCreateDirectories(exportPath); // change back to not be temp
             }
 
+            Console.WriteLine("After export path if statement");
+
             // For each results file, append the results to the aggregate file
             exportPath = Path.Combine(exportPath, $"{tempID}.txt");
+
+            Console.WriteLine("After tempID added to path");
+
             foreach (var requestId in requestIds)
             {
 
-                // TODO: retrieve file path based on requestId via db query
-                string filePath = "d";
+                var filePath = _dbContext.ExperimentResults
+                    .Where(e => e.ExperimentID == requestId)
+                    .Select(e => e.ResultFilePath)
+                    .FirstOrDefault();
+
+                var fileName = _dbContext.ExperimentResults
+                    .Where(e => e.ExperimentID == requestId)
+                    .Select(e => e.ResultFileName)
+                    .FirstOrDefault();
+
+                Console.WriteLine(filePath);
+
+                var completeFilePath = filePath + fileName;
+
+
+                if (filePath != null)
+                {
+                    
 
 
 
-                List<string> lines = File.ReadLines(filePath).ToList();
-                lines.Insert(0, $"nr-----\nRequestID: {requestId}\nOutput Results for {Path.GetFileName(filePath)}\n-----\n");
-                File.AppendAllLines(exportPath, lines);
+                    // TODO: add in all algorithm parameters and values in format "Trees = 10"
+                    var queryResult = (from ereq in _dbContext.ExperimentRequests
+                                       join users in _dbContext.Users on ereq.UserID equals users.UserID
+                                       join alg in _dbContext.Algorithms on ereq.AlgorithmID equals alg.AlgorithmID
+                                       join param in _dbContext.AlgorithmParameters on alg.AlgorithmID equals param.AlgorithmID
+                                       join values in _dbContext.ExperimentAlgorithmParameterValues on param.ParameterID equals values.ParameterID
+                                       where users.UserID == userId && ereq.ExperimentID == requestId
+                                       select new
+                                       {
+                                           ereq.ExperimentID,
+                                           alg.AlgorithmID,
+                                           param.ParameterName,
+                                           values.Value
+                                       }).ToList();
+
+                    StringBuilder sb = new StringBuilder("Algorithm Information:\n");
+
+
+                    foreach (var item in queryResult)
+                    {
+
+                        StringBuilder insideSB = new StringBuilder();
+
+                        insideSB.Append(item.ParameterName + " = ");
+                        insideSB.AppendLine(item.Value);
+
+
+                        sb.AppendLine(insideSB.ToString());
+
+                        Console.WriteLine($"ExperimentID: {item.ExperimentID}");
+                        Console.WriteLine($"AlgorithmID: {item.AlgorithmID}");
+                        Console.WriteLine($"ParameterName: {item.ParameterName}");
+                        Console.WriteLine($"Value: {item.Value}");
+
+                    }
+
+                    List<string> lines = File.ReadLines(completeFilePath).ToList();
+                    lines.Insert(0, $"nr-----\nRequestID: {requestId}\nOutput Results for {Path.GetFileName(completeFilePath)}\n-----\n{sb.ToString()}\n");
+                    File.AppendAllLines(exportPath, lines);
+
+                }
+
+
             }
+
+
+            // TODO: Add aggregate to DB
 
             // Return the path of the saved file
             return exportPath;
@@ -181,6 +264,7 @@ namespace API_Backend.Services.FileProcessing
                 filteredAlgorithms = filteredAlgorithms
                     .Where(r => r.ParameterName == algorithmQueryModel.ParamName && r.Value.Equals(algorithmQueryModel.ParamValue))
                     .ToList();
+
             }
 
 
@@ -246,7 +330,7 @@ namespace API_Backend.Services.FileProcessing
             {
 
                 // Dictory of key value pairs representing metric to obtain from .txt file and corresponding value (initially set to null)
-                var metrics = desiredMetrics.ToDictionary(metric => metric, metric => (double?)null);
+                var metrics = desiredMetrics.ToDictionary(metric => metric, metric => (string?)null);
 
                 var headerList = metrics.Keys.ToList();
                 string csvHeaders = System.String.Join(",", headerList.ToArray()) + "\n";
@@ -265,7 +349,8 @@ namespace API_Backend.Services.FileProcessing
                     {
                         if (line != null && line.StartsWith(metricKey, StringComparison.OrdinalIgnoreCase))
                         {
-                            var value = Double.Parse(line.Split('=')[1].Trim());
+                            
+                            var value = line.Split('=')[1].Trim();
                             metrics[metricKey] = value;
                         }
                     }
@@ -274,7 +359,7 @@ namespace API_Backend.Services.FileProcessing
                     if (line != null && line.StartsWith("nr-----") || output.EndOfStream)
                     {
                         var valueList = metrics.Values.ToList();
-                        if (valueList.Any(value => value.HasValue))
+                        if (valueList.Any(value => value != null && !string.IsNullOrEmpty(value.ToString())))
                         {
                             string csvValues = System.String.Join(",", valueList.ToArray()) + "\n";
                             File.AppendAllText(outputFilePath, csvValues);

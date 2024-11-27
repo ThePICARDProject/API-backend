@@ -117,15 +117,14 @@ namespace API_Backend.Controllers
 
         // TODO: update to handle other status codes and return an appropriate file path
         [HttpPost("createCsv")]
-        public IActionResult csvCreate([FromBody] QueryExperiment requestParams, string aggregateFilePath, string userId, string requestId)
+        public IActionResult csvCreate([FromBody] List<string> desiredMetrics, string aggregateId)
         {
 
             try
             {
 
-                List<string> desiredMetrics = _fileProcessor.generateCSV(requestParams);
 
-                string outputFilePath = _fileProcessor.GetCsv(desiredMetrics, aggregateFilePath);
+                string outputFilePath = _fileProcessor.GetCsv(desiredMetrics, aggregateId);
 
                 return this.Content(outputFilePath);
             }
