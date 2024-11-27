@@ -167,10 +167,30 @@ namespace API_Backend.Services.FileProcessing
             }
 
 
-            // TODO: Add aggregate to DB
+            // TODO: Possibly allow users to pass along name of file or auto generate file name
+            using (var context = _dbContext)
+            {
+                // Create a new instance of AggregatedResult
+                var newAggregatedResult = new AggregatedResult
+                {
+                    AggregatedResultName = exportPath,
+                    AggregatedResultDescription = "",
+                    AggregatedResultFilePath = exportPath,
+                    CreatedAt = DateTime.UtcNow
+                };
 
-            // Return the path of the saved file
-            return exportPath;
+                // Add the new entity to the DbContext
+                context.AggregatedResults.Add(newAggregatedResult);
+
+                // Save changes to persist the new entity to the database
+                context.SaveChanges();
+
+            }
+
+                // TODO: Add aggregate to DB
+
+                // Return the path of the saved file
+                return exportPath;
         }
 
 
@@ -375,7 +395,6 @@ namespace API_Backend.Services.FileProcessing
 
 
                 }
-
 
 
             }

@@ -9,9 +9,9 @@ namespace API_Backend.Models
         [Key]
         public int AggregatedResultID { get; set; }
 
-        public string AggregatedResultName { get; set; }
+        public string? AggregatedResultName { get; set; }
 
-        public string AggregatedResultDescription { get; set; }
+        public string? AggregatedResultDescription { get; set; }
 
         public string AggregatedResultFilePath { get; set; }
 
