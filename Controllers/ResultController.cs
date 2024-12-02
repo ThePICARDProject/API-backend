@@ -23,6 +23,8 @@ namespace API_Backend.Controllers
 
 
 
+        // TODO: remove commenting out of experiemnt service injection.  Currently causing bugs on Jacob File Processor branch
+
         public ResultController(/*ExperimentService experimentService,*/ FileProcessor fileProcessor, ILogger<ResultController> logger, ApplicationDbContext dbContext)
         {
             _fileProcessor = fileProcessor;
@@ -72,6 +74,12 @@ namespace API_Backend.Controllers
         }
 
 
+        /// <summary>
+        /// Controller handling returning an aggregate result file based off a user specified list of db queries
+        /// </summary>
+        /// <param name="queryParams"> List of docker swarm and algorithm parameters to query db </param>
+        /// <returns> Aggregated result file path </returns>
+        /// <exception cref="SecurityException"></exception>
         [HttpPost ("aggregateData")]
         public async Task<IActionResult> aggregateData(QueryExperiment queryParams)
         {
