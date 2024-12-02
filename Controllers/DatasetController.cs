@@ -4,8 +4,7 @@ using API_Backend.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
-using API_backend.Services.FileProcessing;
-using Microsoft.AspNetCore.Authentication.Cookies;
+using API_Backend.Services.FileProcessing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System.Linq;
@@ -225,13 +224,12 @@ namespace API_Backend.Controllers
             }
 
             // Validate file extension
-           /* var extension = Path.GetExtension(dto.File.FileName).ToLowerInvariant();
+            var extension = Path.GetExtension(dto.File.FileName).ToLowerInvariant();
             if (string.IsNullOrEmpty(extension) || !_permittedExtensions.Contains(extension))
             {
                 _logger.LogWarning("Unsupported file type: {Extension}.", extension);
                 return BadRequest(new { message = "Unsupported file type. Only CSV files are allowed." });
             }
-    */
 
             try
             {
@@ -309,8 +307,6 @@ namespace API_Backend.Controllers
             }
 
             // Validate file extension
-           /* 
-            if (string.IsNullOrEmpty(extension) || !_permittedExtensions.Contains(extension))
             var extension = Path.GetExtension(dto.File.FileName).ToLowerInvariant();
             if (string.IsNullOrEmpty(extension) || !_permittedExtensions.Contains(extension))
             {

@@ -1,6 +1,6 @@
 
 
-namespace API_backend.Services.FileProcessing
+namespace API_Backend.Services.FileProcessing
 {
     /// <summary>
     /// Interface for dataset-related file operations.

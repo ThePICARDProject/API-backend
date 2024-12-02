@@ -1,10 +1,10 @@
-﻿using API_backend.Models;
+﻿using API_Backend.Models;
 using Microsoft.AspNetCore.Http;
 using System;
 using System.Diagnostics;
 using System.Text;
 
-namespace API_backend.Services.DataVisualization
+namespace API_Backend.Services.DataVisualization
 {
     public class DataVisualization
     {
@@ -27,35 +27,20 @@ namespace API_backend.Services.DataVisualization
                 // Get the base directory of the application
                 var baseDirectory = _env.ContentRootPath;
 
-                var inputFile = parameters.InputFile;
+                var csvFilePath = parameters.CSVFilePath;
 
-                if (inputFile == null || inputFile.Length == 0)
+                if (csvFilePath == null || csvFilePath.Length == 0)
                 {
                     throw new ArgumentException("No input file provided or file is empty");
                 }
 
-                string fileName = inputFile.FileName;
-
-                if (Path.GetExtension(fileName).ToLower() != ".csv")
+                if (!Path.GetExtension(csvFilePath).ToLower().Equals(".csv"))
                 {
                     throw new ArgumentException("Invalid file format. Only .csv files are allowed.");
                 }
 
-                var filePath = Path.Combine(baseDirectory, "InputFiles", fileName);
 
-                // Check if the directory exists
-                if (!Directory.Exists(Path.Combine(baseDirectory, "InputFiles")))
-                {
-                    Directory.CreateDirectory(Path.Combine(baseDirectory, "InputFiles"));
-                }
-
-                // Copy input file to file path
-                using (var stream = System.IO.File.Create(filePath))
-                {
-                    inputFile.CopyToAsync(stream);
-                }
-
-                string input = FormatInputString(parameters, filePath);
+                string input = FormatInputString(parameters);
 
 
                 ProcessStartInfo startInfo = new ProcessStartInfo
@@ -98,7 +83,7 @@ namespace API_backend.Services.DataVisualization
         /// </summary>
         /// <param name="parameters">Users submitted parameters for python script</param>
         /// <returns>string formatted for python script</returns>
-        public string FormatInputString(VisualizationRequest parameters, string inputFilePath)
+        public string FormatInputString(VisualizationRequest parameters)
         {
 
             if (string.IsNullOrEmpty(parameters.XAxis) || string.IsNullOrEmpty(parameters.YAxis) || string.IsNullOrEmpty(parameters.GraphType) || string.IsNullOrEmpty(parameters.OutputFileName)) {
@@ -113,7 +98,7 @@ namespace API_backend.Services.DataVisualization
 
             StringBuilder sb = new StringBuilder(quotedPythonScript);
 
-            sb.Append(" -i " + $"\"{inputFilePath}\"");
+            sb.Append(" -i " + $"\"{parameters.CSVFilePath}\"");
             sb.Append(" -d1 " + parameters.XAxis);
             sb.Append(" -d2 " + parameters.YAxis);
             sb.Append(" -g " + parameters.GraphType);

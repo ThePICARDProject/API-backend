@@ -2,7 +2,7 @@ using System;
 using System.ComponentModel.DataAnnotations;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
-using API_backend.Models;
+using API_Backend.Models;
 
 namespace API_Backend.Models
 {
@@ -40,6 +40,12 @@ namespace API_Backend.Models
 
         public virtual Algorithm Algorithm { get; set; }
         public ClusterParameters ClusterParameters { get; set; }
+        public AlgorithmRequestParameters AlgorithmParameters { get; set; }
+        public ExperimentResult ExperimentResult { get; set; }
+        
+        public int AggregatedResultId { get; set; }
+
+        public AggregatedResult AggregatedResult { get; set; }
         public ICollection<ExperimentAlgorithmParameterValue> ParameterValues { get; set; }
         //public ExperimentResult ExperimentResult { get; set; }
     }

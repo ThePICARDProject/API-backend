@@ -1,6 +1,6 @@
 using API_Backend.Models;
 
-namespace API_backend.Models;
+namespace API_Backend.Models;
 
 public interface IExperimentQueue
 {

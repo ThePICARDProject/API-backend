@@ -2,7 +2,11 @@
 using API_backend.Models;
 using API_Backend.Models;
 using Microsoft.EntityFrameworkCore;
-using System.Configuration;
+using Microsoft.IdentityModel.Tokens;
+using Org.BouncyCastle.Asn1.Cms;
+using System.ComponentModel.DataAnnotations.Schema;
+using System.ComponentModel.DataAnnotations;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace API_Backend.Data
 {
@@ -14,12 +18,16 @@ namespace API_Backend.Data
         public DbSet<ClusterParameters> ClusterParameters { get; init; }
         public DbSet<Algorithm> Algorithms { get; init; }
         public DbSet<AlgorithmParameter> AlgorithmParameters { get; init; }
+        public DbSet<AlgorithmRequestParameters> AlgorithmRequestParameters { get; init; }
         public DbSet<UploadSession> UploadSessions { get; init; }
         public DbSet<ExperimentAlgorithmParameterValue> ExperimentAlgorithmParameterValues { get; init; }
         public DbSet<ExperimentResult> ExperimentResults { get; init; }
         public DbSet<DataVisualizationModel> DataVisualizations { get; init; }
         public DbSet<VisualizationExperiment> VisualizationExperiments { get; init; }
         public DbSet<StoredDataSet> StoredDataSets { get; init; }
+        public DbSet<AggregatedResult> AggregatedResults { get; init; }
+        public DbSet<CsvResult> CsvResults { get; init; }
+
 
         // Override OnModelCreating to configure relationships
         protected override void OnModelCreating(ModelBuilder modelBuilder)

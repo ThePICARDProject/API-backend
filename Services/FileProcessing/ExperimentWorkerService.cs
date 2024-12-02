@@ -1,7 +1,7 @@
 
-using API_backend.Models;
+using API_Backend.Models;
 
-namespace API_backend.Services.FileProcessing
+namespace API_Backend.Services.FileProcessing
 {
     public class ExperimentWorkerService : BackgroundService
     {

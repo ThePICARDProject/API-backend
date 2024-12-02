@@ -9,7 +9,7 @@ namespace API_Backend.Models
     public class VisualizationExperiment
     {
         [Key]
-        public int ID { get; set; }
+        public int VisualizationExperimentID { get; set; }
 
         [Required]
         public int VisualizationRequestID { get; set; } // FK to DataVisualization

@@ -3,11 +3,13 @@ using API_Backend.Data;
 using API_Backend.Models;
 using Microsoft.EntityFrameworkCore;
 using API_Backend.Controllers;
+using API_Backend.Models;
+using API_Backend.Services.Docker_Swarm;
 using API_backend.Models;
 using API_backend.Services.Docker_Swarm;
 using K4os.Compression.LZ4.Engine;
 
-namespace API_backend.Services.FileProcessing
+namespace API_Backend.Services.FileProcessing
 {
     /// <summary>
     /// Service for handling experiment-related operations.
@@ -357,8 +359,8 @@ namespace API_backend.Services.FileProcessing
                 var experimentResult = new ExperimentResult
                 {
                     ExperimentID = experiment.ExperimentID,
-                    CSVFilePath = "/path/to/csv", // Replace with actual path
-                    CSVFileName = "result.csv",
+                    ResultFilePath = "/path/to/result", // Replace with actual path
+                    ResultFileName = "result.txt",
                     MetaDataFilePath = "/path/to/metadata", // Replace with actual path
                     CreatedAt = DateTime.UtcNow
                 };

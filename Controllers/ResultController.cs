@@ -2,16 +2,38 @@ using API_Backend.Models;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
-using API_backend.Services.FileProcessing;
+using API_Backend.Services.FileProcessing;
+using API_Backend.Data;
+using Microsoft.EntityFrameworkCore;
+using Org.BouncyCastle.Asn1.Ocsp;
+using System.Security;
 
 namespace API_Backend.Controllers
 {
     [Authorize]
     [ApiController]
     [Route("api/result")]
-    public class ResultController(ExperimentService experimentService, ILogger<ResultController> logger)
-        : ControllerBase
+    public class ResultController: ControllerBase
     {
+
+        private readonly FileProcessor _fileProcessor;
+        private readonly ILogger<ResultController> _logger;
+        private readonly ApplicationDbContext _dbContext;
+        private readonly ExperimentService _experimentService;
+
+
+
+        // TODO: remove commenting out of experiemnt service injection.  Currently causing bugs on Jacob File Processor branch
+
+        public ResultController(/*ExperimentService experimentService,*/ FileProcessor fileProcessor, ILogger<ResultController> logger, ApplicationDbContext dbContext)
+        {
+            _fileProcessor = fileProcessor;
+            _logger = logger;
+            _dbContext = dbContext;
+            //_experimentService = experimentService;
+        }
+
+
         /// <summary>
         /// Gets the processed results of an experiment.
         /// </summary>
@@ -19,36 +41,141 @@ namespace API_Backend.Controllers
         public async Task<IActionResult> GetProcessedResults(Guid experimentId)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            logger.LogInformation("User {UserID} is requesting results for ExperimentID {ExperimentID}", userId, experimentId);
+            _logger.LogInformation("User {UserID} is requesting results for ExperimentID {ExperimentID}", userId, experimentId);
 
-            var experiment = await experimentService.GetExperimentByIdAsync(experimentId);
+            var experiment = await _experimentService.GetExperimentByIdAsync(experimentId);
 
             if (experiment is not { Status: ExperimentStatus.Finished })
             {
-                logger.LogWarning("Results not available for ExperimentID {ExperimentID}", experimentId);
+                _logger.LogWarning("Results not available for ExperimentID {ExperimentID}", experimentId);
                 return NotFound(new { message = "Results not available or experiment not completed." });
             }
 
             // Ensure the requesting user is the owner of the experiment
             if (experiment.UserID != userId)
             {
-                logger.LogWarning("User {UserID} is not authorized to access results for ExperimentID {ExperimentID}", userId, experimentId);
+                _logger.LogWarning("User {UserID} is not authorized to access results for ExperimentID {ExperimentID}", userId, experimentId);
                 return Forbid();
             }
 
             // Retrieve result data
-            var result = await experimentService.GetExperimentResultAsync(experimentId);
+            var result = await _experimentService.GetExperimentResultAsync(experimentId);
 
             if (result == null)
             {
-                logger.LogWarning("Experiment results not found for ExperimentID {ExperimentID}", experimentId);
+                _logger.LogWarning("Experiment results not found for ExperimentID {ExperimentID}", experimentId);
                 return NotFound(new { message = "Experiment results not found." });
             }
 
-            logger.LogInformation("Returning results for ExperimentID {ExperimentID}", experimentId);
+            _logger.LogInformation("Returning results for ExperimentID {ExperimentID}", experimentId);
 
             // Return the result data
             return Ok(new { experimentId, result });
+        }
+
+
+        /// <summary>
+        /// Controller handling returning an aggregate result file based off a user specified list of db queries
+        /// </summary>
+        /// <param name="queryParams"> List of docker swarm and algorithm parameters to query db </param>
+        /// <returns> Aggregated result file path </returns>
+        /// <exception cref="SecurityException"></exception>
+        [HttpPost ("aggregateData")]
+        public async Task<IActionResult> aggregateData(QueryExperiment queryParams)
+        {
+            try
+            {
+
+                // Get userId from logged in user
+                var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+                if (userId == null)
+                {
+                    throw new SecurityException("User not logged in");
+                }
+
+                _logger.LogInformation("User {UserID} is aggregating experiment results", userId);
+
+
+                // List of experiment request IDs that match passed query params
+                List<string> requestIds = await _fileProcessor.QueryExperiments(userId, queryParams);
+
+                // File path of aggregate data file composed of concatenated results file associated with passed experiment request IDs
+                string aggregateFilePath = await _fileProcessor.AggregateData(userId, requestIds);
+
+                return this.Content(aggregateFilePath);
+            }
+            catch (FileNotFoundException ex)
+            {
+                Console.WriteLine(ex.Message);
+
+
+
+                return StatusCode(500, new { message = "File not found.", details = ex.Message });
+            }
+            catch (Exception ex)
+            {
+
+                Console.WriteLine(ex.Message);
+
+                return StatusCode(500, new { message = "An unexpected error occurred.", details = ex.Message });
+            }
+            
+
+        }
+
+
+        /// <summary>
+        /// Returns a CSV file path.  CSV is generated by parsing an aggregated data file for user specified data.  The CSV file is primarily used for data visualization.
+        /// </summary>
+        /// <param name="desiredMetrics"> User specified metrics to be parsed from the aggregated data file </param>
+        /// <param name="aggregateDataId"> Path to the aggregated data file </param>
+        /// <returns> Path to the CSV file </returns>
+        [HttpPost("createCsv")]
+        public IActionResult csvCreate([FromBody] List<string> desiredMetrics, int aggregateDataId)
+        {
+
+            try
+            {
+
+                string outputFilePath = _fileProcessor.GetCsv(desiredMetrics, aggregateDataId);
+
+                return this.Content(outputFilePath);
+            }
+            catch (FileNotFoundException ex)
+            {
+                Console.WriteLine("Aggregated data file not found: " + ex.Message);
+
+
+
+                return NotFound("Aggregated data file not found");
+            }
+            catch (Exception ex)
+            {
+
+                Console.WriteLine(ex.Message);
+
+                return StatusCode(500, new { message = "An unexpected error occurred.", details = ex.Message });
+            }
+        }
+
+
+        [HttpGet("DockerSwarmParams")]
+        public async Task<IActionResult> GetAllDockerSwarmParams()
+        {
+
+            try
+            {
+                var dockerSwarmParams = await _dbContext.ClusterParameters.ToListAsync();
+
+
+                return Ok(dockerSwarmParams);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "MySQL error: {Message} - Inner Exception: {InnerException}", ex.Message, ex.InnerException?.Message);
+                return StatusCode(StatusCodes.Status500InternalServerError, new { message = "An error occurred while retrieving docker swarm params." });
+            }
         }
     }
 }

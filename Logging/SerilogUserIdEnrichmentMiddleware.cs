@@ -2,7 +2,7 @@
 using System.Security.Claims;
 using Serilog.Context;
 
-namespace API_backend.Logging
+namespace API_Backend.Logging
 {
     /// <summary>
     /// Middleware to enrich Serilog logs with UserID from the HttpContext.

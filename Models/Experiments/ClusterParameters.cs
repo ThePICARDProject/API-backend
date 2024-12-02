@@ -11,6 +11,11 @@ namespace API_Backend.Models
         [Key, ForeignKey("ExperimentRequest")]
         public Guid ExperimentID { get; set; } // FK and PK to ExperimentRequest
 
+        [Key]
+        public int ClusterParamID { get; set; }
+        [ForeignKey("ExperimentRequest")]
+        public string ExperimentID { get; set; } // FK and PK to ExperimentRequest
+
         // Docker Parameters
         public int NodeCount { get; set; }
 

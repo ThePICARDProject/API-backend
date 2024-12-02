@@ -2,7 +2,7 @@ using System;
 using System.ComponentModel.DataAnnotations;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
-using API_backend.Models;
+using API_Backend.Models;
 
 namespace API_Backend.Models
 {
