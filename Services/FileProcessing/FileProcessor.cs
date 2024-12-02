@@ -49,29 +49,8 @@ namespace API_Backend.Services.FileProcessing
         {
         }
 
-        public string AggregateData(string userId, List<string> requestIds)
+        public async Task<string> AggregateData(string userId, List<string> requestIds)
         {
-
-            // retrieve file paths
-            //List<string> filePaths = new List<string>();
-
-
-            //foreach (var requestId in requestIds)
-            //{
-            //    var filePath = _dbContext.ExperimentResults
-            //        .Where(e => e.ExperimentID == requestId)
-            //        .Select(e => e.ResultFilePath)
-            //        .FirstOrDefault();
-
-            //    if (filePath != null)
-            //    {
-            //        filePaths.Add(filePath);
-            //    }
-            //}
-
-            // Store in db and use ID for file path
-            string tempID = "agg1";
-
 
             // Verify arguments
             if (string.IsNullOrEmpty(userId))
@@ -81,6 +60,13 @@ namespace API_Backend.Services.FileProcessing
 
             // Construct output path
             string exportPath = Path.Combine(_outputBaseDirectory, userId, "AggregateData");
+
+            var dateTime = DateTime.UtcNow;
+
+
+            string aggFileName = $"{userId}_{dateTime:yyyyMMddHHmmss}";
+
+            string aggFilePath = aggFileName + ".txt";
 
 
             Console.WriteLine("Export Path: " + exportPath);
@@ -93,17 +79,18 @@ namespace API_Backend.Services.FileProcessing
             Console.WriteLine("After export path if statement");
 
             // For each results file, append the results to the aggregate file
-            exportPath = Path.Combine(exportPath, $"{tempID}.txt");
+            exportPath = Path.Combine(exportPath, aggFilePath);
 
             Console.WriteLine("After tempID added to path");
 
             foreach (var requestId in requestIds)
             {
 
-                var filePath = _dbContext.ExperimentResults
+                var filePath = await _dbContext.ExperimentResults
                     .Where(e => e.ExperimentID == requestId)
                     .Select(e => e.ResultFilePath)
-                    .FirstOrDefault();
+                    .FirstOrDefaultAsync();
+
 
                 var fileName = _dbContext.ExperimentResults
                     .Where(e => e.ExperimentID == requestId)
@@ -167,25 +154,20 @@ namespace API_Backend.Services.FileProcessing
             }
 
 
-            // TODO: Possibly allow users to pass along name of file or auto generate file name
-            using (var context = _dbContext)
-            {
+
                 // Create a new instance of AggregatedResult
                 var newAggregatedResult = new AggregatedResult
                 {
-                    AggregatedResultName = exportPath,
+                    AggregatedResultName = aggFileName,
                     AggregatedResultDescription = "",
                     AggregatedResultFilePath = exportPath,
-                    CreatedAt = DateTime.UtcNow
+                    CreatedAt = dateTime
                 };
 
-                // Add the new entity to the DbContext
-                context.AggregatedResults.Add(newAggregatedResult);
+                _dbContext.AggregatedResults.Add(newAggregatedResult);
 
-                // Save changes to persist the new entity to the database
-                context.SaveChanges();
+                _dbContext.SaveChanges();
 
-            }
 
                 // Return the path of the saved file
                 return exportPath;
@@ -312,35 +294,28 @@ namespace API_Backend.Services.FileProcessing
         }
 
 
-
-        public Dictionary<string, object> insertAlgorithmData(string requestId)
+        public string GetCsv(List<string> desiredMetrics, int aggregateFileId)
         {
 
-            return null;
-        }
-
-        public List<string> generateCSV(QueryExperiment request)
-        {
-            var clusterParams = request.ClusterParams;
-
-            var algorithmParams = request.AlgorithmParams;
 
 
 
-            return null;
-        }
+            var aggregateResult= _dbContext.AggregatedResults
+            .Single(r => r.AggregatedResultID == aggregateFileId);
 
 
+            var aggregateFilePath = aggregateResult.AggregatedResultFilePath;
 
-        public string GetCsv(List<string> desiredMetrics, string aggregateFilePath)
-        {
+            var aggregateFileName = aggregateResult.AggregatedResultName;
+            
+            
             if (!Path.Exists(aggregateFilePath))
             {
                 throw new FileNotFoundException($"The file at path '{aggregateFilePath}' was not found.");
             }
 
             string aggregateParent = Path.GetDirectoryName(aggregateFilePath);
-            var outputFilePath = Path.Combine(aggregateParent, $"{Path.GetFileName(aggregateParent)}.csv");
+            var outputFilePath = Path.Combine(aggregateParent, $"{Path.GetFileName(aggregateFileName)}.csv");
 
 
 
@@ -393,6 +368,22 @@ namespace API_Backend.Services.FileProcessing
 
 
                 }
+
+
+                    // Create a new instance of CsvResult
+                    var csvResult = new CsvResult
+                    {
+                        AggregatedResultID = aggregateFileId,
+                        CsvResultName = outputFilePath,
+                        CsvResultDescription = "",
+                        CsvResultFilePath = outputFilePath,
+                        CreatedAt = DateTime.UtcNow
+                    };
+
+                    _dbContext.CsvResults.Add(csvResult);
+
+                    _dbContext.SaveChanges();
+
 
 
             }
