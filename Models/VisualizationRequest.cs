@@ -2,7 +2,7 @@
 {
     public class VisualizationRequest
     {
-        public IFormFile InputFile { get; set; } = null!;
+        public string CSVFilePath { get; set; } = null!;
         public string XAxis { get; set; } = null!;
         public string YAxis { get; set;} = null!;
         public string? ColorDimension { get; set; }
