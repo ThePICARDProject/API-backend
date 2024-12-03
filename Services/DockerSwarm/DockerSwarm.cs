@@ -38,14 +38,15 @@ namespace API_backend.Services.Docker_Swarm
 
         public DockerSwarm(string rootDirectory, string advertiseIP, string advertisePort)
         {
+            rootDirectory = "/Services/DockerSwarm";
             _rootDirectory = rootDirectory;
 
             // Verify program files
-            if (!File.Exists(Path.Combine(rootDirectory, "docker-compose.yml")))
+            if (!File.Exists(Path.Combine("Services/DockerSwarm/docker-compose.yml")))
                 throw new Exception("Docker Compose file not found in the project root directory.");
-            if (!Directory.Exists(Path.Combine(rootDirectory, "docker-images")))
+            if (!Directory.Exists(Path.Combine("Services/DockerSwarm/docker-images")))
                 throw new Exception("Docker images directory not found in the project root directory.");
-            if (!Directory.Exists(Path.Combine(rootDirectory, "scripts")))
+            if (!Directory.Exists(Path.Combine("Services/DockerSwarm/scripts")))
                 throw new Exception("Scripts directory not found in the project root directory.");
 
             // Run DockerSwarm_Init scripts
@@ -58,11 +59,11 @@ namespace API_backend.Services.Docker_Swarm
 
                 // Add Arguments
                 //dockerSwarmInit.StartInfo.WorkingDirectory = _rootDirectory;
-                dockerSwarmInit.StartInfo.FileName = Path.Combine(_rootDirectory, "scripts", "dockerswarm-init.sh");
+                dockerSwarmInit.StartInfo.FileName = Path.Combine("Services/DockerSwarm", "scripts", "dockerswarm-init.sh");
                 dockerSwarmInit.StartInfo.ArgumentList.Add(Environment.UserName);
                 dockerSwarmInit.StartInfo.ArgumentList.Add(advertiseIP);
                 dockerSwarmInit.StartInfo.ArgumentList.Add(advertisePort);
-                dockerSwarmInit.StartInfo.ArgumentList.Add(_dockerImagesBasePath);
+                dockerSwarmInit.StartInfo.ArgumentList.Add("Services/DockerSwarm/docker-images");
                 dockerSwarmInit.StartInfo.ArgumentList.Add(_experimentOutputBasePath);
 
                 // Start process and read stderror
