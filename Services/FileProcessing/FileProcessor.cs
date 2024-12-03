@@ -20,6 +20,7 @@ using Microsoft.AspNetCore.Mvc;
 using API_Backend.Models;
 using static Mysqlx.Error.Types;
 using System;
+using System.Linq.Dynamic.Core.Parser;
 
 
 namespace API_Backend.Services.FileProcessing
@@ -92,13 +93,13 @@ namespace API_Backend.Services.FileProcessing
             {
 
                 var filePath = await _dbContext.ExperimentResults
-                    .Where(e => e.ExperimentID == requestId)
+                    .Where(e => e.ExperimentID.ToString() == requestId)
                     .Select(e => e.ResultFilePath)
                     .FirstOrDefaultAsync();
 
 
                 var fileName = _dbContext.ExperimentResults
-                    .Where(e => e.ExperimentID == requestId)
+                    .Where(e => e.ExperimentID.ToString() == requestId)
                     .Select(e => e.ResultFileName)
                     .FirstOrDefault();
 
@@ -119,7 +120,7 @@ namespace API_Backend.Services.FileProcessing
                                        join alg in _dbContext.Algorithms on ereq.AlgorithmID equals alg.AlgorithmID
                                        join param in _dbContext.AlgorithmParameters on alg.AlgorithmID equals param.AlgorithmID
                                        join values in _dbContext.ExperimentAlgorithmParameterValues on param.ParameterID equals values.ParameterID
-                                       where users.UserID == userId && ereq.ExperimentID == requestId
+                                       where users.UserID == userId && ereq.ExperimentID.ToString() == requestId
                                        select new
                                        {
                                            ereq.ExperimentID,
@@ -207,7 +208,6 @@ namespace API_Backend.Services.FileProcessing
                     clusterQuery.Append("x.");
                     clusterQuery.Append(clusterParam);
                 }
-                
             }
 
             List<AlgorithmQueryModel> algorithmQueryModels = new List<AlgorithmQueryModel>();
@@ -259,13 +259,11 @@ namespace API_Backend.Services.FileProcessing
                 filteredAlgorithms = filteredAlgorithms
                     .Where(r => r.ParameterName == algorithmQueryModel.ParamName && r.Value.Equals(algorithmQueryModel.ParamValue))
                     .ToList();
-
             }
 
             // retrieves db results filtered by algorithm params, then further filters by cluster params
             var finalResult = queryResult
-                .Where(r => filteredAlgorithms
-                    .Any(f => f.AlgorithmID == r.AlgorithmID && f.ParameterName == r.ParameterName && f.Value.Equals(r.Value)))
+                .Where(r => filteredAlgorithms.Any(f => f.AlgorithmID == r.AlgorithmID && f.ParameterName == r.ParameterName && f.Value.Equals(r.Value)))
                 .AsQueryable()
                 .Where(clusterQuery.ToString())
                 .ToList();
@@ -274,7 +272,6 @@ namespace API_Backend.Services.FileProcessing
             List<string> requestIds = finalResult
                 .Select(r => r.ExperimentID)
                 .ToList();
-
 
             return requestIds;
         }
