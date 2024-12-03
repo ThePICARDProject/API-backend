@@ -8,6 +8,7 @@ using API_Backend.Services.FileProcessing;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System.Linq;
+using Microsoft.AspNetCore.Authentication.Cookies;
 
 namespace API_Backend.Controllers
 {
@@ -313,7 +314,6 @@ namespace API_Backend.Controllers
                 _logger.LogWarning("Unsupported file type in chunk {ChunkNumber}: {Extension}.", chunkNumber, extension);
                 return BadRequest(new { message = "Unsupported file type. Only CSV files are allowed." });
             }
-            */
 
             try
             {

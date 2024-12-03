@@ -1,5 +1,4 @@
-﻿using CsvHelper;
-using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.Options;
 using Microsoft.Extensions.Primitives;
 using System.Collections.ObjectModel;
 using System.Diagnostics;
@@ -21,7 +20,6 @@ using Microsoft.AspNetCore.Mvc;
 using API_Backend.Models;
 using static Mysqlx.Error.Types;
 using System;
-using System.Linq.Dynamic.Core;
 
 
 namespace API_Backend.Services.FileProcessing
@@ -212,7 +210,6 @@ namespace API_Backend.Services.FileProcessing
                 
             }
 
-
             List<AlgorithmQueryModel> algorithmQueryModels = new List<AlgorithmQueryModel>();
 
             // store passed algorithm queries into algorithm query model for readability
@@ -228,8 +225,6 @@ namespace API_Backend.Services.FileProcessing
 
                 algorithmQueryModels.Add(algorithmQueryModel);
             }
-
-
 
             // TODO: Improve query efficiency, possibly filter initial query by cluster params
             // store joined tb table from a user that includes Experiment Request ID, Docker Swarm parameters, and all Algorithm parameters and values

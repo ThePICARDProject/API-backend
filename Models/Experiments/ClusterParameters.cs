@@ -8,9 +8,6 @@ namespace API_Backend.Models
     /// </summary>
     public class ClusterParameters
     {
-        [Key, ForeignKey("ExperimentRequest")]
-        public Guid ExperimentID { get; set; } // FK and PK to ExperimentRequest
-
         [Key]
         public int ClusterParamID { get; set; }
         [ForeignKey("ExperimentRequest")]
