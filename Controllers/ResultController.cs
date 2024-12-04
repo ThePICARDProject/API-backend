@@ -81,7 +81,7 @@ namespace API_Backend.Controllers
         /// <returns> Aggregated result file path </returns>
         /// <exception cref="SecurityException"></exception>
         [HttpPost ("aggregateData")]
-        public async Task<IActionResult> aggregateData(QueryExperiment queryParams)
+        public async Task<IActionResult> AggregateData(QueryExperiment queryParams)
         {
             try
             {
@@ -132,7 +132,7 @@ namespace API_Backend.Controllers
         /// <param name="aggregateDataId"> Path to the aggregated data file </param>
         /// <returns> Path to the CSV file </returns>
         [HttpPost("createCsv")]
-        public IActionResult csvCreate([FromBody] List<string> desiredMetrics, int aggregateDataId)
+        public IActionResult CsvCreate([FromBody] List<string> desiredMetrics, int aggregateDataId)
         {
 
             try

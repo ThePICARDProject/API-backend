@@ -21,6 +21,7 @@ using API_Backend.Models;
 using static Mysqlx.Error.Types;
 using System;
 using System.Linq.Dynamic.Core.Parser;
+using Microsoft.EntityFrameworkCore.Query.Internal;
 
 
 namespace API_Backend.Services.FileProcessing
@@ -110,10 +111,6 @@ namespace API_Backend.Services.FileProcessing
 
                 if (filePath != null)
                 {
-                    
-
-
-
                     // TODO: add in all algorithm parameters and values in format "Trees = 10"
                     var queryResult = (from ereq in _dbContext.ExperimentRequests
                                        join users in _dbContext.Users on ereq.UserID equals users.UserID
@@ -140,27 +137,19 @@ namespace API_Backend.Services.FileProcessing
                         insideSB.Append(item.ParameterName + " = ");
                         insideSB.AppendLine(item.Value);
 
-
                         sb.AppendLine(insideSB.ToString());
 
                         Console.WriteLine($"ExperimentID: {item.ExperimentID}");
                         Console.WriteLine($"AlgorithmID: {item.AlgorithmID}");
                         Console.WriteLine($"ParameterName: {item.ParameterName}");
                         Console.WriteLine($"Value: {item.Value}");
-
                     }
 
                     List<string> lines = File.ReadLines(completeFilePath).ToList();
                     lines.Insert(0, $"nr-----\nRequestID: {requestId}\nOutput Results for {Path.GetFileName(completeFilePath)}\n-----\n{sb.ToString()}\n");
-                    File.AppendAllLines(exportPath, lines);
-
+                     File.AppendAllLines(exportPath, lines);
                 }
-
-
             }
-
-
-
                 // Create a new instance of AggregatedResult
                 var newAggregatedResult = new AggregatedResult
                 {
@@ -235,19 +224,19 @@ namespace API_Backend.Services.FileProcessing
                                join values in _dbContext.ExperimentAlgorithmParameterValues on param.ParameterID equals values.ParameterID
                                join cluster in _dbContext.ClusterParameters on ereq.ExperimentID equals cluster.ExperimentID
                                where users.UserID == userId
-                               select new
+                               select new ExperimentQueryModel
                                {
-                                   ereq.ExperimentID,
-                                   alg.AlgorithmID,
-                                   param.ParameterName,
-                                   values.Value,
-                                   cluster.NodeCount,
-                                   cluster.DriverMemory,
-                                   cluster.DriverCores,
-                                   cluster.ExecutorNumber,
-                                   cluster.ExecutorCores,
-                                   cluster.ExecutorMemory,
-                                   cluster.MemoryOverhead
+                                   ExperimentID = ereq.ExperimentID,
+                                   AlgorithmID = alg.AlgorithmID,
+                                   ParameterName = param.ParameterName,
+                                   Value = values.Value,
+                                   NodeCount = cluster.NodeCount,
+                                   DriverMemory = cluster.DriverMemory,
+                                   DriverCores = cluster.DriverCores,
+                                   ExecutorNumber = cluster.ExecutorNumber,
+                                   ExecutorCores = cluster.ExecutorCores,
+                                   ExecutorMemory = cluster.ExecutorMemory,
+                                   MemoryOverhead = cluster.MemoryOverhead
                                }).ToList();
 
 
@@ -265,12 +254,12 @@ namespace API_Backend.Services.FileProcessing
             var finalResult = queryResult
                 .Where(r => filteredAlgorithms.Any(f => f.AlgorithmID == r.AlgorithmID && f.ParameterName == r.ParameterName && f.Value.Equals(r.Value)))
                 .AsQueryable()
-                .Where(clusterQuery.ToString())
+                .Where(ExpressionParser.ParseExpression<ExperimentQueryModel>(clusterQuery.ToString(), "x"))
                 .ToList();
 
             // Returning the ExperimentIDs from the final result
             List<string> requestIds = finalResult
-                .Select(r => r.ExperimentID)
+                .Select(r => r.ExperimentID.ToString())
                 .ToList();
 
             return requestIds;
@@ -396,6 +385,21 @@ namespace API_Backend.Services.FileProcessing
             }
         }
     }
+}
+
+public class ExperimentQueryModel
+{
+    public Guid ExperimentID { get; set; }
+    public int AlgorithmID { get; set; }
+    public string ParameterName { get; set; }
+    public string Value { get; set; }
+    public int NodeCount { get; set; }
+    public string DriverMemory {  get; set; }
+    public int DriverCores { get; set; }
+    public int ExecutorNumber { get; set; }
+    public int ExecutorCores { get; set; }
+    public string ExecutorMemory { get; set; }
+    public int MemoryOverhead { get; set; }
 }
 
 // "SplittingTime",
