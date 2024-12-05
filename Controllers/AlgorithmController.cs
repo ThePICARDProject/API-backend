@@ -115,7 +115,7 @@ namespace API_backend.Controllers
             try
             {
                 // Check that the docker-images path exists
-                string algorithmFolder = Path.Combine(environment.ContentRootPath, "docker-images", "spark-hadoop");
+                string algorithmFolder = Path.Combine("Services/DockerSwarm/docker-images");
                 if (!Directory.Exists(algorithmFolder))
                     throw new Exception("docker-images folder does not exist in the applications root directory");
 
