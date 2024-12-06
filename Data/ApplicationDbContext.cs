@@ -18,7 +18,6 @@ namespace API_Backend.Data
         public DbSet<ClusterParameters> ClusterParameters { get; init; }
         public DbSet<Algorithm> Algorithms { get; init; }
         public DbSet<AlgorithmParameter> AlgorithmParameters { get; init; }
-        public DbSet<AlgorithmRequestParameters> AlgorithmRequestParameters { get; init; }
         public DbSet<UploadSession> UploadSessions { get; init; }
         public DbSet<ExperimentAlgorithmParameterValue> ExperimentAlgorithmParameterValues { get; init; }
         public DbSet<ExperimentResult> ExperimentResults { get; init; }

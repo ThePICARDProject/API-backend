@@ -191,6 +191,7 @@ namespace API_backend.Controllers
                 case "int": break;
                 case "string": break;
                 case "boolean": break;
+                case "double": break;
                 default:
                     throw new FormatException("DataType must have the pattern \"int\", \"string\", \"boolean\"");
             }
