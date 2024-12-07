@@ -10,7 +10,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 
 namespace API_backend.Controllers
-{
+{ 
     [Authorize]
     [ApiController]
     [Route("api/algorithms")]

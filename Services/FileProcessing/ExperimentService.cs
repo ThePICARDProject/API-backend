@@ -94,8 +94,10 @@ namespace API_backend.Services.FileProcessing
                     Value = pv.Value
                 }).ToList();
 
+
+
                 // Add entities to the context
-                
+
                 if (parameterValues.Any())
                 {
                     _dbContext.ExperimentAlgorithmParameterValues.AddRange(parameterValues);
@@ -114,6 +116,40 @@ namespace API_backend.Services.FileProcessing
             catch (Exception ex)
             {
                 _logger.LogError(ex, "Error occurred while submitting experiment for user {UserID}", userId);
+                throw;
+            }
+        }
+
+        /// <summary>
+        /// Retrieves all experiments for a specific user.
+        /// </summary>
+        /// <param name="userId">The ID of the user.</param>
+        /// <returns>A list of experiments related to the user.</returns>
+        public async Task<List<ExperimentRequest>> GetExperimentsByUserAsync(string userId)
+        {
+            _logger.LogInformation("Fetching experiments for UserID {UserID}", userId);
+
+            try
+            {
+                var experiments = await _dbContext.ExperimentRequests
+                    .Where(e => e.UserID == userId)
+                    .OrderBy(e => e.CreatedAt)
+                    .ToListAsync();
+
+                if (experiments.Any())
+                {
+                    _logger.LogInformation("Found {Count} experiments for user {UserID}", experiments.Count, userId);
+                }
+                else
+                {
+                    _logger.LogWarning("No experiments found for user {UserID}", userId);
+                }
+
+                return experiments;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Error occurred while fetching experiments for user {UserID}", userId);
                 throw;
             }
         }
@@ -329,7 +365,7 @@ namespace API_backend.Services.FileProcessing
 
         #endregion
 
-         #region Private Methods
+        #region Private Methods
 
         /// <summary>
         /// Processes the experiment results after execution.

@@ -1,0 +1,5 @@
+2024-12-05T22:41:22.3316197Z Unable to write 1 log events to the database due to following error: Unable to connect to any of the specified MySQL hosts.
+2024-12-05T22:41:27.3532481Z Unable to write 2 log events to the database due to following error: Unable to connect to any of the specified MySQL hosts.
+2024-12-05T22:42:50.8569556Z Unable to write 2 log events to the database due to following error: Unable to connect to any of the specified MySQL hosts.
+2024-12-05T22:43:08.6596736Z Unable to write 2 log events to the database due to following error: Unable to connect to any of the specified MySQL hosts.
+2024-12-05T22:43:18.6811571Z Unable to write 3 log events to the database due to following error: Unable to connect to any of the specified MySQL hosts.

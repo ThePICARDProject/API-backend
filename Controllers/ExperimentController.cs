@@ -39,6 +39,8 @@ namespace API_Backend.Controllers
             }
         }
 
+
+
         /// <summary>
         /// Gets the status of an experiment.
         /// </summary>
@@ -59,11 +61,46 @@ namespace API_Backend.Controllers
             return Ok(new { experimentId, status });
         }
 
+        /// <summary>
+        /// Gets all experiments related to the currently authenticated user.
+        /// </summary>
+        [HttpGet("user/getUserExperiments")]
+        public async Task<IActionResult> GetExperimentsByUser()
+        {
+
+            // Get user ID from authenticated user
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+
+            logger.LogInformation("Fetching experiments for UserID {UserID}", userId);
+
+            try
+            {
+                var experiments = await experimentService.GetExperimentsByUserAsync(userId);
+
+                if (experiments == null || !experiments.Any())
+                {
+                    logger.LogWarning("No experiments found for user {UserID}", userId);
+                    return NotFound(new { message = "No experiments found for this user." });
+                }
+
+                logger.LogInformation("Found {Count} experiments for user {UserID}", experiments.Count, userId);
+
+                return Ok(experiments);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Error occurred while fetching experiments for user {UserID}", userId);
+                return StatusCode(StatusCodes.Status500InternalServerError, new { message = "An error occurred while fetching experiments." });
+            }
+        }
+
         [HttpGet("getlogs")]
         public async Task<IActionResult> GetExperimentLog(Guid experimentId)
         {
             throw new NotImplementedException();
         }
+
+
     }
 
     /// <summary>
