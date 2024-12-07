@@ -74,3 +74,5 @@ then
 fi
 setfacl -m u:$current_user:rwx $results_dir
 setfacl -m u:$hadoop:rwx $results_dir
+
+echo "-----Docker-Swarm successfully initialized-----"

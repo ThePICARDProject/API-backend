@@ -47,6 +47,15 @@ touch $log_path
 
 
 echo "-----Setting permissions-----"
+
+if ! id "hadoop";
+then
+	echo "Hadoop user with username 'hadoop' does not exist. Create a hadoop user to run experiments."
+	exit 1
+fi
+
+
+
 setfacl -m u:hadoop:rwx ${results_output_directory} || { echo "Failed to set permissions for hadoop on the results output" 1>&2 ; exit 1; }
 setfacl -m u:${current_user}:rwx ${results_output_directory} || { echo "Failed to set permissions for user on the results output" 1>&2 ; exit 1; }
 				    

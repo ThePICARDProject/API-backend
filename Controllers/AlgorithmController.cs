@@ -172,7 +172,7 @@ namespace API_backend.Controllers
                 // Return OK
                 return Ok(new
                 {
-                    message = "Dataset uploaded successfully.",
+                    message = "Algorithm data uploaded successfully.",
                     algorithmId = Algorithm.AlgorithmID
                 });
 

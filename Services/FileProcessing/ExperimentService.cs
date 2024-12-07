@@ -33,14 +33,6 @@ namespace API_Backend.Services.FileProcessing
             _experimentQueue = experimentQueue;
 
             _dockerSwarm = dockerSwarm;
-            //try
-            //{
-            //    _dockerSwarm = new DockerSwarm(environment.ContentRootPath, "157.182.194.132", "2377");
-            //} catch (Exception ex)
-            //{
-            //    _logger.LogCritical($"An error occured while initializing DockerSwarm with message: \"{ex.Message}\"");
-            //    throw;
-            //}
         }
 
         #region Public Methods
