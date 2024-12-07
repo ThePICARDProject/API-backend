@@ -81,4 +81,4 @@ namespace API_Backend.Controllers
             return allowedUrls.Contains(returnUrl);
         }
     }
-} 
+}

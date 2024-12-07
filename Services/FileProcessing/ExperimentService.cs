@@ -54,7 +54,7 @@ namespace API_backend.Services.FileProcessing
         {
             Guid experimentId = Guid.NewGuid();
 
-            _logger.LogInformation("User {UserID} is submitting a new experiment with ExperimentID {ExperimentID}", userId, experimentId);
+            _logger.LogInformation("User {UserID} is submitting a new experiment with ExperimentID {ExperimentID} and ExperimentName {ExperimentName}", userId, experimentId, request.ExperimentName);
 
             try
             {
@@ -67,8 +67,10 @@ namespace API_backend.Services.FileProcessing
                     Algorithm = _dbContext.Algorithms.FirstOrDefault(x => x.AlgorithmID == request.AlgorithmId),
                     CreatedAt = DateTime.UtcNow,
                     Status = ExperimentStatus.WaitingInQueue,
-                    DatasetName = request.DatasetName
+                    DatasetName = request.DatasetName,
+                    ExperimentName = request.ExperimentName // Store the ExperimentName
                 };
+
                 _dbContext.ExperimentRequests.Add(experimentRequest);
 
                 // Create DockerSwarmParameters entity
@@ -94,10 +96,6 @@ namespace API_backend.Services.FileProcessing
                     Value = pv.Value
                 }).ToList();
 
-
-
-                // Add entities to the context
-
                 if (parameterValues.Any())
                 {
                     _dbContext.ExperimentAlgorithmParameterValues.AddRange(parameterValues);
@@ -119,6 +117,7 @@ namespace API_backend.Services.FileProcessing
                 throw;
             }
         }
+
 
         /// <summary>
         /// Retrieves all experiments for a specific user.
@@ -145,6 +144,12 @@ namespace API_backend.Services.FileProcessing
                     _logger.LogWarning("No experiments found for user {UserID}", userId);
                 }
 
+                // Handle DBNull for ExperimentName
+                foreach (var experiment in experiments)
+                {
+                    experiment.ExperimentName = experiment.ExperimentName ?? string.Empty;
+                }
+
                 return experiments;
             }
             catch (Exception ex)
@@ -153,6 +158,8 @@ namespace API_backend.Services.FileProcessing
                 throw;
             }
         }
+
+
 
         /// <summary>
         /// Retrieves the next experiment in the queue.

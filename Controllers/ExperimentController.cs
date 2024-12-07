@@ -108,7 +108,7 @@ namespace API_Backend.Controllers
     /// </summary>
     public class ExperimentSubmissionRequest
     {
-        public ExperimentSubmissionRequest(int algorithmId, string datasetName, int nodeCount, string driverMemory, int driverCores, int executorNumber, int executorCores, string executorMemory, int memoryOverhead /*, List<ParameterValueDto> parameterValues*/)
+        public ExperimentSubmissionRequest(int algorithmId, string datasetName, int nodeCount, string driverMemory, int driverCores, int executorNumber, int executorCores, string executorMemory, int memoryOverhead, string experimentName /*, List<ParameterValueDto> parameterValues*/)
         {
             AlgorithmId = algorithmId;
             DatasetName = datasetName;
@@ -119,6 +119,7 @@ namespace API_Backend.Controllers
             ExecutorCores = executorCores;
             ExecutorMemory = executorMemory;
             MemoryOverhead = memoryOverhead;
+            ExperimentName = experimentName;
         }
 
         public int AlgorithmId { get; set; }
@@ -132,10 +133,12 @@ namespace API_Backend.Controllers
         public int ExecutorCores { get; set; }
         public string ExecutorMemory { get; set; }
         public int MemoryOverhead { get; set; }
+        public string ExperimentName { get; set; }
 
         // Algorithm Parameter Values
         public ICollection<ParameterValueDto> ParameterValues { get; set; }
     }
+
 
     /// <summary>
     /// DTO for parameter values.

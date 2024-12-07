@@ -33,6 +33,7 @@ namespace API_Backend.Models
         public DateTime StartTime { get; set; }
         public DateTime? EndTime { get; set; }
         public string? ErrorMessage { get; set; }
+        public string ExperimentName { get; set; }
 
         // Navigation properties
         [ForeignKey("UserID")]
