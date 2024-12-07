@@ -41,11 +41,11 @@ namespace API_backend.Services.Docker_Swarm
             _rootDirectory = rootDirectory;
 
             // Verify program files
-            if (!File.Exists(Path.Combine(rootDirectory, "docker-compose.yml")))
+            if (!File.Exists(Path.Combine(rootDirectory + "/Services/DockerSwarm", "docker-compose.yml")))
                 throw new Exception("Docker Compose file not found in the project root directory.");
-            if (!Directory.Exists(Path.Combine(rootDirectory, "docker-images")))
+            if (!Directory.Exists(Path.Combine(rootDirectory + "/Services/DockerSwarm/", "docker-images")))
                 throw new Exception("Docker images directory not found in the project root directory.");
-            if (!Directory.Exists(Path.Combine(rootDirectory, "scripts")))
+            if (!Directory.Exists(Path.Combine(rootDirectory + "/Services/DockerSwarm/", "scripts")))
                 throw new Exception("Scripts directory not found in the project root directory.");
 
             // Run DockerSwarm_Init scripts

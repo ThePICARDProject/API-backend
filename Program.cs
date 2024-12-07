@@ -16,8 +16,17 @@ using System.Reflection;
 using System.Security.Claims;
 using API_backend.Models;
 using System;
+using Hangfire;
 
 var builder = WebApplication.CreateBuilder(args);
+
+//builder.Services.AddHangfire(sp, configuration) =>
+//{
+//    var connectionString = sp.GetRequiredService<IConfiguration>().GetConnectionString("DefaultConnection");
+//    configuration.UseSqlServerStorage(connectionString);
+//});
+//builder.Services.AddHangfireServer();
+
 
 builder.Services.AddCors(options =>
 {
@@ -66,6 +75,12 @@ builder.Services.AddSingleton<DockerSwarm>(
         builder.Configuration["DockerSwarm:AdvertiseAddr"],
         builder.Configuration["DockerSwarm:AdvertisePort"])
     );
+
+//add check to help identify docker config issues
+if (string.IsNullOrEmpty(builder.Configuration["DockerSwarm:AdvertiseAddr"]) || string.IsNullOrEmpty(builder.Configuration["DockerSwarm:AdvertisePort"]))
+{
+    throw new InvalidOperationException("Docker swarm advertiseAddr or AdvertisePort is invalid.");
+}
 
 // Register IHttpContextAccessor
 builder.Services.AddSingleton<IHttpContextAccessor, HttpContextAccessor>();

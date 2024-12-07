@@ -1,0 +1,4 @@
+2024-10-21T19:18:02.2513110Z Unable to write 1 log events to the database due to following error: Access denied for user 'root'@'localhost' (using password: YES)
+2024-10-21T19:20:05.9563005Z Unable to write 1 log events to the database due to following error: Access denied for user 'root'@'localhost' (using password: YES)
+2024-10-21T19:22:00.7071110Z Unable to write 1 log events to the database due to following error: Access denied for user 'root'@'localhost' (using password: YES)
+2024-10-21T19:23:10.9022544Z Unable to write 2 log events to the database due to following error: Access denied for user 'root'@'localhost' (using password: YES)
