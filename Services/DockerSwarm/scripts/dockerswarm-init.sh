@@ -8,6 +8,9 @@ advertise_port=$3
 docker_images_dir=$4
 results_dir=$5
 
+
+echo "-----Attempting to initialize Docker Swarm at ($advertise_ip:$advertise_port)-----"
+
 # Add user to docker group if not already
 echo "-----Checking if user is in the docker group-----"
 if ! groups $current_user | grep -qc 'docker'
@@ -24,12 +27,13 @@ then
 	echo "-----Initializing Docker Swarm-----"
 	response=-1
 	if [[ $advertise_ip == "-1" && $advertise_port == "-1" ]] ; then
-		echo "-----Initializing Docker Swarm with address $advertise_ip:$advertise_port-----"
+		
+		echo "-----Initializing Docker Swarm with default address-----"
 		docker swarm init
 		response=$?
 	else
-		echo "-----Initializing Docker Swarm with default address-----"
-		docker swarm init --advertise-addr "${advertise_ip}:$advertise_port"
+		echo "-----Initializing Docker Swarm with address $advertise_ip:$advertise_port-----"
+		docker swarm init --advertise-addr "${advertise_ip}"
 		response=$?
 	fi
 	if [[ $response != 0 ]]

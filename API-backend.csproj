@@ -1,14 +1,50 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
-    <OutputType>Exe</OutputType>
     <TargetFramework>net8.0</TargetFramework>
-    <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>API_backend</RootNamespace>
   </PropertyGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\ThePICARDProject\API-backend\API-backend.csproj" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.Cookies" Version="2.2.0" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.Google" Version="8.0.8" />
+    <PackageReference Include="Microsoft.AspNetCore.Authentication.JwtBearer" Version="8.0.8" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.10" />
+    <PackageReference Include="Microsoft.IdentityModel.Tokens" Version="8.0.2" />
+    <PackageReference Include="MySql.EntityFrameworkCore" Version="8.0.5" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="8.0.2" />
+    <PackageReference Include="Serilog" Version="4.0.2" />
+    <PackageReference Include="Serilog.Extensions.Logging" Version="8.0.1-dev-10398" />
+    <PackageReference Include="Serilog.Sinks.MariaDB" Version="1.0.1" />
+    <PackageReference Include="Serilog.Sinks.MySQL" Version="5.0.0" />
+    <PackageReference Include="Swashbuckle.AspNetCore" Version="6.4.0" />
+    <PackageReference Include="System.Linq.Dynamic.Core" Version="1.5.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Folder Include="Services\DockerSwarm\algorithms\SupervisedMLRF\target\global-logging\" />
+    <Folder Include="Services\DockerSwarm\algorithms\SupervisedMLRF\target\task-temp-directory\" />
+    <Folder Include="Services\FileProcessing\Test Files\" />
+    <Folder Include="Services\Token\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Remove="Services\Token\TokenService.cs" />
+    <Compile Remove="Models\TokenRequest.cs" />
+    <Compile Remove="Models\TokenResponse.cs" />
+    <Compile Remove="Models\Dataset.cs" />
+    <Compile Remove="AllowSwaggerAccessHandler.cs" />
+    <Compile Remove="AllowSwaggerAccessRequirement.cs" />
+    <Compile Remove="Models\InitiateUploadDto.cs" />
+    <Compile Remove="Models\ChunkedUploadDto.cs" />
+    <Compile Remove="Logging\UserIdEnricher.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="FileProcessorTest.csproj" />
   </ItemGroup>
 
 </Project>
