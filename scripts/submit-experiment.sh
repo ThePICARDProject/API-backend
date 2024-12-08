@@ -166,3 +166,21 @@ check_error
 ./scripts/cleanup.sh "${dataset_path}" "/${hdfs_relative_output}" $timeout &>> $log_path
 
 echo "-----Experiment Completed-----" | tee -a $log_path
+
+	--driver-memory "$driver_memory" \
+	--driver-cores $driver_cores \
+	--num-executors $executor_number \
+	--executor-cores $executor_cores \
+	--executor-memory "$executor_memory" \
+	--conf spark.executor.memoryOverhead=$memory_overhead \
+	--class "${class_name}" "/opt/jars/${jar_path}" "$(basename ${dataset_path})" $hdfs_url $hdfs_relative_output ${@:16} &>> $log_path
+check_error
+
+
+echo "-----Attempting to output results for experiment-----" | tee -a $log_path
+docker run --rm --name results-extractor --network "$(basename $(pwd) | sed 's/\./_/g')_cluster-network" -v "${results_output_directory}:/mnt/results" spark-hadoop:latest hdfs dfs -getmerge "${hdfs_url}/${hdfs_relative_output}" "/mnt/results/$(basename ${hdfs_relative_output})" &>> $log_path
+check_error
+
+./scripts/cleanup.sh "${dataset_path}" "/${hdfs_relative_output}" $timeout &>> $log_path
+
+echo "-----Experiment Completed-----" | tee -a $log_path

@@ -31,7 +31,7 @@ namespace API_backend.Services.Docker_Swarm
         // File Paths in the applications local directory
         private readonly string _rootDirectory;
         private readonly string _experimentOutputBasePath = "./results";
-        private readonly string _dockerImagesBasePath = "./docker-images";
+        private readonly string _dockerImagesBasePath = "./Services/DockerSwarm/docker-images"; 
         private readonly string _hadoopOutputBasePath = "hdfs://master:8020";
 
         public DockerSwarm(string rootDirectory) : this(rootDirectory, "-1", "-1") {}
@@ -105,7 +105,7 @@ namespace API_backend.Services.Docker_Swarm
             {
                 // Setup Process
                 submit.StartInfo.FileName = Path.Combine(_rootDirectory, "scripts", "submit-experiment.sh");
-                
+
                 submit.StartInfo.CreateNoWindow = false;
 
                 submit.StartInfo.RedirectStandardError = true;
@@ -128,7 +128,7 @@ namespace API_backend.Services.Docker_Swarm
 
                 submit.StartInfo.ArgumentList.Add(requestData.Algorithm.MainClassName);
                 submit.StartInfo.ArgumentList.Add(Path.GetFileName(requestData.Algorithm.JarFilePath));
-                
+
                 // Add output paths
                 submit.StartInfo.ArgumentList.Add($"{_hadoopOutputBasePath}");
                 submit.StartInfo.ArgumentList.Add(outputPath);
@@ -138,7 +138,7 @@ namespace API_backend.Services.Docker_Swarm
                 List<(int, string)> parameters = new List<(int, string)>();
                 foreach (ExperimentAlgorithmParameterValue item in requestData.ParameterValues)
                     parameters.Add((item.AlgorithmParameter.DriverIndex, item.Value.ToString()));
-                
+
                 // Sort according to each arguments DriverIndex
                 parameters.Sort(delegate((int, string) item1, (int, string) item2)
                 {
@@ -162,8 +162,8 @@ namespace API_backend.Services.Docker_Swarm
             }
 
             // Generate and return an experiment response
-            return new ExperimentResponse() 
-            { 
+            return new ExperimentResponse()
+            {
                 ErrorCode = exitCode,
                 ErrorMessage = error,
                 OutputPath = Path.Combine(outputPath, outputName)
@@ -192,8 +192,8 @@ namespace API_backend.Services.Docker_Swarm
                     string line = dockerfile.ReadLine();
                     Match match = linePattern.Match(line);
                     if (line.Length != 0 && match.Value.Length == line.Length) // If the pattern matches the line, update the line
-                            line = $"COPY ./jars/{userId}/* /opt/jars";
-                    
+                        line = $"COPY ./jars/{userId}/* /opt/jars";
+
                     newFileContent = $"{newFileContent}{line}\n";
                 }
             }
