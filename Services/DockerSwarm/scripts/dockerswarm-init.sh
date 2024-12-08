@@ -33,7 +33,7 @@ then
 		response=$?
 	else
 		echo "-----Initializing Docker Swarm with address $advertise_ip:$advertise_port-----"
-		docker swarm init --advertise-addr "${advertise_ip}"
+		docker swarm init --advertise-addr "${advertise_ip}:${advertise_port}"
 		response=$?
 	fi
 	if [[ $response != 0 ]]

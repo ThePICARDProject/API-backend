@@ -88,7 +88,6 @@ namespace API_Backend.Services.FileProcessing
                 }).ToList();
 
                 // Add entities to the context
-                
                 if (parameterValues.Any())
                 {
                     _dbContext.ExperimentAlgorithmParameterValues.AddRange(parameterValues);
@@ -208,17 +207,18 @@ namespace API_Backend.Services.FileProcessing
                     _logger.LogInformation("Starting experiment process for ExperimentID {ExperimentID}", experiment.ExperimentID);
 
                     StoredDataSet dataset = await _dbContext.StoredDataSets.FirstOrDefaultAsync(x => x.User.UserID == experiment.UserID && x.Name == experiment.DatasetName);
-                    ExperimentResponse error = await _dockerSwarm.SubmitExperiment(experiment, dataset);
+                    ExperimentResponse response = await _dockerSwarm.SubmitExperiment(experiment, dataset);
 
-                    _logger.LogInformation("Experiment process exited with code {ExitCode} for ExperimentID {ExperimentID}", error.ErrorCode, experiment.ExperimentID);
-
-                    if (error.ErrorCode != 0)
+                    _logger.LogInformation("Experiment process exited with code {ExitCode} for ExperimentID {ExperimentID}", response.ErrorCode, experiment.ExperimentID);
+                    
+                     if (response.ErrorCode != 0)
                     {
-                        _logger.LogError("ExperimentID {ExperimentID} failed with error: {Error}", experiment.ExperimentID, error.ErrorMessage);
-                        throw new Exception($"Experiment failed: {error.ErrorMessage}");
+                        _logger.LogError("ExperimentID {ExperimentID} failed with error: {Error}", experiment.ExperimentID, response.ErrorMessage);
+                        throw new Exception($"Experiment failed: {response.ErrorMessage}");
                     }
                     else
                     {
+                        await this.ProcessExperimentResultsAsync(experiment, response);
                         _logger.LogInformation("ExperimentID {ExperimentID} completed successfully.", experiment.ExperimentID);
                     }
                 }
@@ -328,11 +328,8 @@ namespace API_Backend.Services.FileProcessing
         /// Processes the experiment results after execution.
         /// </summary>
         /// <param name="experiment">The experiment request whose results are to be processed.</param>
-        private async Task ProcessExperimentResultsAsync(ExperimentRequest experiment)
+        private async Task ProcessExperimentResultsAsync(ExperimentRequest experiment, ExperimentResponse resultsPath)
         {
-            // THIS NEEDS TO BE A SEPERATE REQUEST, WHERE WE WILL PROCESS BASED ON 
-            // SELECTED PARAMETERS/CONDITIONS
-
             _logger.LogInformation("Processing results for ExperimentID {ExperimentID}", experiment.ExperimentID);
 
             // Update status to BeingProcessed
@@ -340,29 +337,21 @@ namespace API_Backend.Services.FileProcessing
 
             try
             {
-                // Implement your result processing logic here
-                // For example, retrieve outputs from HDFS or process data files
+                    // Save experiment result (placeholder implementation)
+                    var experimentResult = new ExperimentResult
+                    {
+                        ExperimentID = experiment.ExperimentID,
+                        ResultFilePath = resultsPath.OutputPath, // Replace with actual path
+                        CreatedAt = DateTime.UtcNow
+                    };
 
-                // Simulate result processing delay
-                await Task.Delay(2000);
+                    _dbContext.ExperimentResults.Add(experimentResult);
+                    await _dbContext.SaveChangesAsync();
 
-                // Save experiment result (placeholder implementation)
-                var experimentResult = new ExperimentResult
-                {
-                    ExperimentID = experiment.ExperimentID,
-                    ResultFilePath = "/path/to/result", // Replace with actual path
-                    ResultFileName = "result.txt",
-                    MetaDataFilePath = "/path/to/metadata", // Replace with actual path
-                    CreatedAt = DateTime.UtcNow
-                };
+                    _logger.LogInformation("Experiment results saved for ExperimentID {ExperimentID}", experiment.ExperimentID);
 
-                _dbContext.ExperimentResults.Add(experimentResult);
-                await _dbContext.SaveChangesAsync();
-
-                _logger.LogInformation("Experiment results saved for ExperimentID {ExperimentID}", experiment.ExperimentID);
-
-                // Update status to Finished
-                await UpdateExperimentStatusAsync(experiment.ExperimentID, ExperimentStatus.Finished);
+                    // Update status to Finished
+                    await UpdateExperimentStatusAsync(experiment.ExperimentID, ExperimentStatus.Finished);
             }
             catch (Exception ex)
             {

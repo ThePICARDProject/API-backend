@@ -104,8 +104,7 @@ namespace API_Backend.Services.Docker_Swarm
             using (Process submit = new Process())
             {
                 // Setup Process
-                submit.StartInfo.WorkingDirectory = _rootDirectory;
-                submit.StartInfo.FileName = Path.Combine("./scripts", "submit-experiment.sh");
+                submit.StartInfo.FileName = Path.Combine(_rootDirectory, "scripts", "submit-experiment.sh");
                 
                 submit.StartInfo.CreateNoWindow = false;
 
@@ -179,10 +178,10 @@ namespace API_Backend.Services.Docker_Swarm
         private void UpdateDockerfile(string userId)
         {
             // Generate the path and the jar line regex pattern
-            string dockerfilePath = "./docker-images/spark-hadoop/Dockerfile";
+            string dockerfilePath = Path.Combine(_rootDirectory, "docker-images/spark-hadoop/Dockerfile");
             if (!File.Exists(dockerfilePath))
                 throw new FileNotFoundException("Dockerfile was not found");
-            Regex linePattern = new Regex("COPY \\.\\/jars\\/(?:[a-zA-Z0-9]+\\/\\*|\\*) \\/opt\\/jars");
+            Regex linePattern = new Regex("COPY \\.\\/jars\\/(?:[a-zA-Z0-9-]+\\/\\*|\\*) \\/opt\\/jars");
 
             // Copy each line from the old dockerfile to a string
             string newFileContent = "";

@@ -56,7 +56,7 @@ namespace API_Backend.Services.FileProcessing
         /// <param name="requestIds"> List of experiment request IDs </param>
         /// <returns> Aggregated results file path </returns>
         /// <exception cref="ArgumentNullException"></exception>
-        public async Task<string> AggregateData(string userId, List<string> requestIds)
+        public async Task<int> AggregateData(string userId, List<string> requestIds)
         {
 
             // Verify arguments
@@ -70,11 +70,8 @@ namespace API_Backend.Services.FileProcessing
 
             var dateTime = DateTime.UtcNow;
 
-
             string aggFileName = $"{userId}_{dateTime:yyyyMMddHHmmss}";
-
             string aggFilePath = aggFileName + ".txt";
-
 
             Console.WriteLine("Export Path: " + exportPath);
 
@@ -92,24 +89,12 @@ namespace API_Backend.Services.FileProcessing
 
             foreach (var requestId in requestIds)
             {
-
-                var filePath = await _dbContext.ExperimentResults
+                var experimentResultPath = await _dbContext.ExperimentResults
                     .Where(e => e.ExperimentID.ToString() == requestId)
                     .Select(e => e.ResultFilePath)
                     .FirstOrDefaultAsync();
 
-
-                var fileName = _dbContext.ExperimentResults
-                    .Where(e => e.ExperimentID.ToString() == requestId)
-                    .Select(e => e.ResultFileName)
-                    .FirstOrDefault();
-
-                Console.WriteLine(filePath);
-
-                var completeFilePath = filePath + fileName;
-
-
-                if (filePath != null)
+                if (experimentResultPath != null)
                 {
                     // TODO: add in all algorithm parameters and values in format "Trees = 10"
                     var queryResult = (from ereq in _dbContext.ExperimentRequests
@@ -124,14 +109,12 @@ namespace API_Backend.Services.FileProcessing
                                            alg.AlgorithmID,
                                            param.ParameterName,
                                            values.Value
-                                       }).ToList();
+                                       }).Distinct().ToList();
 
                     StringBuilder sb = new StringBuilder("Algorithm Information:\n");
 
-
                     foreach (var item in queryResult)
                     {
-
                         StringBuilder insideSB = new StringBuilder();
 
                         insideSB.Append(item.ParameterName + " = ");
@@ -145,10 +128,14 @@ namespace API_Backend.Services.FileProcessing
                         Console.WriteLine($"Value: {item.Value}");
                     }
 
-                    List<string> lines = File.ReadLines(completeFilePath).ToList();
-                    lines.Insert(0, $"nr-----\nRequestID: {requestId}\nOutput Results for {Path.GetFileName(completeFilePath)}\n-----\n{sb.ToString()}\n");
-                     File.AppendAllLines(exportPath, lines);
+                    List<string> lines = File.ReadLines(experimentResultPath).ToList();
+                    lines.Insert(0, $"nr-----\nRequestID: {requestId}\nOutput Results for {Path.GetFileName(experimentResultPath)}\n-----\n{sb.ToString()}\n");
+                    File.AppendAllLines(exportPath, lines);
+                } else
+                {
+                    continue;
                 }
+                
             }
                 // Create a new instance of AggregatedResult
                 var newAggregatedResult = new AggregatedResult
@@ -164,8 +151,8 @@ namespace API_Backend.Services.FileProcessing
                 _dbContext.SaveChanges();
 
 
-                // Return the path of the saved file
-                return exportPath;
+            // Return the path of the saved file
+            return newAggregatedResult.AggregatedResultID;
         }
 
         /// <summary>
@@ -174,29 +161,37 @@ namespace API_Backend.Services.FileProcessing
         /// <param name="userId"> ID of logged in user </param>
         /// <param name="queryParams"> User passed query parameters for docker swarm and algorithm parameters </param>
         /// <returns> A list of experiment request IDs </returns>
-        public async Task<List<string>> QueryExperiments(string userId, QueryExperiment queryParams)
+        public async Task<HashSet<string>> QueryExperiments(string userId, QueryExperiment queryParams)
         {
             
             // Store docker swarm and algorithm parameters in their own variables
-            var clusterParams = queryParams.ClusterParams;
-            var algorithmParams = queryParams.AlgorithmParams;
+            var clusterParams = queryParams.ClusterParameters;
+            var algorithmParams = queryParams.AlgorithmParameters;
 
 
             // TODO: improve dynamic query efficiency / safety
             // Build dynamic query based off of docker swarm parameters
-            StringBuilder clusterQuery = new StringBuilder("x => ");
-            foreach (var clusterParam in clusterParams)
+            StringBuilder clusterQuery;
+            if (clusterParams.Count != 0)
             {
-                if (clusterParam != clusterParams.Last())
+                clusterQuery = new StringBuilder("x => ");
+                foreach (var clusterParam in clusterParams)
                 {
-                    clusterQuery.Append("x.");
-                    clusterQuery.Append(clusterParam);
-                    clusterQuery.Append(" && ");
-                } else
-                {
-                    clusterQuery.Append("x.");
-                    clusterQuery.Append(clusterParam);
+                    if (clusterParam != clusterParams.Last())
+                    {
+                        clusterQuery.Append("x.");
+                        clusterQuery.Append(clusterParam);
+                        clusterQuery.Append(" && ");
+                    }
+                    else
+                    {
+                        clusterQuery.Append("x.");
+                        clusterQuery.Append(clusterParam);
+                    }
                 }
+            } else
+            {
+                clusterQuery = null;
             }
 
             List<AlgorithmQueryModel> algorithmQueryModels = new List<AlgorithmQueryModel>();
@@ -204,13 +199,12 @@ namespace API_Backend.Services.FileProcessing
             // store passed algorithm queries into algorithm query model for readability
             foreach (var algorithmParam in algorithmParams)
             {
-                var queryComponents = algorithmParam.Split(' ');
-
+    
                 var algorithmQueryModel = new AlgorithmQueryModel();
 
-                algorithmQueryModel.ParamName = queryComponents[0];
-                algorithmQueryModel.ParamOperator = queryComponents[1];
-                algorithmQueryModel.ParamValue = queryComponents[2];
+                algorithmQueryModel.ParamName = algorithmParam.AlgorithmParameterId;
+                algorithmQueryModel.ParamOperator = algorithmParam.Operator;
+                algorithmQueryModel.ParamValue = algorithmParam.Value;
 
                 algorithmQueryModels.Add(algorithmQueryModel);
             }
@@ -250,19 +244,29 @@ namespace API_Backend.Services.FileProcessing
                     .ToList();
             }
 
-            // retrieves db results filtered by algorithm params, then further filters by cluster params
-            var finalResult = queryResult
-                .Where(r => filteredAlgorithms.Any(f => f.AlgorithmID == r.AlgorithmID && f.ParameterName == r.ParameterName && f.Value.Equals(r.Value)))
+            List<ExperimentQueryModel> clusterResults = new List<ExperimentQueryModel>();
+            if(clusterQuery != null)
+                clusterResults = queryResult
                 .AsQueryable()
                 .Where(ExpressionParser.ParseExpression<ExperimentQueryModel>(clusterQuery.ToString(), "x"))
                 .ToList();
 
+
+            // retrieves db results filtered by algorithm params, then further filters by cluster params
+            var AlgorithmResults = queryResult
+                .Where(r => filteredAlgorithms.Any(f => f.AlgorithmID == r.AlgorithmID && f.ParameterName == r.ParameterName && f.Value.Equals(r.Value)))
+                .ToList();
+
+            var finalResult = AlgorithmResults.Intersect(clusterResults);
+
             // Returning the ExperimentIDs from the final result
-            List<string> requestIds = finalResult
+            List<string> requestIds = AlgorithmResults
                 .Select(r => r.ExperimentID.ToString())
                 .ToList();
 
-            return requestIds;
+            HashSet<string> finalRequestIds = new HashSet<string>(requestIds);
+
+            return finalRequestIds;
         }
 
         /// <summary>
@@ -272,16 +276,14 @@ namespace API_Backend.Services.FileProcessing
         /// <param name="aggregateFileId"> Path to the aggregated data file </param>
         /// <returns> Path to the CSV file </returns>
         /// <exception cref="FileNotFoundException"></exception>
-        public string GetCsv(List<string> desiredMetrics, int aggregateFileId)
+        public int GetCsv(List<string> desiredMetrics, int aggregateFileId)
         {
-
             // retrieve aggregate result from db based off of ID
             var aggregateResult= _dbContext.AggregatedResults
             .Single(r => r.AggregatedResultID == aggregateFileId);
 
             var aggregateFilePath = aggregateResult.AggregatedResultFilePath;
             var aggregateFileName = aggregateResult.AggregatedResultName;
-            
             
             if (!Path.Exists(aggregateFilePath))
             {
@@ -290,21 +292,18 @@ namespace API_Backend.Services.FileProcessing
 
             // Create file path for CSV to be stored
             string aggregateParent = Path.GetDirectoryName(aggregateFilePath);
-            var outputFilePath = Path.Combine(aggregateParent, $"{Path.GetFileName(aggregateFileName)}.csv");
-
-
+            var outputFilePath = Path.Combine(aggregateParent, $"{Path.GetFileName(aggregateFileName)}_{DateTime.UtcNow:yyyyMMddHHmmss}.csv");
 
             using (StreamReader output = new StreamReader(aggregateFilePath))
             {
-
                 // Dictory of key value pairs representing metric to obtain from .txt file and corresponding value (initially set to null)
                 var metrics = desiredMetrics.ToDictionary(metric => metric, metric => (string?)null);
 
+                // Generate header line
                 var headerList = metrics.Keys.ToList();
                 string csvHeaders = System.String.Join(",", headerList.ToArray()) + "\n";
 
                 File.AppendAllText(outputFilePath, csvHeaders);
-
 
                 while (!output.EndOfStream)
                 {
@@ -316,12 +315,10 @@ namespace API_Backend.Services.FileProcessing
                     {
                         if (line != null && line.StartsWith(metricKey, StringComparison.OrdinalIgnoreCase))
                         {
-                            
                             var value = line.Split('=')[1].Trim();
                             metrics[metricKey] = value;
                         }
                     }
-
 
                     // If new experiment result or end of file reached, append values and start new row
                     if (line != null && line.StartsWith("nr-----") || output.EndOfStream)
@@ -338,12 +335,9 @@ namespace API_Backend.Services.FileProcessing
                         {
                             metrics[key] = null;
                         }
-
                     }
-
-
                 }
-
+            }
 
             // Create a new instance of CsvResult
             var csvResult = new CsvResult
@@ -356,13 +350,9 @@ namespace API_Backend.Services.FileProcessing
             };
 
             _dbContext.CsvResults.Add(csvResult);
-
             _dbContext.SaveChanges();
 
-
-
-            }
-            return outputFilePath;
+            return csvResult.CsvResultID;
         }
 
         private void CreateDirectories(string filePath)

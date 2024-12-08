@@ -16,8 +16,6 @@ namespace API_Backend.Models
         public Guid ExperimentID { get; set; } // FK to ExperimentRequest
 
         public string ResultFilePath { get; set; } // TODO: Change to ResultFilePath
-        public string ResultFileName { get; set; } // TODO: Change to ResultFileName
-        public string MetaDataFilePath { get; set; }
 
         [Required]
         public DateTime CreatedAt { get; set; }
