@@ -16,24 +16,17 @@ namespace API_Backend.Controllers
     [Route("api/result")]
     public class ResultController: ControllerBase
     {
-
         private readonly FileProcessor _fileProcessor;
         private readonly ILogger<ResultController> _logger;
         private readonly ApplicationDbContext _dbContext;
         private readonly ExperimentService _experimentService;
-
-
-
-        // TODO: remove commenting out of experiemnt service injection.  Currently causing bugs on Jacob File Processor branch
 
         public ResultController(/*ExperimentService experimentService,*/ FileProcessor fileProcessor, ILogger<ResultController> logger, ApplicationDbContext dbContext)
         {
             _fileProcessor = fileProcessor;
             _logger = logger;
             _dbContext = dbContext;
-            //_experimentService = experimentService;
         }
-
 
         /// <summary>
         /// Gets the processed results of an experiment.

@@ -1,5 +1,6 @@
 ﻿using System.Linq.Expressions;
 using System.Linq.Dynamic.Core;
+using API_Backend.Models;
 
 namespace API_Backend.Services.FileProcessing
 {

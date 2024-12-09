@@ -2,8 +2,7 @@
 {
     public class AlgorithmQueryModel
     {
-
-        public string ParamName { get; set; }
+        public int ParamId { get; set; }
         public string ParamOperator { get; set; }
         public string ParamValue { get; set; }
     }

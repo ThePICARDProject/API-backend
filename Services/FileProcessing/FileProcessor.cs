@@ -22,6 +22,7 @@ using static Mysqlx.Error.Types;
 using System;
 using System.Linq.Dynamic.Core.Parser;
 using Microsoft.EntityFrameworkCore.Query.Internal;
+using API_backend.Models;
 
 
 namespace API_Backend.Services.FileProcessing
@@ -180,13 +181,13 @@ namespace API_Backend.Services.FileProcessing
                     if (clusterParam != clusterParams.Last())
                     {
                         clusterQuery.Append("x.");
-                        clusterQuery.Append(clusterParam);
+                        clusterQuery.Append($"{clusterParam.ClusterParameterName} {clusterParam.Operator} {clusterParam.Value}");
                         clusterQuery.Append(" && ");
                     }
                     else
                     {
                         clusterQuery.Append("x.");
-                        clusterQuery.Append(clusterParam);
+                        clusterQuery.Append($"{clusterParam.ClusterParameterName} {clusterParam.Operator} {clusterParam.Value}");
                     }
                 }
             } else
@@ -202,7 +203,7 @@ namespace API_Backend.Services.FileProcessing
     
                 var algorithmQueryModel = new AlgorithmQueryModel();
 
-                algorithmQueryModel.ParamName = algorithmParam.AlgorithmParameterId;
+                algorithmQueryModel.ParamId = algorithmParam.AlgorithmParameterId;
                 algorithmQueryModel.ParamOperator = algorithmParam.Operator;
                 algorithmQueryModel.ParamValue = algorithmParam.Value;
 
@@ -222,7 +223,7 @@ namespace API_Backend.Services.FileProcessing
                                {
                                    ExperimentID = ereq.ExperimentID,
                                    AlgorithmID = alg.AlgorithmID,
-                                   ParameterName = param.ParameterName,
+                                   ParameterId = param.ParameterID,
                                    Value = values.Value,
                                    NodeCount = cluster.NodeCount,
                                    DriverMemory = cluster.DriverMemory,
@@ -231,7 +232,7 @@ namespace API_Backend.Services.FileProcessing
                                    ExecutorCores = cluster.ExecutorCores,
                                    ExecutorMemory = cluster.ExecutorMemory,
                                    MemoryOverhead = cluster.MemoryOverhead
-                               }).ToList();
+                               }).Distinct().ToList();
 
 
             var filteredAlgorithms = queryResult;
@@ -240,7 +241,7 @@ namespace API_Backend.Services.FileProcessing
             foreach (var algorithmQueryModel in algorithmQueryModels)
             {
                 filteredAlgorithms = filteredAlgorithms
-                    .Where(r => r.ParameterName == algorithmQueryModel.ParamName && r.Value.Equals(algorithmQueryModel.ParamValue))
+                    .Where(r => r.ParameterId == algorithmQueryModel.ParamId && r.Value.Equals(algorithmQueryModel.ParamValue))
                     .ToList();
             }
 
@@ -254,13 +255,13 @@ namespace API_Backend.Services.FileProcessing
 
             // retrieves db results filtered by algorithm params, then further filters by cluster params
             var AlgorithmResults = queryResult
-                .Where(r => filteredAlgorithms.Any(f => f.AlgorithmID == r.AlgorithmID && f.ParameterName == r.ParameterName && f.Value.Equals(r.Value)))
+                .Where(r => filteredAlgorithms.Any(f => f.AlgorithmID == r.AlgorithmID && f.ParameterId == r.ParameterId && f.Value.Equals(r.Value)))
                 .ToList();
 
-            var finalResult = AlgorithmResults.Intersect(clusterResults);
+            var finalResult = AlgorithmResults.Intersect(clusterResults, new ExperimentQueryModelComparer()).ToList();
 
             // Returning the ExperimentIDs from the final result
-            List<string> requestIds = AlgorithmResults
+            List<string> requestIds = finalResult
                 .Select(r => r.ExperimentID.ToString())
                 .ToList();
 
@@ -381,7 +382,7 @@ public class ExperimentQueryModel
 {
     public Guid ExperimentID { get; set; }
     public int AlgorithmID { get; set; }
-    public string ParameterName { get; set; }
+    public int ParameterId { get; set; }
     public string Value { get; set; }
     public int NodeCount { get; set; }
     public string DriverMemory {  get; set; }
@@ -390,6 +391,47 @@ public class ExperimentQueryModel
     public int ExecutorCores { get; set; }
     public string ExecutorMemory { get; set; }
     public int MemoryOverhead { get; set; }
+}
+
+public class ExperimentQueryModelComparer : IEqualityComparer<ExperimentQueryModel>
+{
+    public bool Equals(ExperimentQueryModel a, ExperimentQueryModel b)
+    {
+        if (b is null && a is null) return true;
+        else if(b is null || a is null) return false;
+        
+        return (a.ExperimentID == b.ExperimentID
+            && a.AlgorithmID == b.AlgorithmID
+            && a.ParameterId == b.ParameterId
+            && a.Value == b.Value
+            && a.NodeCount == b.NodeCount
+            && a.DriverMemory == b.DriverMemory
+            && a.DriverCores == b.DriverCores
+            && a.ExecutorNumber == b.ExecutorNumber
+            && a.ExecutorCores == b.ExecutorCores
+            && a.ExecutorMemory == b.ExecutorMemory
+            && a.MemoryOverhead == b.MemoryOverhead);
+    }
+
+    public int GetHashCode(ExperimentQueryModel model)
+    {
+        if (model is null) return 0;
+
+        int hashEID = model.ExperimentID.GetHashCode(); 
+        int hashAID = model.AlgorithmID.GetHashCode();
+        int hashPN = model.ParameterId.GetHashCode();
+        int hashValue = model.Value.GetHashCode();
+        int hashNodeCount = model.NodeCount.GetHashCode();
+        int hashDriverMemory = model.DriverMemory.GetHashCode();
+        int hashDriverCores = model.DriverCores.GetHashCode();
+        int hashExecutorNumber = model.ExecutorNumber.GetHashCode();
+        int hashExecutorCores = model.ExecutorCores.GetHashCode();
+        int hashExecutorMemory = model.ExecutorMemory.GetHashCode();
+        int hashMemoryOverhead = model.MemoryOverhead.GetHashCode();
+
+        return hashEID ^ hashAID ^ hashPN ^ hashValue ^ hashNodeCount ^ hashDriverMemory
+            ^ hashDriverCores ^ hashExecutorNumber ^ hashExecutorCores ^ hashExecutorMemory ^ hashMemoryOverhead;
+    }
 }
 
 // "SplittingTime",
