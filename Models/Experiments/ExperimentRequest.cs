@@ -18,6 +18,9 @@ namespace API_Backend.Models
         public string UserID { get; set; } // FK to Users
 
         [Required]
+        public string ExperimentName { get; set; }
+
+        [Required]
         public int AlgorithmID { get; set; } // FK to Algorithms
 
         [Required]

@@ -54,6 +54,7 @@ namespace API_Backend.Services.FileProcessing
                 // Create a new ExperimentRequest entity
                 var experimentRequest = new ExperimentRequest
                 {
+                    ExperimentName = request.ExperimentName,
                     ExperimentID = experimentId,
                     UserID = userId,
                     AlgorithmID = request.AlgorithmId,
