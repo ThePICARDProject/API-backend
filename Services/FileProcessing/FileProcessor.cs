@@ -23,6 +23,7 @@ using System;
 using System.Linq.Dynamic.Core.Parser;
 using Microsoft.EntityFrameworkCore.Query.Internal;
 using API_backend.Models;
+using System.Runtime.ConstrainedExecution;
 
 
 namespace API_Backend.Services.FileProcessing
@@ -275,6 +276,8 @@ namespace API_Backend.Services.FileProcessing
             List<string> requestIds = finalResult
                 .Select(r => r.ExperimentID.ToString())
                 .ToList();
+
+            HashSet<string> final = new HashSet<string>(requestIds);
 
             return requestIds;
         }
