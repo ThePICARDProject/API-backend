@@ -163,7 +163,7 @@ namespace API_Backend.Services.FileProcessing
         /// <param name="userId"> ID of logged in user </param>
         /// <param name="queryParams"> User passed query parameters for docker swarm and algorithm parameters </param>
         /// <returns> A list of experiment request IDs </returns>
-        public async Task<List<string>> QueryExperiments(string userId, QueryExperiment queryParams)
+        public async Task<HashSet<string>> QueryExperiments(string userId, QueryExperiment queryParams)
         {
             
             // Store docker swarm and algorithm parameters in their own variables
@@ -279,7 +279,7 @@ namespace API_Backend.Services.FileProcessing
 
             HashSet<string> final = new HashSet<string>(requestIds);
 
-            return requestIds;
+            return final;
         }
 
         /// <summary>
