@@ -27,7 +27,6 @@
   <ItemGroup>
     <Folder Include="Services\DockerSwarm\algorithms\SupervisedMLRF\target\global-logging\" />
     <Folder Include="Services\DockerSwarm\algorithms\SupervisedMLRF\target\task-temp-directory\" />
-    <Folder Include="Services\FileProcessing\Test Files\" />
     <Folder Include="Services\Token\" />
   </ItemGroup>
 

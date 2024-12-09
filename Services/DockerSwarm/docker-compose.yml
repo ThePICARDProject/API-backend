@@ -41,17 +41,6 @@ services:
     depends_on:
       - master
 
-  # It rewrites some of the responses - I had it working for the spark dashboard on compose but will have to redo some of it to account for hadoop and yarn.
-  webui-proxy:
-    image: webui-proxy:latest
-    build: 
-      context: ./docker-images/webui-proxy
-      dockerfile: Dockerfile
-    networks:
-      - cluster-network
-    ports:
-      - '8080:8080'
-
 networks:
   cluster-network:
     attachable: true
