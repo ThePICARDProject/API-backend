@@ -17,15 +17,27 @@ using System.Security.Claims;
 using API_backend.Models;
 using System;
 using Hangfire;
+using Hangfire.SqlServer;
+using System.Configuration;
 
 var builder = WebApplication.CreateBuilder(args);
 
-//builder.Services.AddHangfire(sp, configuration) =>
+//builder.Services.AddHangfire (sp, configuration) =>
 //{
 //    var connectionString = sp.GetRequiredService<IConfiguration>().GetConnectionString("DefaultConnection");
 //    configuration.UseSqlServerStorage(connectionString);
 //});
 //builder.Services.AddHangfireServer();
+
+builder.Services.AddHangfire(configuration => configuration
+     .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+     .UseSimpleAssemblyNameTypeSerializer()
+     .UseRecommendedSerializerSettings()
+     .UseSqlServerStorage(builder.Configuration.GetConnectionString("HangfireConnection"))
+     );
+
+// Add the processing server as IHostedService
+builder.Services.AddHangfireServer();
 
 
 builder.Services.AddCors(options =>
