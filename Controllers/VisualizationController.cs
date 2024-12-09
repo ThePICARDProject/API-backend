@@ -2,6 +2,7 @@
 using API_Backend.Services.DataVisualization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using System.Security.Claims;
 
 namespace API_Backend.Controllers
 {
@@ -9,6 +10,7 @@ namespace API_Backend.Controllers
     [ApiController]
     public class VisualizationController : ControllerBase
     {
+
         private readonly DataVisualization _dataVisualization;
 
         public VisualizationController(DataVisualization dataVisualization)
@@ -17,12 +19,26 @@ namespace API_Backend.Controllers
         }
 
         [HttpPost]
-        public IActionResult GetValues([FromForm] VisualizationRequest visRequest)
+        public async Task<IActionResult> GetValues([FromForm] VisualizationRequest visRequest)
         {
-            bool result = _dataVisualization.GraphInput(visRequest);
+            // Get userId from logged in user
+            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var aggregatedResultId = visRequest.AggregatedResultID;
+
+            bool result = await _dataVisualization.GraphInput(visRequest, userId);
             if (result)
             {
-                return Ok("Graph successfully generated");
+                string filePath = await _dataVisualization.GetFilePath(aggregatedResultId, userId);
+
+                if (filePath != null)
+                {
+
+                    return this.Content(filePath);
+                }
+                else
+                {
+                    return StatusCode(500, new { message = "Error returning file path to data visualization grpah." });
+                }
             }
             else
             {

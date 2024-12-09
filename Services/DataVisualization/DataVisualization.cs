@@ -1,5 +1,8 @@
-﻿using API_Backend.Models;
+﻿using API_Backend.Data;
+using API_Backend.Models;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
+using MySqlX.XDevAPI.Common;
 using System;
 using System.Diagnostics;
 using System.Text;
@@ -9,25 +12,41 @@ namespace API_Backend.Services.DataVisualization
     public class DataVisualization
     {
         private readonly IWebHostEnvironment _env;
+        private readonly ApplicationDbContext _dbContext;
 
-        public DataVisualization(IWebHostEnvironment env)
+
+        public DataVisualization(IWebHostEnvironment env, ApplicationDbContext dbContext)
         {
             _env = env;
+            _dbContext = dbContext;
         }
+        private readonly string _outputBaseDirectory = "exports";
 
         /// <summary>
         /// Method <c>GraphInput</c> creates graph.py executable file and sets user submitted values as parameters
         /// </summary>
         /// <param name="parameters">Users submitted parameters for python script</param>
         /// <returns>boolean representing successfully passed parameters</returns>
-        public bool GraphInput(VisualizationRequest parameters)
+        public async Task<bool> GraphInput(VisualizationRequest parameters, string userId)
         {
             try
             {
                 // Get the base directory of the application
                 var baseDirectory = _env.ContentRootPath;
 
-                var csvFilePath = parameters.CSVFilePath;
+                var csvResultId = parameters.AggregatedResultID;
+
+                var queryResult = (from csvres in _dbContext.CsvResults
+                                   join aggres in _dbContext.AggregatedResults on csvres.AggregatedResultID equals aggres.AggregatedResultID
+                                   where aggres.UserID == userId && csvres.CsvResultID == csvResultId
+                                   select new
+                                   {
+                                       csvres.CsvResultFilePath
+                                   }).FirstOrDefault();
+
+                string csvFilePath = (await _dbContext.CsvResults.FirstOrDefaultAsync(x => x.AggregatedResultID == parameters.AggregatedResultID)).CsvResultFilePath;
+
+                var csvParentDirectory = Path.GetDirectoryName(csvFilePath);
 
                 if (csvFilePath == null || csvFilePath.Length == 0)
                 {
@@ -40,7 +59,7 @@ namespace API_Backend.Services.DataVisualization
                 }
 
 
-                string input = FormatInputString(parameters);
+                string input = FormatInputString(parameters, csvFilePath);
 
 
                 ProcessStartInfo startInfo = new ProcessStartInfo
@@ -75,21 +94,19 @@ namespace API_Backend.Services.DataVisualization
 
         }
 
-
-
-
         /// <summary>
         /// Method <c>FormatInputStringt</c> formats graph.py parameters to pass to python executable file
         /// </summary>
         /// <param name="parameters">Users submitted parameters for python script</param>
         /// <returns>string formatted for python script</returns>
-        public string FormatInputString(VisualizationRequest parameters)
+        public string FormatInputString(VisualizationRequest parameters, string CSVFilePath)
         {
 
-            if (string.IsNullOrEmpty(parameters.XAxis) || string.IsNullOrEmpty(parameters.YAxis) || string.IsNullOrEmpty(parameters.GraphType) || string.IsNullOrEmpty(parameters.OutputFileName)) {
+            if (string.IsNullOrEmpty(parameters.XAxis) || string.IsNullOrEmpty(parameters.YAxis) || string.IsNullOrEmpty(parameters.GraphType) || string.IsNullOrEmpty(parameters.OutputFileName))
+            {
                 throw new ArgumentException("Missing graph parameters: X axis, Y axis, graph type, or output filename.");
             }
-            
+
             var baseDirectory = _env.ContentRootPath;
 
             // Build the path to the Python script
@@ -98,7 +115,7 @@ namespace API_Backend.Services.DataVisualization
 
             StringBuilder sb = new StringBuilder(quotedPythonScript);
 
-            sb.Append(" -i " + $"\"{parameters.CSVFilePath}\"");
+            sb.Append(" -i " + $"\"{CSVFilePath}\"");
             sb.Append(" -d1 " + parameters.XAxis);
             sb.Append(" -d2 " + parameters.YAxis);
             sb.Append(" -g " + parameters.GraphType);
@@ -116,5 +133,65 @@ namespace API_Backend.Services.DataVisualization
 
             return sb.ToString();
         }
+
+        public async Task<string> GetFilePath(int csvResultId, string userId)
+        {
+            AggregatedResult result = await _dbContext.AggregatedResults.FirstOrDefaultAsync(x => x.UserID == userId && x.AggregatedResultID == csvResultId);
+
+            var csvParentDirectory = Path.GetDirectoryName(result.AggregatedResultFilePath);
+            if (string.IsNullOrEmpty(csvParentDirectory))
+            {
+                throw new InvalidOperationException("CSV parent directory not found.");
+            }
+
+            var tempGraphDirectory = Path.Combine(_outputBaseDirectory, "tempGraph");
+
+            Console.WriteLine($"{tempGraphDirectory}");
+
+            if (!Directory.Exists(tempGraphDirectory))
+            {
+                throw new DirectoryNotFoundException("tempGraph directory not found");
+            }
+
+
+            var tempGraphFiles = Directory.GetFiles(tempGraphDirectory);
+
+            if (tempGraphFiles.Length != 1)
+            {
+                throw new InvalidOperationException($"Expected exactly one file in the directory, but found {tempGraphFiles.Length}.");
+            }
+
+            var graphFilePath = tempGraphFiles[0];
+
+            var destFilePath = Path.Combine(csvParentDirectory, Path.GetFileName(graphFilePath));
+
+            // move graph to aggregateData directory (csv parent directory)
+            try
+            {
+                File.Move(graphFilePath, destFilePath);
+                Console.WriteLine($"Moved file from {graphFilePath} to {destFilePath}");
+            }
+            catch (Exception ex)
+            {
+                throw new InvalidOperationException($"Failed to move the graph file. Error: {ex.Message}", ex);
+            }
+
+            // delete files in tempGraphDirectory
+            foreach (var file in tempGraphFiles)
+            {
+                try
+                {
+                    File.Delete(file);
+                    Console.WriteLine($"Deleted file: {file}");
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Failed to delete file: {file}. Error: {ex.Message}");
+                }
+            }
+
+            return destFilePath;
+        }
     }
+
 }

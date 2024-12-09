@@ -4,6 +4,8 @@ using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 using API_Backend.Services.FileProcessing;
 using Org.BouncyCastle.Asn1.X509;
+using Org.BouncyCastle.Asn1.Ocsp;
+using API_Backend.Models;
 
 namespace API_Backend.Controllers
 {
@@ -58,12 +60,6 @@ namespace API_Backend.Controllers
             logger.LogInformation("Experiment {ExperimentID} has status {Status}", experimentId, status);
 
             return Ok(new { experimentId, status });
-        }
-
-        [HttpGet("getlogs")]
-        public async Task<IActionResult> GetExperimentLog(Guid experimentId)
-        {
-            throw new NotImplementedException();
         }
     }
 
