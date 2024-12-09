@@ -221,7 +221,9 @@ namespace API_Backend.Services.FileProcessing
                                join values in _dbContext.ExperimentAlgorithmParameterValues 
                                     on new { param.ParameterID, ereq.ExperimentID}
                                     equals new { values.ParameterID, values.ExperimentID}
-                               join cluster in _dbContext.ClusterParameters on ereq.ExperimentID equals cluster.ExperimentID
+                               join cluster in _dbContext.ClusterParameters 
+                                    on new { ereq.ExperimentID, ereq.ClusterParameters.ClusterParamID } 
+                                    equals new {cluster.ExperimentID, cluster.ClusterParamID}
                                where users.UserID == userId
                                select new ExperimentQueryModel
                                {
@@ -265,9 +267,9 @@ namespace API_Backend.Services.FileProcessing
             List<ExperimentQueryModel> finalResult = new List<ExperimentQueryModel>();
             if (queryParams.ClusterParameters.Count != 0 && queryParams.AlgorithmParameters.Count != 0)
                 finalResult = AlgorithmResults.Intersect(clusterResults, new ExperimentQueryModelComparer()).ToList();
-            if (queryParams.AlgorithmParameters.Count == 0)
+            else if (queryParams.AlgorithmParameters.Count == 0)
                 finalResult = clusterResults;
-            if (queryParams.ClusterParameters.Count == 0)
+            else if (queryParams.ClusterParameters.Count == 0)
                 finalResult = AlgorithmResults;
             else
                 finalResult = filteredAlgorithms;
