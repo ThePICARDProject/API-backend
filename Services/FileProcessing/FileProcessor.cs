@@ -162,7 +162,7 @@ namespace API_Backend.Services.FileProcessing
         /// <param name="userId"> ID of logged in user </param>
         /// <param name="queryParams"> User passed query parameters for docker swarm and algorithm parameters </param>
         /// <returns> A list of experiment request IDs </returns>
-        public async Task<HashSet<string>> QueryExperiments(string userId, QueryExperiment queryParams)
+        public async Task<List<string>> QueryExperiments(string userId, QueryExperiment queryParams)
         {
             
             // Store docker swarm and algorithm parameters in their own variables
@@ -212,11 +212,14 @@ namespace API_Backend.Services.FileProcessing
 
             // TODO: Improve query efficiency, possibly filter initial query by cluster params
             // store joined tb table from a user that includes Experiment Request ID, Docker Swarm parameters, and all Algorithm parameters and values
+            // DOES NOT WORK: Kind of fixed but needs review
             var queryResult = (from ereq in _dbContext.ExperimentRequests
                                join users in _dbContext.Users on ereq.UserID equals users.UserID
                                join alg in _dbContext.Algorithms on ereq.AlgorithmID equals alg.AlgorithmID
                                join param in _dbContext.AlgorithmParameters on alg.AlgorithmID equals param.AlgorithmID
-                               join values in _dbContext.ExperimentAlgorithmParameterValues on param.ParameterID equals values.ParameterID
+                               join values in _dbContext.ExperimentAlgorithmParameterValues 
+                                    on new { param.ParameterID, ereq.ExperimentID}
+                                    equals new { values.ParameterID, values.ExperimentID}
                                join cluster in _dbContext.ClusterParameters on ereq.ExperimentID equals cluster.ExperimentID
                                where users.UserID == userId
                                select new ExperimentQueryModel
@@ -258,16 +261,22 @@ namespace API_Backend.Services.FileProcessing
                 .Where(r => filteredAlgorithms.Any(f => f.AlgorithmID == r.AlgorithmID && f.ParameterId == r.ParameterId && f.Value.Equals(r.Value)))
                 .ToList();
 
-            var finalResult = AlgorithmResults.Intersect(clusterResults, new ExperimentQueryModelComparer()).ToList();
+            List<ExperimentQueryModel> finalResult = new List<ExperimentQueryModel>();
+            if (queryParams.ClusterParameters.Count != 0 && queryParams.AlgorithmParameters.Count != 0)
+                finalResult = AlgorithmResults.Intersect(clusterResults, new ExperimentQueryModelComparer()).ToList();
+            if (queryParams.AlgorithmParameters.Count == 0)
+                finalResult = clusterResults;
+            if (queryParams.ClusterParameters.Count == 0)
+                finalResult = AlgorithmResults;
+            else
+                finalResult = filteredAlgorithms;
 
             // Returning the ExperimentIDs from the final result
             List<string> requestIds = finalResult
                 .Select(r => r.ExperimentID.ToString())
                 .ToList();
 
-            HashSet<string> finalRequestIds = new HashSet<string>(requestIds);
-
-            return finalRequestIds;
+            return requestIds;
         }
 
         /// <summary>

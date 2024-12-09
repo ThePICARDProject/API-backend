@@ -87,10 +87,10 @@ namespace API_Backend.Controllers
                 _logger.LogInformation("User {UserID} is aggregating experiment results", userId);
 
                 // List of experiment request IDs that match passed query params
-                HashSet<string> requestIds = await _fileProcessor.QueryExperiments(userId, queryParams);
+                List<string> requestIds = await _fileProcessor.QueryExperiments(userId, queryParams);
 
                 // File path of aggregate data file composed of concatenated results file associated with passed experiment request IDs
-                int aggregateDataId = await _fileProcessor.AggregateData(userId, requestIds.ToList());
+                int aggregateDataId = await _fileProcessor.AggregateData(userId, requestIds);
 
                 return Ok(new { AggregateDataId = aggregateDataId });
             }
