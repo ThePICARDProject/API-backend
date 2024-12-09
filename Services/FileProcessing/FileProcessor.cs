@@ -166,6 +166,7 @@ namespace API_Backend.Services.FileProcessing
                 var newAggregatedResult = new AggregatedResult
                 {
                     AggregatedResultName = aggFileName,
+                    UserID = userId,
                     AggregatedResultDescription = "",
                     AggregatedResultFilePath = exportPath,
                     CreatedAt = dateTime
