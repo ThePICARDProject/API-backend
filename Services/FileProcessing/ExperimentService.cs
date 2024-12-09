@@ -291,36 +291,6 @@ namespace API_Backend.Services.FileProcessing
             }
         }
 
-        /// <summary>
-        /// Retrieves experiment result by experiment ID.
-        /// </summary>
-        /// <param name="experimentId">The ID of the experiment.</param>
-        /// <returns>The experiment result, or null if not found.</returns>
-        public async Task<ExperimentResult?> GetExperimentResultAsync(Guid experimentId)
-        {
-            _logger.LogInformation("Retrieving results for ExperimentID {ExperimentID}", experimentId);
-
-            try
-            {
-                var result = await _dbContext.ExperimentResults.FirstOrDefaultAsync(r => r.ExperimentID == experimentId);
-                if (result != null)
-                {
-                    _logger.LogInformation("Results retrieved for ExperimentID {ExperimentID}", experimentId);
-                    return result;
-                }
-                else
-                {
-                    _logger.LogWarning("Results not found for ExperimentID {ExperimentID}", experimentId);
-                    return null;
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error occurred while retrieving results for ExperimentID {ExperimentID}", experimentId);
-                throw;
-            }
-        }
-
         #endregion
 
          #region Private Methods

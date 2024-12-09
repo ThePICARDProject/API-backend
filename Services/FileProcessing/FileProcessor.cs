@@ -24,6 +24,7 @@ using System.Linq.Dynamic.Core.Parser;
 using Microsoft.EntityFrameworkCore.Query.Internal;
 using API_backend.Models;
 using System.Runtime.ConstrainedExecution;
+using System.IO.Compression;
 
 
 namespace API_Backend.Services.FileProcessing
@@ -60,21 +61,30 @@ namespace API_Backend.Services.FileProcessing
         /// <exception cref="ArgumentNullException"></exception>
         public async Task<int> AggregateData(string userId, List<string> requestIds)
         {
-
             // Verify arguments
             if (string.IsNullOrEmpty(userId))
             {
                 throw new ArgumentNullException(nameof(userId));
             }
 
-            // Construct output path
-            string exportPath = Path.Combine(_outputBaseDirectory, userId, "AggregateData");
-
+            // Create a new instance of AggregatedResult
             var dateTime = DateTime.UtcNow;
-
             string aggFileName = $"{userId}_{dateTime:yyyyMMddHHmmss}";
-            string aggFilePath = aggFileName + ".txt";
+            
+            var newAggregatedResult = new AggregatedResult
+            {
+                UserID = userId,
+                AggregatedResultName = aggFileName,
+                AggregatedResultDescription = "",
+                CreatedAt = dateTime
+            };
+            _dbContext.AggregatedResults.Add(newAggregatedResult);
+            _dbContext.SaveChanges();
 
+            // Construct output path
+            string aggFilePath = aggFileName + ".txt";
+            string exportPath = Path.Combine(_outputBaseDirectory, userId, "aggregate_data", ((Int32) newAggregatedResult.AggregatedResultID).ToString());
+            
             Console.WriteLine("Export Path: " + exportPath);
 
             if (!Directory.Exists(exportPath))
@@ -82,13 +92,9 @@ namespace API_Backend.Services.FileProcessing
                 this.tempCreateDirectories(exportPath); // change back to not be temp
             }
 
-            Console.WriteLine("After export path if statement");
-
-            // For each results file, append the results to the aggregate file
             exportPath = Path.Combine(exportPath, aggFilePath);
-
-            Console.WriteLine("After tempID added to path");
-
+            newAggregatedResult.AggregatedResultFilePath = exportPath;
+           
             foreach (var requestId in requestIds)
             {
                 var experimentResultPath = await _dbContext.ExperimentResults
@@ -139,16 +145,8 @@ namespace API_Backend.Services.FileProcessing
                 }
                 
             }
-                // Create a new instance of AggregatedResult
-                var newAggregatedResult = new AggregatedResult
-                {
-                    AggregatedResultName = aggFileName,
-                    AggregatedResultDescription = "",
-                    AggregatedResultFilePath = exportPath,
-                    CreatedAt = dateTime
-                };
 
-                _dbContext.AggregatedResults.Add(newAggregatedResult);
+                
 
                 _dbContext.SaveChanges();
 
@@ -370,6 +368,18 @@ namespace API_Backend.Services.FileProcessing
             return csvResult.CsvResultID;
         }
 
+        public string GetZippedResults(AggregatedResult result)
+        {
+            string zipPath = Path.Combine(_outputBaseDirectory, result.UserID, "aggregate_data", "temp");
+            if(!Directory.Exists(zipPath))
+                Directory.CreateDirectory(zipPath);
+                
+            zipPath = Path.Combine(zipPath, $"{((Int32)result.AggregatedResultID).ToString()}_temp.zip");
+            ZipFile.CreateFromDirectory(Path.GetDirectoryName(result.AggregatedResultFilePath), zipPath);
+            
+            return zipPath;
+        }
+
         private void CreateDirectories(string filePath)
         {
             using (Process permissions = new Process())
@@ -389,6 +399,8 @@ namespace API_Backend.Services.FileProcessing
                 Directory.CreateDirectory(filePath);
             }
         }
+    
+        
     }
 }
 

@@ -8,6 +8,7 @@ using Microsoft.EntityFrameworkCore;
 using Org.BouncyCastle.Asn1.Ocsp;
 using System.Security;
 using API_backend.Models;
+using System.IO.Compression;
 
 namespace API_Backend.Controllers
 {
@@ -31,40 +32,41 @@ namespace API_Backend.Controllers
         /// <summary>
         /// Gets the processed results of an experiment.
         /// </summary>
-        [HttpGet("data/{experimentId}")]
-        public async Task<IActionResult> GetProcessedResults(Guid experimentId)
+        [HttpGet("getProcessedResults/{aggregateDataId}")]
+        public async Task<IActionResult> GetProcessedResults(int aggregateDataId)
         {
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            _logger.LogInformation("User {UserID} is requesting results for ExperimentID {ExperimentID}", userId, experimentId);
+            _logger.LogInformation("User {UserID} is requesting results for AggregateDataId {aggregateDataId}", userId, aggregateDataId);
 
-            var experiment = await _experimentService.GetExperimentByIdAsync(experimentId);
-
-            if (experiment is not { Status: ExperimentStatus.Finished })
-            {
-                _logger.LogWarning("Results not available for ExperimentID {ExperimentID}", experimentId);
-                return NotFound(new { message = "Results not available or experiment not completed." });
-            }
+            // Get AggregatedDataResult
+            AggregatedResult result = await _dbContext.AggregatedResults.FirstOrDefaultAsync(x => x.AggregatedResultID == aggregateDataId);
+            if (result is null)
+                return NotFound(new { message = $"Aggregate data with the id \"{aggregateDataId}\" was not found." });
 
             // Ensure the requesting user is the owner of the experiment
-            if (experiment.UserID != userId)
+            if (result.UserID != userId)
             {
-                _logger.LogWarning("User {UserID} is not authorized to access results for ExperimentID {ExperimentID}", userId, experimentId);
+                _logger.LogWarning("User {UserID} is not authorized to access results for AggregateDataId {AggregateDataId}", userId, aggregateDataId);
                 return Forbid();
             }
 
-            // Retrieve result data
-            var result = await _experimentService.GetExperimentResultAsync(experimentId);
+            // Get Csv results
+            _logger.LogInformation("Getting .csv results for AggregateDataId {aggregateDataId}", aggregateDataId);
+            CsvResult csvResult = await _dbContext.CsvResults.FirstOrDefaultAsync(x => x.AggregatedResultID == result.AggregatedResultID);
+            if (csvResult is null)
+                _logger.LogInformation("Csv result not found for AggregateDataId {aggregateDataId}", aggregateDataId);
 
-            if (result == null)
-            {
-                _logger.LogWarning("Experiment results not found for ExperimentID {ExperimentID}", experimentId);
-                return NotFound(new { message = "Experiment results not found." });
-            }
+            // Get zip data
+            _logger.LogInformation("Zipping results files.");
+            string zipPath = _fileProcessor.GetZippedResults(result);
+            string fileName = Path.GetFileName(zipPath);
+            byte[] fileBytes = await System.IO.File.ReadAllBytesAsync(zipPath);
 
-            _logger.LogInformation("Returning results for ExperimentID {ExperimentID}", experimentId);
+            // Cleanup zip file
+            Directory.Delete(Path.GetDirectoryName(zipPath), true);
 
-            // Return the result data
-            return Ok(new { experimentId, result });
+            _logger.LogInformation("Returning results for AggregateDataId {aggregateDataId}", aggregateDataId);
+            return File(fileBytes, "application/octet-stream", fileName);
         }
 
         /// <summary>
