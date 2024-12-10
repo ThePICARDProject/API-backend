@@ -19,11 +19,13 @@ using static System.Runtime.InteropServices.JavaScript.JSType;
 namespace API_Backend.Services.Docker_Swarm
 {
     /// <summary>
-    /// Service for working with experiments and Docker-Swarm.
+    /// Microservice for running machine learning experiments using DockerSwarm, Hadoop, and Spark.
+    /// Facilitates easy integration with C# applications and automated experiment execution.
     /// </summary>
     /// <remarks>
-    /// Wrapper class based off of scripts provided in the docker-swarm repository.
-    /// Modified for automation and ease of use within the API.
+    /// C# wrapper class based off of interactive scripts provided in the docker-swarm repository.
+    /// docker-compose.yml, scripts, and docker-images must be copied to the root directory 
+    /// provided in the constructor.
     /// </remarks>
     /// <seealso href="https://github.com/ThePICARDProject/docker-swarm/"/>
     public class DockerSwarm
@@ -81,8 +83,9 @@ namespace API_Backend.Services.Docker_Swarm
         /// <summary>
         /// Submits an experiment to Docker-Swarm based on the request data.
         /// </summary>
-        /// <param name="requestData"></param>
-        /// <returns></returns>
+        /// <param name="requestData">ExperimentRequest object containing experiment arguments.</param>
+        /// <param name="dataset">StoredDataSet object containing reference to a dataset for the experiment.</param>
+        /// <returns>ExperimentResponse containing the response from submit-experiment.sh</returns>
         public async Task<ExperimentResponse> SubmitExperiment(ExperimentRequest requestData, StoredDataSet dataset)
         {
             // Get the date and time of the submit request
@@ -171,10 +174,12 @@ namespace API_Backend.Services.Docker_Swarm
         }
 
         /// <summary>
-        /// Updates the docker images with user specific data.
+        /// Updates the Dockerfile for the spark-hadoop docker image.
+        ///
+        /// Updates the jar path to the path containing packages for a specific userId.
         /// </summary>
         /// <param name="userId"></param>
-        /// <exception cref="FileNotFoundException"></exception>
+        /// <exception cref="FileNotFoundException">Occurs when the Dockerfile is not found.</exception>
         private void UpdateDockerfile(string userId)
         {
             // Generate the path and the jar line regex pattern
