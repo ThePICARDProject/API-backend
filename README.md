@@ -1,11 +1,11 @@
 # The PICARD Project: API and Backend Implementation
 
 ## Table of Contents
-1. Overview
-2. Quick Start
-3. API Documentation
-4. Current State and Future Work
-5. Help/Resources
+1. [Overview](#overview)
+2. [Quick Start](#quick-start)
+3. [API Documentation](#api-documentation)
+4. [Current State and Future Work](#current-state-and-future-work)
+5. [Help/Resources](#helpresources)
 
 ## Overview
 
@@ -19,15 +19,35 @@
 6. Navigate to `./bin/Debug/net8.0` and execute `dotnet API-backend.dll`
 7. The backend service should run and begin initializing Docker Swarm.
 
-#### Integration with Front End Applications
+#### Configuration
 
-Currently the PICARD server does not have an open port for making requests. Integration should be achieved through an SSH tunnel to the server. In order to utilize the PICARD server, users must have ssh access to the WVU SSH Gateway, the PICARD Server, and have a user profile on the server. An SSH tunnel can be opened using the following steps:
+The API backend configuration is defined in `appsettings.<Environement>.json`. The configuration file will be read based on the environment, which can be initialized in an environment variable:
+1. Execute `vim ~/.bashrc`
+2. Add the following line at the bottom of the file: `export ASPNETCORE__ENVIRONMENT='<Environment>'`
+3. The Environment should be set to either `Development` or `Production`
+
+#### Integration with Front-End Applications
+
+The PICARD server does not have an open port for making requests. Integration should be achieved through an SSH tunnel to the server. To utilize the PICARD server, users must have SSH access to the WVU SSH Gateway, the PICARD Server, and have a user profile on the server. An SSH tunnel can be opened by following these instructions:
 
 1. From the machine running the front end, open a terminal and execute `ssh -L 5080:localhost:5080 <username>@ssh.wvu.edu`
 2. After creating a tunnel to the ssh gateway, tunnel from the gateway to the PICARD server by executing `ssh -L 5080:localhost:5080 <username>@157.182.194.132`
-3. The tunnel should now allow the server to be accessed through `https://localhost:5080/` on the front end application.
+3. The tunnel should now allow server access through `https://localhost:5080/` on the front-end application.
 
-#### Common Errors
+#### Trouble Shooting/Common Errors
+
+1. File not found exceptions/error
+   1. Ensure scripts and all files are correctly copied into the content root directory as specified in the Docker Swarm documentation.
+   2. Ensure the user has execute permissions for the scripts directory in the content root directory.
+   3. Verify script files have unix line endings by executing the following:
+      1. `sudo apt-get update`
+      2. `sudo apt-get install dos2unix`
+      3. `dos2unix <pathToScript>`
+2. CORS errors:
+   1. In `appsettings.<Environment>.json`, Ensure the KestrelUrl is set to HTTP or a valid certificate is provided.
+   2. Ensure all environment variables are configured and the correct `appsettings.<Environment>.json` file is being used by the application.
+4. OS not supported
+   1. The API backend is designed to run on the Linux operating system. Other operating systems, such as Windows and MacOS, are not supported.
 
 ## API Documentation
 
@@ -38,10 +58,6 @@ Currently the PICARD server does not have an open port for making requests. Inte
 
 #### GET
 ##### Summary:
-
-Gets all of a users algorithms stored in the database
-
-##### Description:
 
 Gets all of a users algorithms stored in the database
 
@@ -67,11 +83,7 @@ Gets all of a users algorithms stored in the database
 #### GET
 ##### Summary:
 
-Gets all algorithm parameter definitions for a users algorithm
-
-##### Description:
-
-Gets all algorithm parameter definitions for a users algorithm
+Gets all algorithm parameter definitions for a user algorithm
 
 ##### Parameters
 
@@ -101,7 +113,7 @@ Gets all algorithm parameter definitions for a users algorithm
 #### POST
 ##### Summary:
 
-Uploads a users algorithm to the database
+Uploads a user algorithm to the database
 
 ##### Parameters
 
@@ -152,7 +164,7 @@ Uploads a users algorithm to the database
 #### GET
 ##### Summary:
 
-Redirects user to the Google OAuth page for authentication
+Redirects the user to the Google OAuth page for authentication
 
 ##### Parameters
 
@@ -173,10 +185,6 @@ Redirects user to the Google OAuth page for authentication
 
 Logs out an authenticated user
 
-##### Description:
-
-Logs out an authenticated user
-
 ##### Parameters
 
 | Name | Located in | Description | Required | Schema |
@@ -194,7 +202,7 @@ Logs out an authenticated user
 #### GET
 ##### Summary:
 
-Gets all of a users dataset information
+Gets all of a user dataset information
 
 ##### Responses
 
@@ -428,7 +436,7 @@ Creates a .csv file for an aggregated data result based on its id
 
 ##### Description:
 
-Creates a .csv file for an aggregated data result based on its id. The metrics identifiers must match the raw data files exactly, and the identifier and the value must be seperated by a single equals sign.
+Creates a .csv file for an aggregated data result based on its id. The metrics identifiers must match the raw data files exactly, and the identifier and the value must be separated by a single equals sign.
 
 #### Parameters
 
@@ -518,24 +526,24 @@ Not Currently Working
 
 The PICARD API/backend currently implements the following features:
 1. User Authentication using Google OAuth2.0
-2. Storing users datasets, algorithms, results in the database
+2. Storing users' datasets, algorithms, and results in the database
 3. Experiment submission through an API request
-4. Generating Csv results from raw data
+4. Generating CSV results from raw data
 5. Downloading results from the backend database and filesystem
 
 #### Future Work
 
 The following features/improvements should continue to be developed:
-1. Implemented features need to be thoroughly tested and verified
+1. Currently implemented features need to be thoroughly tested and verified
 2. Successful integration of the visualization service
-3. Enhanced delete/purge functionalities
-4. Implement/Integrate resource management and montoring tools
+3. Enhanced delete/purge functionalities for files
+4. Implement/Integrate resource management and monitoring tools
 5. Expand the cluster to run experiments in parallel
 6. Implement advanced run configurations to execute multiple experiments in series for a single request 
 
 ## Help/Resources
 
-1. For more information on the Docker Swarm service and wrapper class see the [documentation]().
-2. For database documentation see [database-schema-backend]()
-3. For resources on C# and .NET see the [Microsoft Learn Documentation]()
-4. For more resources about Docker see the [Docker Documentation]()
+1. For more information on the Docker Swarm service and wrapper class see the [documentation](https://docs.docker.com/).
+2. For database documentation see [database-schema-backend](https://github.com/ThePICARDProject/database-schema-backend/blob/main/README.md)
+3. For resources on C# and .NET see the [Microsoft Learn Documentation]([https://learn.microsoft.com/en-us/aspnet/core/?view=aspnetcore-9.0](https://learn.microsoft.com/en-us/))
+4. For more resources about Docker see the [Docker Documentation](/Services/DockerSwarm/dockerswarm.md)
