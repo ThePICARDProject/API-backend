@@ -545,7 +545,7 @@ The following features/improvements should continue to be developed:
 
 ## Help/Resources
 
-1. For more information on the Docker Swarm service and wrapper class see the [documentation](https://docs.docker.com/).
+1. For more information on the Docker Swarm service and wrapper class see the [documentation](/Services/DockerSwarm/dockerswarm.md).
 2. For database documentation see [database-schema-backend](https://github.com/ThePICARDProject/database-schema-backend/blob/main/README.md)
 3. For resources on C# and .NET see the [Microsoft Learn Documentation](https://learn.microsoft.com/en-us/)
-4. For more resources about Docker see the [Docker Documentation](/Services/DockerSwarm/dockerswarm.md)
+4. For more resources about Docker see the [Docker Documentation](https://docs.docker.com/)
