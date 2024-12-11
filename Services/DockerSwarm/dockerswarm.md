@@ -4,7 +4,7 @@
 1. [Overview](#overview)
 2. [Setup](#setup)
 3. [Quick Start](#quickstart)
-4. [Detailed Documentation/More Information](#detailed-documentationmore-information)
+4. [Detailed Documentation/More Information](#detailed-documentation)
 
 ## Overview
 
@@ -132,3 +132,52 @@ To get started using the DockerSwarm service, follow these instructions:
 9. For more in-depth code documentation or resources for further reading, see the Detailed Documentation/More Information
 
 ## Detailed Documentation
+## Models
+### ExperimentResponse
+
+#### Properties:
+
+- ErrorCode: public
+    - Type: int?
+    - Description: The error code returned from the process. Value = 0 for success and value != 0 on error.
+
+- ErrorMessage: public:
+    - Type: string?
+    - Description: The error message returned from the process.
+
+- OutputPath: public
+    - Type: string?
+    - Description: The path of the output file(s)
+   
+## Classes  
+### DockerSwarm: public
+
+#### Constructors
+- DockerSwarm(string rootDirectory)
+   - Description: Initializes a DockerSwarm object with the content root directory and the default Docker advertise IP and port.
+   - Parameters:
+      - rootDirectory: The content root directory of the currently executing application
+
+- DockerSwarm(string rootDirectory, string advertiseIP, string advertisePort)
+   - Description: Initializes a DockerSwarm object with the content root directory and provided advertise IP and port.
+   - Parameters:
+      - rootDirectory: The content root directory of the currently executing application
+      - advertiseIP: The advertise IP for Docker Swarm
+      - advertisePort: The advertise port for Docker Swarm
+
+#### Public Methods
+- async Task<ExperimentResponse> SubmitExperiment(ExperimentRequest requestData, StoredDataSet dataset)
+   - Description: Submits an experiment to DockerSwarm based on the request data.
+   - Parameters:
+      - requestData: The ExperimentRequest model containing information and arguments for the experiment.
+      - dataset: StoredDataSet object containing a reference to a dataset for the experiment.
+   - Returns:
+      - An ExperimentResponse object containing the result of the experiment submission.
+
+#### Private Methods
+- void UpdateDockerfile(string userId)
+   - Description: Updates the Dockerfile for the spark-hadoop docker image.
+   - Parameters:
+      - userId">The userId for the user submitting an experiment.
+
+
