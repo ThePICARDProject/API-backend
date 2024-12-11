@@ -5,7 +5,6 @@ namespace API_Backend.Models
 {
     public class AggregatedResult
     {
-
         [Key]
         public int AggregatedResultID { get; set; }
 
@@ -21,6 +20,5 @@ namespace API_Backend.Models
 
         [Required]
         public DateTime CreatedAt { get; set; }
-
     }
 }

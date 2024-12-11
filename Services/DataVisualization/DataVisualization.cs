@@ -14,12 +14,12 @@ namespace API_Backend.Services.DataVisualization
         private readonly IWebHostEnvironment _env;
         private readonly ApplicationDbContext _dbContext;
 
-
         public DataVisualization(IWebHostEnvironment env, ApplicationDbContext dbContext)
         {
             _env = env;
             _dbContext = dbContext;
         }
+
         private readonly string _outputBaseDirectory = "exports";
 
         /// <summary>
@@ -58,11 +58,9 @@ namespace API_Backend.Services.DataVisualization
                     throw new ArgumentException("Invalid file format. Only .csv files are allowed.");
                 }
 
-
                 string input = FormatInputString(parameters, csvFilePath);
 
                 string pyFileName = Environment.OSVersion.Platform == PlatformID.Unix ? "python3" : "python.exe";
-
 
                 ProcessStartInfo startInfo = new ProcessStartInfo
                 {
@@ -92,8 +90,6 @@ namespace API_Backend.Services.DataVisualization
                 Console.WriteLine($"An unexpected error occurred: {ex.Message}");
                 return false;
             }
-
-
         }
 
         /// <summary>
@@ -103,7 +99,6 @@ namespace API_Backend.Services.DataVisualization
         /// <returns>string formatted for python script</returns>
         public string FormatInputString(VisualizationRequest parameters, string CSVFilePath)
         {
-
             if (string.IsNullOrEmpty(parameters.XAxis) || string.IsNullOrEmpty(parameters.YAxis) || string.IsNullOrEmpty(parameters.GraphType) || string.IsNullOrEmpty(parameters.OutputFileName))
             {
                 throw new ArgumentException("Missing graph parameters: X axis, Y axis, graph type, or output filename.");
@@ -128,11 +123,8 @@ namespace API_Backend.Services.DataVisualization
                 sb.Append(parameters.OutputFileName);
             }
 
-
-
             Console.WriteLine(sb.ToString());
-
-
+       
             return sb.ToString();
         }
 
@@ -154,7 +146,6 @@ namespace API_Backend.Services.DataVisualization
             {
                 throw new DirectoryNotFoundException("tempGraph directory not found");
             }
-
 
             var tempGraphFiles = Directory.GetFiles(tempGraphDirectory);
 

@@ -5,8 +5,6 @@ namespace API_Backend.Models
 {
     public class CsvResult
     {
-
-
         [Key]
         public int CsvResultID { get; set; }
 

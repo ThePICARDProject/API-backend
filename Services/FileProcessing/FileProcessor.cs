@@ -89,7 +89,7 @@ namespace API_Backend.Services.FileProcessing
 
             if (!Directory.Exists(exportPath))
             {
-                this.tempCreateDirectories(exportPath); // change back to not be temp
+                this.TempCreateDirectories(exportPath); // change back to not be temp
             }
 
             exportPath = Path.Combine(exportPath, aggFilePath);
@@ -145,11 +145,7 @@ namespace API_Backend.Services.FileProcessing
                 }
                 
             }
-
-                
-
                 _dbContext.SaveChanges();
-
 
             // Return the path of the saved file
             return newAggregatedResult.AggregatedResultID;
@@ -167,7 +163,6 @@ namespace API_Backend.Services.FileProcessing
             // Store docker swarm and algorithm parameters in their own variables
             var clusterParams = queryParams.ClusterParameters;
             var algorithmParams = queryParams.AlgorithmParameters;
-
 
             // TODO: improve dynamic query efficiency / safety
             // Build dynamic query based off of docker swarm parameters
@@ -255,7 +250,6 @@ namespace API_Backend.Services.FileProcessing
                 .AsQueryable()
                 .Where(ExpressionParser.ParseExpression<ExperimentQueryModel>(clusterQuery.ToString(), "x"))
                 .ToList();
-
 
             // retrieves db results filtered by algorithm params, then further filters by cluster params
             var AlgorithmResults = queryResult
@@ -392,15 +386,13 @@ namespace API_Backend.Services.FileProcessing
             }
         }
 
-        private void tempCreateDirectories(string filePath)
+        private void TempCreateDirectories(string filePath)
         {
             if (!Directory.Exists(filePath))
             {
                 Directory.CreateDirectory(filePath);
             }
         }
-    
-        
     }
 }
 
@@ -459,10 +451,4 @@ public class ExperimentQueryModelComparer : IEqualityComparer<ExperimentQueryMod
             ^ hashDriverCores ^ hashExecutorNumber ^ hashExecutorCores ^ hashExecutorMemory ^ hashMemoryOverhead;
     }
 }
-
-// "SplittingTime",
-// "TrainingTime",
-// "TestingTime"
-// "Recall(1.0)"
-// "Precision(1.0)"
     

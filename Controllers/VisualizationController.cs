@@ -10,7 +10,6 @@ namespace API_Backend.Controllers
     [ApiController]
     public class VisualizationController : ControllerBase
     {
-
         private readonly DataVisualization _dataVisualization;
 
         public VisualizationController(DataVisualization dataVisualization)

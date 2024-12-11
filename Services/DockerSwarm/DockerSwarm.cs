@@ -36,8 +36,19 @@ namespace API_Backend.Services.Docker_Swarm
         private readonly string _dockerImagesBasePath = "./docker-images";
         private readonly string _hadoopOutputBasePath = "hdfs://master:8020";
 
+        /// <summary>
+        /// Initializes a DockerSwarm object with the content root directory, and the default Docker advertise IP and address.
+        /// </summary>
+        /// <param name="rootDirectory">The content root directory for the running application</param>
         public DockerSwarm(string rootDirectory) : this(rootDirectory, "-1", "-1") {}
 
+        /// <summary>
+        /// Initializes a DockerSwarm object with the content root directory, and the provided advertise IP and address.
+        /// </summary>
+        /// <param name="rootDirectory">The content root directory for the running application</param>
+        /// <param name="advertiseIP">The advertise IP for Docker Swarm</param>
+        /// <param name="advertisePort">The advertise Port for Docker Swarm</param>
+        /// <exception cref="Exception"></exception>
         public DockerSwarm(string rootDirectory, string advertiseIP, string advertisePort)
         {
             _rootDirectory = rootDirectory;
@@ -81,11 +92,11 @@ namespace API_Backend.Services.Docker_Swarm
         }
 
         /// <summary>
-        /// Submits an experiment to Docker-Swarm based on the request data.
+        /// Submits an experiment to DockerSwarm based on the request data.
         /// </summary>
         /// <param name="requestData">ExperimentRequest object containing experiment arguments.</param>
-        /// <param name="dataset">StoredDataSet object containing reference to a dataset for the experiment.</param>
-        /// <returns>ExperimentResponse containing the response from submit-experiment.sh</returns>
+        /// <param name="dataset">StoredDataSet object containing a reference to a dataset for the experiment.</param>
+        /// <returns>An Experiment Response containing the result of the experiment submission.</returns>
         public async Task<ExperimentResponse> SubmitExperiment(ExperimentRequest requestData, StoredDataSet dataset)
         {
             // Get the date and time of the submit request
@@ -176,9 +187,9 @@ namespace API_Backend.Services.Docker_Swarm
         /// <summary>
         /// Updates the Dockerfile for the spark-hadoop docker image.
         ///
-        /// Updates the jar path to the path containing packages for a specific userId.
+        /// Updates the jar path to the equal the directory containing packages for a specific user.
         /// </summary>
-        /// <param name="userId"></param>
+        /// <param name="userId">The userId for the user submitting an experiment.</param>
         /// <exception cref="FileNotFoundException">Occurs when the Dockerfile is not found.</exception>
         private void UpdateDockerfile(string userId)
         {

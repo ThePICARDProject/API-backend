@@ -137,32 +137,6 @@ namespace API_Backend.Controllers
             }
         }
 
-        [HttpGet("getlogs")]
-        public async Task<IActionResult> GetExperimentLog(Guid experimentId)
-        {
-            throw new NotImplementedException();
-
-            // Get user ID from authenticated user
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-            _logger.LogInformation("User {UserID} is requesting logs with ExperimentID {experimentId}", userId, experimentId);
-
-            try
-            {
-                Debug.Assert(userId != null, nameof(userId) + " != null");
-                ExperimentRequest request = await _dbContext.ExperimentRequests.FirstOrDefaultAsync(x => x.UserID == userId && x.ExperimentID == experimentId);
-
-               
-
-                return Ok(new { message = "Experiment submitted successfully.", experimentId });
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError(ex, "Error occurred while submitting experiment for user {UserID}", userId);
-                return StatusCode(StatusCodes.Status500InternalServerError, new { message = "An error occurred while submitting the experiment." });
-            }
-        }
-
         [HttpGet("DockerSwarmParams")]
         public async Task<IActionResult> GetAllDockerSwarmParams()
         {
