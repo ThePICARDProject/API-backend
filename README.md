@@ -364,7 +364,62 @@ Gets the status of a submitted experiment
 | ---- | ----------- |
 | 200 | Success |
 
-#### TODO: CHECK ON RESPONSE JSON
+#### Algorithm Status Codes
+
+| Value | Type |
+| ----- | ---- |
+| 0 | WaitingInQueue |
+| 1 | BeingExecuted |
+| 2 | BeingProcessed |
+| 3 | Finished |
+| 4 | Failed |
+
+#### Experiment Status Response
+
+```
+{
+  "experimentId": "string",
+  "status": int
+}
+```
+
+### /api/experiment/user/getUserExperiments
+
+#### GET
+##### Summary:
+
+Gets all experiment requests for a user.
+
+##### Responses
+
+| Code | Description |
+| ---- | ----------- |
+| 200 | Success |
+
+```
+[
+  {
+    "experimentID": "string",
+    "userID": "string",
+    "experimentName": "string",
+    "algorithmID": int,
+    "createdAt": "string",
+    "updatedAt": "string",
+    "status": int,
+    "datasetName": "string",
+    "startTime": "string",
+    "endTime": "string",
+    "errorMessage": "string",
+    "user": null,
+    "algorithm": null,
+    "clusterParameters": null,
+    "experimentResult": null,
+    "aggregatedResultId": int,
+    "aggregatedResult": null,
+    "parameterValues": null
+  },
+]
+```
 
 ### /api/result/getProcessedResults/{aggregateDataId}
 
