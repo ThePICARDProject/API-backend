@@ -169,7 +169,13 @@ def main():
 
     #navigate to output directory if it exists
     current_directory = os.getcwd() #TODO: Added this line to get current directory, then concatenated with output_file in following line
-    output_directory = os.path.dirname(current_directory + output_file)
+    export_directory = os.path.join(current_directory,"exports", "tempGraph")
+
+    os.makedirs(export_directory, exist_ok=True)
+
+    output_filepath = os.path.join(export_directory, output_file)
+
+    output_directory = os.path.dirname(output_filepath)
     if output_directory: #if file exists, move to it
         os.makedirs(output_directory, exist_ok=True)
         os.chdir(output_directory)
@@ -179,8 +185,8 @@ def main():
 
     # Save the plot with the specified file name and extension in the specified directory
     #output_filepath = os.path.join(output_directory, output_file)
-    plot.save(output_file, units="in")
-    print(f"Plot saved as '{output_file}'")
+    plot.save(output_filepath, units="in")
+    print(f"Plot saved as '{output_filepath}'")
 
 
 #main function call
