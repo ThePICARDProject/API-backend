@@ -348,3 +348,8 @@ Not Currently Working
 
 
 ## Help/Resources
+
+1. For more information on the Docker Swarm service and wrapper class see the [documentation]().
+2. For database documentation see [database-schema-backend]()
+3. For resources on C# and .NET see the [Microsoft Learn Documentation]()
+4. For more resources about Docker see the [Docker Documentation]()
