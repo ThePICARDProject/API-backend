@@ -4,10 +4,12 @@
 1. [Overview](#overview)
 2. [Quick Start](#quick-start)
 3. [API Documentation](#api-documentation)
-4. [Current State and Future Work](#current-state-and-future-work)
+4. [Current State and Future Work](#current-statefuture-work)
 5. [Help/Resources](#helpresources)
 
 ## Overview
+
+The PICARD Project API and backend service implements a backend service for storing user data and facilitating machine learning experimentation. This API attempts to help streamline the process of submitting and managing machine learning experiments and results by providing a more streamlined and intuitive interface for use in front end applications.
 
 ## Quick Start
 
@@ -545,5 +547,5 @@ The following features/improvements should continue to be developed:
 
 1. For more information on the Docker Swarm service and wrapper class see the [documentation](https://docs.docker.com/).
 2. For database documentation see [database-schema-backend](https://github.com/ThePICARDProject/database-schema-backend/blob/main/README.md)
-3. For resources on C# and .NET see the [Microsoft Learn Documentation]([https://learn.microsoft.com/en-us/aspnet/core/?view=aspnetcore-9.0](https://learn.microsoft.com/en-us/))
+3. For resources on C# and .NET see the [Microsoft Learn Documentation](https://learn.microsoft.com/en-us/)
 4. For more resources about Docker see the [Docker Documentation](/Services/DockerSwarm/dockerswarm.md)
