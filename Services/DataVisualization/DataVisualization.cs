@@ -59,10 +59,11 @@ namespace API_Backend.Services.DataVisualization
 
                 string input = FormatInputString(parameters, csvFilePath);
 
+                string pyFileName = Environment.OSVersion.Platform == PlatformID.Unix ? "python3" : "python.exe";
 
                 ProcessStartInfo startInfo = new ProcessStartInfo
                 {
-                    FileName = "python.exe",
+                    FileName = pyFileName,
                     Arguments = $"{input}",
                     WindowStyle = ProcessWindowStyle.Hidden
                 };
