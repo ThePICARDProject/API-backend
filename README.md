@@ -153,8 +153,6 @@ Uploads a user algorithm to the database
 | ---- | ----------- |
 | 200 | Success 
 
-# TODO: Check on this
-
 ```
 {
   "algorithmId": 0
