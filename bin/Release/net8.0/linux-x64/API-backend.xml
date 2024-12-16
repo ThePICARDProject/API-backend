@@ -1,0 +1,469 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>API-backend</name>
+    </assembly>
+    <members>
+        <member name="M:API_backend.Controllers.AlgorithmController.GetAlgorithms">
+            <summary>
+            Retrieves a Algorithm set by its Users ID.
+            </summary>
+            <param name="id">The ID of the Algorithm.</param>
+            <returns>Returns the Algorithm IDs and Names for given User.</returns>
+        </member>
+        <member name="M:API_backend.Controllers.AlgorithmController.GetAlgorithmParameters(System.Int32)">
+            <summary>
+            Gets the parameters for a specific Algorithm by its Id.
+            </summary>
+            <param name="algorithmId">The Id for the algorithm</param>
+            <returns></returns>
+        </member>
+        <member name="M:API_backend.Controllers.AlgorithmController.HandleUpload(API_backend.Models.AlgorithmUploadDto,System.Collections.Generic.List{API_backend.Models.AlgorithmParameterUploadDto})">
+            <summary>
+            Handles the upload of a JAR file in the database and filesystem.
+            </summary>
+            <param name="dto"></param>
+            <param name="parameters"></param>
+            <returns></returns>
+        </member>
+        <member name="M:API_Backend.Controllers.AuthenticationController.Login(System.String)">
+            <summary>
+            Initiates the Google OAuth 2.0 authentication process.
+            </summary>
+            <param name="returnUrl">The URL to redirect to after successful authentication.</param>
+        </member>
+        <member name="M:API_Backend.Controllers.AuthenticationController.Logout(System.String)">
+            <summary>
+            Logs the user out and clears the authentication cookie.
+            </summary>
+        </member>
+        <member name="M:API_Backend.Controllers.AuthenticationController.IsAllowedRedirectUrl(System.String)">
+            <summary>
+            Validates if the provided returnUrl is allowed.
+            </summary>
+        </member>
+        <member name="M:API_Backend.Controllers.DataSetController.GetAllDatasets">
+            <summary>
+            Retrieves all datasets associated with the authenticated user.
+            </summary>
+            <returns>Returns a list of datasets with name, description, and download links.</returns>
+        </member>
+        <member name="M:API_Backend.Controllers.DataSetController.GetDataSetById(System.Int32)">
+            <summary>
+            Retrieves a specific dataset by its ID.
+            </summary>
+            <param name="id">The ID of the dataset.</param>
+            <returns>Returns the dataset details.</returns>
+        </member>
+        <member name="M:API_Backend.Controllers.DataSetController.DownloadDataset(System.Int32)">
+            <summary>
+            Downloads the specified dataset.
+            </summary>
+            <param name="id">The ID of the dataset to download.</param>
+            <returns>Returns the dataset file for download.</returns>
+        </member>
+        <member name="M:API_Backend.Controllers.DataSetController.UploadDataSet(API_Backend.Models.DataSetUploadDto)">
+            <summary>
+            Uploads a new dataset or a chunk of a dataset.
+            </summary>
+            <param name="dto">The dataset upload information.</param>
+            <returns>Returns a success message and the ID of the uploaded dataset.</returns>
+        </member>
+        <member name="M:API_Backend.Controllers.DataSetController.HandleRegularUpload(API_Backend.Models.DataSetUploadDto)">
+            <summary>
+            Handles a regular (non-chunked) file upload.
+            </summary>
+        </member>
+        <member name="M:API_Backend.Controllers.DataSetController.HandleChunkedUpload(API_Backend.Models.DataSetUploadDto,System.String,System.String,System.String)">
+            <summary>
+            Handles a chunked file upload.
+            </summary>
+        </member>
+        <member name="M:API_Backend.Controllers.ExperimentController.SubmitExperiment(API_Backend.Controllers.ExperimentSubmissionRequest)">
+            <summary>
+            Submits a new experiment.
+            </summary>
+        </member>
+        <member name="M:API_Backend.Controllers.ExperimentController.GetExperimentStatus(System.Guid)">
+            <summary>
+            Gets the status of an experiment.
+            </summary>
+        </member>
+        <member name="M:API_Backend.Controllers.ExperimentController.GetExperimentsByUser">
+            <summary>
+            Gets all experiments related to the currently authenticated user.
+            </summary>
+        </member>
+        <member name="T:API_Backend.Controllers.ExperimentSubmissionRequest">
+            <summary>
+            Request model for submitting an experiment.
+            </summary>
+        </member>
+        <member name="T:API_Backend.Controllers.ParameterValueDto">
+            <summary>
+            DTO for parameter values.
+            </summary>
+        </member>
+        <member name="M:API_Backend.Controllers.ParameterValueDto.#ctor(System.String)">
+            <summary>
+            DTO for parameter values.
+            </summary>
+        </member>
+        <member name="M:API_Backend.Controllers.ResultController.GetProcessedResults(System.Int32)">
+            <summary>
+            Gets the processed results of an experiment.
+            </summary>
+        </member>
+        <member name="M:API_Backend.Controllers.ResultController.AggregateData(API_backend.Models.QueryExperiment)">
+            <summary>
+            Controller handling returning an aggregate result file based off a user specified list of db queries
+            </summary>
+            <param name="queryParams"> List of docker swarm and algorithm parameters to query db </param>
+            <returns> Aggregated result file path </returns>
+            <exception cref="T:System.Security.SecurityException"></exception>
+        </member>
+        <member name="M:API_Backend.Controllers.ResultController.CreateCsv(API_backend.Models.CreateCsvRequest)">
+            <summary>
+            Returns a CSV file path.  CSV is generated by parsing an aggregated data file for user specified data.  The CSV file is primarily used for data visualization.
+            </summary>
+            <param name="desiredMetrics"> User specified metrics to be parsed from the aggregated data file </param>
+            <param name="aggregateDataId"> Path to the aggregated data file </param>
+            <returns> Path to the CSV file </returns>
+        </member>
+        <member name="M:API_Backend.Controllers.UserController.GetUserInfo">
+            <summary>
+            Retrieves the authenticated user's information.
+            </summary>
+        </member>
+        <member name="T:API_Backend.Logging.SerilogUserIdEnrichmentMiddleware">
+            <summary>
+            Middleware to enrich Serilog logs with UserID from the HttpContext.
+            </summary>
+        </member>
+        <member name="T:API_Backend.Migrations.InitialCreate">
+            <inheritdoc />
+        </member>
+        <member name="M:API_Backend.Migrations.InitialCreate.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:API_Backend.Migrations.InitialCreate.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:API_Backend.Migrations.InitialCreate.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:API_Backend.Migrations.ModifiedNamesAndAddedModels">
+            <inheritdoc />
+        </member>
+        <member name="M:API_Backend.Migrations.ModifiedNamesAndAddedModels.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:API_Backend.Migrations.ModifiedNamesAndAddedModels.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:API_Backend.Migrations.ModifiedNamesAndAddedModels.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:API_Backend.Migrations.ModifiedNamesAndAddedModelsRedo">
+            <inheritdoc />
+        </member>
+        <member name="M:API_Backend.Migrations.ModifiedNamesAndAddedModelsRedo.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:API_Backend.Migrations.ModifiedNamesAndAddedModelsRedo.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:API_Backend.Migrations.ModifiedNamesAndAddedModelsRedo.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:API_Backend.Migrations.AlgorithmRequestParameters">
+            <inheritdoc />
+        </member>
+        <member name="M:API_Backend.Migrations.AlgorithmRequestParameters.Up(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:API_Backend.Migrations.AlgorithmRequestParameters.Down(Microsoft.EntityFrameworkCore.Migrations.MigrationBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="M:API_Backend.Migrations.AlgorithmRequestParameters.BuildTargetModel(Microsoft.EntityFrameworkCore.ModelBuilder)">
+            <inheritdoc />
+        </member>
+        <member name="T:API_Backend.Models.Algorithm">
+            <summary>
+            Represents an algorithm uploaded by a user or provided by admin.
+            </summary>
+        </member>
+        <member name="T:API_Backend.Models.AlgorithmParameter">
+            <summary>
+            Represents a parameter for an algorithm.
+            </summary>
+        </member>
+        <member name="T:API_Backend.Models.DataSetUploadDto">
+            <summary>
+            Data Transfer Object for uploading a dataset.
+            </summary>
+        </member>
+        <member name="P:API_Backend.Models.DataSetUploadDto.File">
+            <summary>
+            The CSV file to upload.
+            </summary>
+        </member>
+        <member name="P:API_Backend.Models.DataSetUploadDto.Name">
+            <summary>
+            The name of the dataset.
+            </summary>
+        </member>
+        <member name="P:API_Backend.Models.DataSetUploadDto.Description">
+            <summary>
+            A description of the dataset.
+            </summary>
+        </member>
+        <member name="T:API_Backend.Models.DataVisualizationModel">
+            <summary>
+            Represents a data visualization request.
+            </summary>
+        </member>
+        <member name="T:API_Backend.Models.VisualizationExperiment">
+            <summary>
+            Links visualization requests to experiments.
+            </summary>
+        </member>
+        <member name="T:API_Backend.Models.ClusterParameters">
+            <summary>
+            Represents Docker Swarm parameters for an experiment.
+            </summary>
+        </member>
+        <member name="T:API_Backend.Models.ExperimentAlgorithmParameterValue">
+            <summary>
+            Stores parameter values for each experiment.
+            </summary>
+        </member>
+        <member name="T:API_Backend.Models.ExperimentRequest">
+            <summary>
+            Represents an experiment request submitted by a user.
+            </summary>
+        </member>
+        <member name="T:API_Backend.Models.ExperimentResult">
+            <summary>
+            Represents the results of an experiment.
+            </summary>
+        </member>
+        <member name="T:API_Backend.Models.UploadSession">
+            <summary>
+            Represents an upload session for chunked uploads.
+            </summary>
+        </member>
+        <member name="T:API_Backend.Models.User">
+            <summary>
+            Represents a user in the system.
+            </summary>
+        </member>
+        <member name="M:API_Backend.Services.DataVisualization.DataVisualization.GraphInput(API_Backend.Models.VisualizationRequest,System.String)">
+            <summary>
+            Method <c>GraphInput</c> creates graph.py executable file and sets user submitted values as parameters
+            </summary>
+            <param name="parameters">Users submitted parameters for python script</param>
+            <returns>boolean representing successfully passed parameters</returns>
+        </member>
+        <member name="M:API_Backend.Services.DataVisualization.DataVisualization.FormatInputString(API_Backend.Models.VisualizationRequest,System.String)">
+            <summary>
+            Method <c>FormatInputStringt</c> formats graph.py parameters to pass to python executable file
+            </summary>
+            <param name="parameters">Users submitted parameters for python script</param>
+            <returns>string formatted for python script</returns>
+        </member>
+        <member name="T:API_Backend.Services.Docker_Swarm.DockerSwarm">
+            <summary>
+            Microservice for running machine learning experiments using DockerSwarm, Hadoop, and Spark.
+            Facilitates easy integration with C# applications and automated experiment execution.
+            </summary>
+            <remarks>
+            C# wrapper class based off of interactive scripts provided in the docker-swarm repository.
+            docker-compose.yml, scripts, and docker-images must be copied to the root directory 
+            provided in the constructor.
+            </remarks>
+            <seealso href="https://github.com/ThePICARDProject/docker-swarm/"/>
+        </member>
+        <member name="M:API_Backend.Services.Docker_Swarm.DockerSwarm.#ctor(System.String)">
+            <summary>
+            Initializes a DockerSwarm object with the content root directory, and the default Docker advertise IP and address.
+            </summary>
+            <param name="rootDirectory">The content root directory for the running application</param>
+        </member>
+        <member name="M:API_Backend.Services.Docker_Swarm.DockerSwarm.#ctor(System.String,System.String,System.String)">
+            <summary>
+            Initializes a DockerSwarm object with the content root directory, and the provided advertise IP and address.
+            </summary>
+            <param name="rootDirectory">The content root directory for the running application</param>
+            <param name="advertiseIP">The advertise IP for Docker Swarm</param>
+            <param name="advertisePort">The advertise Port for Docker Swarm</param>
+            <exception cref="T:System.Exception"></exception>
+        </member>
+        <member name="M:API_Backend.Services.Docker_Swarm.DockerSwarm.SubmitExperiment(API_Backend.Models.ExperimentRequest,API_Backend.Models.StoredDataSet)">
+            <summary>
+            Submits an experiment to DockerSwarm based on the request data.
+            </summary>
+            <param name="requestData">ExperimentRequest object containing experiment arguments.</param>
+            <param name="dataset">StoredDataSet object containing a reference to a dataset for the experiment.</param>
+            <returns>An Experiment Response containing the result of the experiment submission.</returns>
+        </member>
+        <member name="M:API_Backend.Services.Docker_Swarm.DockerSwarm.UpdateDockerfile(System.String)">
+             <summary>
+             Updates the Dockerfile for the spark-hadoop docker image.
+            
+             Updates the jar path to the equal the directory containing packages for a specific user.
+             </summary>
+             <param name="userId">The userId for the user submitting an experiment.</param>
+             <exception cref="T:System.IO.FileNotFoundException">Occurs when the Dockerfile is not found.</exception>
+        </member>
+        <member name="T:API_Backend.Services.FileProcessing.ExperimentQueue">
+            <summary>
+            Implementation of a background task queue for experiments.
+            </summary>
+        </member>
+        <member name="M:API_Backend.Services.FileProcessing.ExperimentQueue.QueueExperiment(API_Backend.Models.ExperimentRequest)">
+            <summary>
+            Adds an experiment to the queue.
+            </summary>
+            <param name="experiment">The experiment request to enqueue.</param>
+        </member>
+        <member name="M:API_Backend.Services.FileProcessing.ExperimentQueue.DequeueAsync(System.Threading.CancellationToken)">
+            <summary>
+            Dequeues an experiment from the queue.
+            </summary>
+            <param name="cancellationToken">Cancellation token.</param>
+            <returns>The next experiment request.</returns>
+        </member>
+        <member name="T:API_Backend.Services.FileProcessing.ExperimentService">
+            <summary>
+            Service for handling experiment-related operations.
+            </summary>
+        </member>
+        <member name="M:API_Backend.Services.FileProcessing.ExperimentService.#ctor(API_Backend.Data.ApplicationDbContext,API_Backend.Services.Docker_Swarm.DockerSwarm,Microsoft.Extensions.Logging.ILogger{API_Backend.Services.FileProcessing.ExperimentService},API_Backend.Models.IExperimentQueue,Microsoft.AspNetCore.Hosting.IWebHostEnvironment)">
+            <summary>
+            Initializes a new instance of the <see cref="T:API_Backend.Services.FileProcessing.ExperimentService"/> class.
+            </summary>
+            <param name="dbContext">The application database context.</param>
+            <param name="logger">The logger instance.</param>
+            <param name="experimentQueue">The experiment task queue.</param>
+        </member>
+        <member name="M:API_Backend.Services.FileProcessing.ExperimentService.SubmitExperimentAsync(API_Backend.Controllers.ExperimentSubmissionRequest,System.String)">
+            <summary>
+            Submits a new experiment request.
+            </summary>
+            <param name="request">The experiment submission request.</param>
+            <param name="userId">The ID of the user submitting the experiment.</param>
+            <returns>The ID of the newly created experiment.</returns>
+        </member>
+        <member name="M:API_Backend.Services.FileProcessing.ExperimentService.GetNextQueuedExperimentAsync">
+            <summary>
+            Retrieves the next experiment in the queue.
+            </summary>
+            <returns>The next queued experiment request, or null if none are queued.</returns>
+        </member>
+        <member name="M:API_Backend.Services.FileProcessing.ExperimentService.UpdateExperimentStatusAsync(System.Guid,API_Backend.Models.ExperimentStatus,System.String)">
+            <summary>
+            Updates the status of an experiment.
+            </summary>
+            <param name="experimentId">The ID of the experiment to update.</param>
+            <param name="status">The new status of the experiment.</param>
+            <param name="errorMessage">Optional error message if the experiment failed.</param>
+        </member>
+        <member name="M:API_Backend.Services.FileProcessing.ExperimentService.RunExperimentAsync(API_Backend.Models.ExperimentRequest)">
+            <summary>
+            Runs the experiment by executing the necessary processes.
+            </summary>
+            <param name="experiment">The experiment request to run.</param>
+        </member>
+        <member name="M:API_Backend.Services.FileProcessing.ExperimentService.GetExperimentStatusAsync(System.Guid)">
+            <summary>
+            Gets the status of an experiment.
+            </summary>
+            <param name="experimentId">The ID of the experiment.</param>
+            <returns>The status of the experiment, or null if not found.</returns>
+        </member>
+        <member name="M:API_Backend.Services.FileProcessing.ExperimentService.GetExperimentByIdAsync(System.Guid)">
+            <summary>
+            Retrieves an experiment by its ID.
+            </summary>
+            <param name="experimentId">The ID of the experiment.</param>
+            <returns>The experiment request, or null if not found.</returns>
+        </member>
+        <member name="M:API_Backend.Services.FileProcessing.ExperimentService.ProcessExperimentResultsAsync(API_Backend.Models.ExperimentRequest,API_Backend.Services.Docker_Swarm.ExperimentResponse)">
+            <summary>
+            Processes the experiment results after execution.
+            </summary>
+            <param name="experiment">The experiment request whose results are to be processed.</param>
+        </member>
+        <member name="M:API_Backend.Services.FileProcessing.ExperimentService.GetExperimentsByUserAsync(System.String)">
+            <summary>
+            Retrieves all experiments for a specific user.
+            </summary>
+            <param name="userId">The ID of the user.</param>
+            <returns>A list of experiments related to the user.</returns>
+        </member>
+        <member name="T:API_Backend.Services.FileProcessing.IDatasetService">
+            <summary>
+            Interface for dataset-related file operations.
+            </summary>
+        </member>
+        <member name="T:API_Backend.Services.FileProcessing.DatasetService">
+            <summary>
+            Service for handling dataset file operations.
+            </summary>
+        </member>
+        <member name="M:API_Backend.Services.FileProcessing.DatasetService.SaveChunkAsync(Microsoft.AspNetCore.Http.IFormFile,System.String)">
+            <summary>
+            Saves a single chunk of the uploaded file.
+            </summary>
+        </member>
+        <member name="M:API_Backend.Services.FileProcessing.DatasetService.CombineChunksAsync(System.String,System.String,System.String,System.Int32)">
+            <summary>
+            Combines all chunks into the final file.
+            </summary>
+        </member>
+        <member name="M:API_Backend.Services.FileProcessing.ExpressionParser.ParseExpression``1(System.String,System.String)">
+            <summary>
+            Takes an input string containing an expression and parses it into an expression with type T and return of type boolean.
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="expression"></param>
+            <returns></returns>
+        </member>
+        <member name="T:API_Backend.Services.FileProcessing.FileProcessor">
+            <summary>
+            Service for aggregating experiment data and parsing the data into a .csv file.
+            </summary>
+            <remarks>
+            Implemented based off of bash scripts provided in the docker-swarm repository.
+            </remarks>
+            <seealso href="https://github.com/ThePICARDProject/docker-swarm/"/>
+        </member>
+        <member name="M:API_Backend.Services.FileProcessing.FileProcessor.AggregateData(System.String,System.Collections.Generic.List{System.String})">
+            <summary>
+            Concatenates a list of experiment results files into one aggregate file.  Inserts algorithm parameter data from db into aggregate file.
+            </summary>
+            <param name="userId"> ID of logged in user </param>
+            <param name="requestIds"> List of experiment request IDs </param>
+            <returns> Aggregated results file path </returns>
+            <exception cref="T:System.ArgumentNullException"></exception>
+        </member>
+        <member name="M:API_Backend.Services.FileProcessing.FileProcessor.QueryExperiments(System.String,API_backend.Models.QueryExperiment)">
+            <summary>
+            Queries database for experiment IDs based on logged in user, docker swarm parameters, and algorithm parameters
+            </summary>
+            <param name="userId"> ID of logged in user </param>
+            <param name="queryParams"> User passed query parameters for docker swarm and algorithm parameters </param>
+            <returns> A list of experiment request IDs </returns>
+        </member>
+        <member name="M:API_Backend.Services.FileProcessing.FileProcessor.GetCsv(System.Collections.Generic.List{System.String},System.Int32)">
+            <summary>
+            Parses an aggregated date file for user specified metrics and stores the key value pairs in CSV file
+            </summary>
+            <param name="desiredMetrics"> User specified metrics to be parsed from the aggregated data file </param>
+            <param name="aggregateFileId"> Path to the aggregated data file </param>
+            <returns> Path to the CSV file </returns>
+            <exception cref="T:System.IO.FileNotFoundException"></exception>
+        </member>
+    </members>
+</doc>

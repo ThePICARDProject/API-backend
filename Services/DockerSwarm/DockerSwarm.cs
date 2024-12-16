@@ -1,0 +1,221 @@
+﻿using API_Backend.Models;
+using API_Backend.Services.Docker_Swarm;
+using API_Backend.Services.FileProcessing;
+using API_Backend.Models;
+using Microsoft.Extensions.Options;
+using System.Collections.ObjectModel;
+using System.Diagnostics;
+using System.Diagnostics.Eventing.Reader;
+using System.Linq.Expressions;
+using System.Net;
+using System.Reflection;
+using System.Text;
+using System.Text.RegularExpressions;
+using System.Text.Unicode;
+using System.Xml;
+using static System.Net.Mime.MediaTypeNames;
+using static System.Runtime.InteropServices.JavaScript.JSType;
+
+namespace API_Backend.Services.Docker_Swarm
+{
+    /// <summary>
+    /// Microservice for running machine learning experiments using DockerSwarm, Hadoop, and Spark.
+    /// Facilitates easy integration with C# applications and automated experiment execution.
+    /// </summary>
+    /// <remarks>
+    /// C# wrapper class based off of interactive scripts provided in the docker-swarm repository.
+    /// docker-compose.yml, scripts, and docker-images must be copied to the root directory 
+    /// provided in the constructor.
+    /// </remarks>
+    /// <seealso href="https://github.com/ThePICARDProject/docker-swarm/"/>
+    public class DockerSwarm
+    {
+        // File Paths in the applications local directory
+        private readonly string _rootDirectory;
+        private readonly string _experimentOutputBasePath = "./results";
+        private readonly string _dockerImagesBasePath = "./docker-images";
+        private readonly string _hadoopOutputBasePath = "hdfs://master:8020";
+
+        /// <summary>
+        /// Initializes a DockerSwarm object with the content root directory, and the default Docker advertise IP and address.
+        /// </summary>
+        /// <param name="rootDirectory">The content root directory for the running application</param>
+        public DockerSwarm(string rootDirectory) : this(rootDirectory, "-1", "-1") {}
+
+        /// <summary>
+        /// Initializes a DockerSwarm object with the content root directory, and the provided advertise IP and address.
+        /// </summary>
+        /// <param name="rootDirectory">The content root directory for the running application</param>
+        /// <param name="advertiseIP">The advertise IP for Docker Swarm</param>
+        /// <param name="advertisePort">The advertise Port for Docker Swarm</param>
+        /// <exception cref="Exception"></exception>
+        public DockerSwarm(string rootDirectory, string advertiseIP, string advertisePort)
+        {
+            _rootDirectory = rootDirectory;
+
+            // Verify program files
+            if (!File.Exists(Path.Combine(rootDirectory, "docker-compose.yml")))
+                throw new Exception("Docker Compose file not found in the project root directory.");
+            if (!Directory.Exists(Path.Combine(rootDirectory, "docker-images")))
+                throw new Exception("Docker images directory not found in the project root directory.");
+            if (!Directory.Exists(Path.Combine(rootDirectory, "scripts")))
+                throw new Exception("Scripts directory not found in the project root directory.");
+
+            // Run DockerSwarm_Init scripts
+            string error = "";
+            int errorCode;
+            using (Process dockerSwarmInit = new Process())
+            {
+                dockerSwarmInit.StartInfo.RedirectStandardError = true;
+                dockerSwarmInit.StartInfo.UseShellExecute = false;
+
+                // Add Arguments
+                //dockerSwarmInit.StartInfo.WorkingDirectory = _rootDirectory;
+                dockerSwarmInit.StartInfo.FileName = Path.Combine(_rootDirectory, "scripts", "dockerswarm-init.sh");
+                dockerSwarmInit.StartInfo.ArgumentList.Add(Environment.UserName);
+                dockerSwarmInit.StartInfo.ArgumentList.Add(advertiseIP);
+                dockerSwarmInit.StartInfo.ArgumentList.Add(advertisePort);
+                dockerSwarmInit.StartInfo.ArgumentList.Add(_dockerImagesBasePath);
+                dockerSwarmInit.StartInfo.ArgumentList.Add(_experimentOutputBasePath);
+
+                // Start process and read stderror
+                dockerSwarmInit.ErrorDataReceived += (sender, args) => error += args.Data ?? "";
+                dockerSwarmInit.Start();
+                dockerSwarmInit.BeginErrorReadLine();
+                dockerSwarmInit.WaitForExit();
+                errorCode = dockerSwarmInit.ExitCode;
+            }
+
+            // If an error occurs, throw an exception
+            if (errorCode != 0)
+                throw new Exception(error);
+        }
+
+        /// <summary>
+        /// Submits an experiment to DockerSwarm based on the request data.
+        /// </summary>
+        /// <param name="requestData">ExperimentRequest object containing experiment arguments.</param>
+        /// <param name="dataset">StoredDataSet object containing a reference to a dataset for the experiment.</param>
+        /// <returns>An Experiment Response containing the result of the experiment submission.</returns>
+        public async Task<ExperimentResponse> SubmitExperiment(ExperimentRequest requestData, StoredDataSet dataset)
+        {
+            // Get the date and time of the submit request
+            DateTime dateTime = DateTime.Now;
+            string submissionDateTime = $"{dateTime.Year.ToString()}-{dateTime.Month.ToString()}-{dateTime.Day.ToString()}" +
+                $"_{dateTime.Hour.ToString()}-{dateTime.Minute.ToString()}-{dateTime.Second.ToString()}";
+
+            // Generate user/experiment specific directories
+            string datasetPath = dataset.FilePath;
+            string outputPath = Path.Combine(_experimentOutputBasePath, requestData.UserID.ToString(), requestData.ExperimentID.ToString());
+            string outputName = $"{requestData.ExperimentID}_{submissionDateTime}.txt";
+
+            // Update Docker images
+            this.UpdateDockerfile(requestData.UserID.ToString());
+
+            // Create submit process
+            int? exitCode = null;
+            string error = "";
+            using (Process submit = new Process())
+            {
+                // Setup Process
+                submit.StartInfo.FileName = Path.Combine(_rootDirectory, "scripts", "submit-experiment.sh");
+                
+                submit.StartInfo.CreateNoWindow = false;
+
+                submit.StartInfo.RedirectStandardError = true;
+                submit.StartInfo.UseShellExecute = false;
+
+                submit.StartInfo.ArgumentList.Add(Environment.UserName);
+                submit.StartInfo.ArgumentList.Add(Path.Combine(outputPath, $"{requestData.ExperimentID}_log.txt"));
+                submit.StartInfo.ArgumentList.Add($"./{datasetPath}");
+
+                // Add Node Counts
+                submit.StartInfo.ArgumentList.Add(requestData.ClusterParameters.NodeCount.ToString());
+
+                // Add Spark arguments
+                submit.StartInfo.ArgumentList.Add(requestData.ClusterParameters.DriverMemory);
+                submit.StartInfo.ArgumentList.Add(requestData.ClusterParameters.DriverCores.ToString());
+                submit.StartInfo.ArgumentList.Add(requestData.ClusterParameters.ExecutorNumber.ToString());
+                submit.StartInfo.ArgumentList.Add(requestData.ClusterParameters.ExecutorCores.ToString());
+                submit.StartInfo.ArgumentList.Add(requestData.ClusterParameters.ExecutorMemory);
+                submit.StartInfo.ArgumentList.Add(requestData.ClusterParameters.MemoryOverhead.ToString());
+
+                submit.StartInfo.ArgumentList.Add(requestData.Algorithm.MainClassName);
+                submit.StartInfo.ArgumentList.Add(Path.GetFileName(requestData.Algorithm.JarFilePath));
+                
+                // Add output paths
+                submit.StartInfo.ArgumentList.Add($"{_hadoopOutputBasePath}");
+                submit.StartInfo.ArgumentList.Add(outputPath);
+                submit.StartInfo.ArgumentList.Add($"data/{requestData.UserID}/{requestData.ExperimentID}/{outputName}");
+
+                // Get algorithm parameters
+                List<(int, string)> parameters = new List<(int, string)>();
+                foreach (ExperimentAlgorithmParameterValue item in requestData.ParameterValues)
+                    parameters.Add((item.AlgorithmParameter.DriverIndex, item.Value.ToString()));
+                
+                // Sort according to each arguments DriverIndex
+                parameters.Sort(delegate((int, string) item1, (int, string) item2)
+                {
+                    if (item1.Item1 > item2.Item1)
+                        return 1;
+                    if (item1.Item1 < item2.Item1)
+                        return -1;
+                    return 0;
+                });
+
+                // Add algorithm arguments
+                foreach ((int, string) arg in parameters)
+                    submit.StartInfo.ArgumentList.Add(arg.Item2);
+
+                // Start and read from stderror
+                submit.ErrorDataReceived += (sender, args) => error += args.Data ?? "";
+                submit.Start();
+                submit.BeginErrorReadLine();
+                await submit.WaitForExitAsync();
+                exitCode = submit.ExitCode;
+            }
+
+            // Generate and return an experiment response
+            return new ExperimentResponse() 
+            { 
+                ErrorCode = exitCode,
+                ErrorMessage = error,
+                OutputPath = Path.Combine(outputPath, outputName)
+            };
+        }
+
+        /// <summary>
+        /// Updates the Dockerfile for the spark-hadoop docker image.
+        ///
+        /// Updates the jar path to the equal the directory containing packages for a specific user.
+        /// </summary>
+        /// <param name="userId">The userId for the user submitting an experiment.</param>
+        /// <exception cref="FileNotFoundException">Occurs when the Dockerfile is not found.</exception>
+        private void UpdateDockerfile(string userId)
+        {
+            // Generate the path and the jar line regex pattern
+            string dockerfilePath = Path.Combine(_rootDirectory, "docker-images/spark-hadoop/Dockerfile");
+            if (!File.Exists(dockerfilePath))
+                throw new FileNotFoundException("Dockerfile was not found");
+            Regex linePattern = new Regex("COPY \\.\\/jars\\/(?:[a-zA-Z0-9-]+\\/\\*|\\*) \\/opt\\/jars");
+
+            // Copy each line from the old dockerfile to a string
+            string newFileContent = "";
+            using(StreamReader dockerfile = new StreamReader(dockerfilePath))
+            {
+                while(!dockerfile.EndOfStream)
+                {
+                    string line = dockerfile.ReadLine();
+                    Match match = linePattern.Match(line);
+                    if (line.Length != 0 && match.Value.Length == line.Length) // If the pattern matches the line, update the line
+                            line = $"COPY ./jars/{userId}/* /opt/jars";
+                    
+                    newFileContent = $"{newFileContent}{line}\n";
+                }
+            }
+
+            // Write all bytes in the new file content to a new Dockerfile
+            File.WriteAllBytes(dockerfilePath, Encoding.UTF8.GetBytes(newFileContent));
+        }
+    }
+}
